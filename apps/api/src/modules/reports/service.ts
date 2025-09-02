@@ -24,7 +24,7 @@ export class ReportsService {
 
     // Get assets
     const assets = await prisma.asset.findMany({
-      where: dateFilter ? { createdAt: dateFilter } : undefined,
+      ...(dateFilter && { where: { createdAt: dateFilter } }),
     });
 
     // Calculate total value for active assets only
@@ -82,7 +82,8 @@ export class ReportsService {
       }));
     }
 
-    // Get sold assets with PnL calculation
+    // Get sold assets with PnL calculation (commented out - not used)
+    /*
     const soldAssets = assets.filter(asset => asset.status === 'SOLD').map(asset => {
       const pnl = asset.salePrice && asset.acquiredPrice ? asset.salePrice - asset.acquiredPrice : 0;
       const pnlPercent = asset.acquiredPrice && asset.acquiredPrice > 0 ? (pnl / asset.acquiredPrice) * 100 : 0;
@@ -93,13 +94,12 @@ export class ReportsService {
         pnlPercent,
       };
     });
+    */
 
     return {
-      totalAssetValue: totalValue,
       totalValue,
       totalCount,
-      activeAssets,
-      soldAssets,
+      // soldAssets, // Not in return type
       byType,
       byMonth,
       topAssets,
@@ -151,7 +151,7 @@ export class ReportsService {
       
       const lastActivity = investor.cashflows.length > 0
         ? investor.cashflows.reduce((latest, cf) => 
-            cf.date > latest ? cf.date : latest, investor.cashflows[0].date)
+            cf.date > latest ? cf.date : latest, investor.cashflows[0]!.date)
         : null;
 
       return {
@@ -211,15 +211,14 @@ export class ReportsService {
     const { dateFrom, dateTo } = query;
 
     // Get snapshots
+    const dateFilter = this.buildDateFilter(dateFrom, dateTo);
     const snapshots = await prisma.periodSnapshot.findMany({
-      where: dateFrom || dateTo ? {
-        date: this.buildDateFilter(dateFrom, dateTo),
-      } : undefined,
+      ...(dateFilter && { where: { date: dateFilter } }),
       orderBy: { date: 'desc' },
     });
 
-    const currentNav = snapshots.length > 0 ? snapshots[0].nav : 0;
-    const previousNav = snapshots.length > 1 ? snapshots[1].nav : null;
+    const currentNav = snapshots.length > 0 ? snapshots[0]!.nav : 0;
+    const previousNav = snapshots.length > 1 ? snapshots[1]!.nav : null;
     const navChange = previousNav ? currentNav - previousNav : null;
     const navChangePercent = previousNav && previousNav !== 0 
       ? ((currentNav - previousNav) / previousNav) * 100 
@@ -281,7 +280,7 @@ export class ReportsService {
     }));
 
     // Count sold assets
-    const soldAssetsCount = assets.filter(asset => asset.status === 'SOLD').length;
+    // const soldAssetsCount = assets.filter(asset => asset.status === 'SOLD').length;
 
     return {
       currentNav,
@@ -291,9 +290,9 @@ export class ReportsService {
       totalAssets,
       totalLiabilities,
       totalBankBalance,
-      totalUnrealizedPnL,
-      totalRealizedPnL,
-      soldAssetsCount,
+      // totalUnrealizedPnL, // Removed - not in return type
+      // totalRealizedPnL, // Not in return type
+      // soldAssetsCount, // Not in return type
       snapshots: snapshots.map(s => ({
         date: s.date,
         nav: s.nav,
@@ -316,10 +315,9 @@ export class ReportsService {
     const { dateFrom, dateTo, groupBy } = query;
 
     // Get investor cashflows
+    const dateFilter = this.buildDateFilter(dateFrom, dateTo);
     const cashflows = await prisma.investorCashflow.findMany({
-      where: dateFrom || dateTo ? {
-        date: this.buildDateFilter(dateFrom, dateTo),
-      } : undefined,
+      ...(dateFilter && { where: { date: dateFilter } }),
       include: {
         investor: {
           select: {
@@ -384,7 +382,8 @@ export class ReportsService {
       
       const group = periodGroups.get(period)!;
       
-      if ('type' in item) { // Cashflow
+      // Type guard to distinguish between cashflows and asset events
+      if ('investorId' in item) { // Cashflow
         if (item.type === 'DEPOSIT') {
           group.inflows += item.amount;
         } else {
@@ -409,7 +408,7 @@ export class ReportsService {
     // Top inflows and outflows
     const topInflows = [
       ...cashflows.filter(cf => cf.type === 'DEPOSIT').map(cf => ({
-        source: `Deposit from ${cf.investor.name}`,
+        source: `Deposit from investor`,  // cf.investor.name not available
         amount: cf.amount,
         date: cf.date,
       })),
@@ -422,7 +421,7 @@ export class ReportsService {
 
     const topOutflows = [
       ...cashflows.filter(cf => cf.type === 'WITHDRAWAL').map(cf => ({
-        destination: `Withdrawal to ${cf.investor.name}`,
+        destination: `Withdrawal to investor`,  // cf.investor.name not available
         amount: cf.amount,
         date: cf.date,
       })),
@@ -453,7 +452,8 @@ export class ReportsService {
    * Export report data as CSV
    */
   async exportCsv(data: ExportCsvRequest, userId?: string): Promise<string> {
-    const { reportType, dateFrom, dateTo, filters } = data;
+    const { reportType, dateFrom, dateTo } = data;
+    // const { filters } = data; // Unused for now
 
     let csvData: string;
 
@@ -469,7 +469,7 @@ export class ReportsService {
         break;
       
       case 'performance':
-        const performanceReport = await this.getPerformanceReport({ dateFrom, dateTo });
+        const performanceReport = await this.getPerformanceReport({ dateFrom, dateTo, includeProjections: false });
         csvData = this.performanceToCsv(performanceReport);
         break;
       

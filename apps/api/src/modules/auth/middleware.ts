@@ -19,7 +19,7 @@ declare global {
 /**
  * JWT Authentication middleware
  */
-export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const authenticate = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
     
@@ -48,7 +48,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
  * Role-based authorization middleware
  */
 export const authorize = (roles: UserRoleType[]) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.user) {
       next(errors.unauthorized('Authentication required'));
       return;
@@ -76,7 +76,7 @@ export const adminOrInternal = authorize(['ADMIN', 'INTERNAL']);
 /**
  * Optional authentication middleware (doesn't throw if no token)
  */
-export const optionalAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const optionalAuth = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
     

@@ -81,13 +81,14 @@ router.get('/me', authenticate, asyncHandler(async (req, res) => {
  * POST /api/auth/verify
  * Verify token validity
  */
-router.post('/verify', asyncHandler(async (req, res) => {
+router.post('/verify', asyncHandler(async (req, res): Promise<void> => {
   const { token } = req.body;
   
   if (!token) {
-    return res.status(400).json({ 
+    res.status(400).json({ 
       error: { code: 'BAD_REQUEST', message: 'Token is required' } 
     });
+    return;
   }
   
   try {

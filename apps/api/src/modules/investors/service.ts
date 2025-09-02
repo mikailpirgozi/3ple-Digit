@@ -14,6 +14,26 @@ import type {
 
 export class InvestorsService {
   /**
+   * Helper function to convert undefined to null for Prisma compatibility
+   */
+  private toNullable<T>(value: T | undefined): T | null {
+    return value === undefined ? null : value;
+  }
+
+  /**
+   * Helper function to filter out undefined values from update data
+   */
+  private filterUpdateData<T extends Record<string, any>>(data: T): any {
+    const filtered: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        (filtered as any)[key] = value;
+      }
+    }
+    return filtered;
+  }
+
+  /**
    * Create a new investor
    */
   async createInvestor(data: CreateInvestorRequest, userId?: string): Promise<InvestorResponse> {
@@ -40,9 +60,9 @@ export class InvestorsService {
         userId: data.userId,
         name: data.name,
         email: data.email,
-        phone: data.phone,
-        address: data.address,
-        taxId: data.taxId,
+        phone: this.toNullable(data.phone),
+        address: this.toNullable(data.address),
+        taxId: this.toNullable(data.taxId),
       },
     });
 
@@ -176,9 +196,16 @@ export class InvestorsService {
       throw errors.notFound('Investor not found');
     }
 
+    const updateData = this.filterUpdateData({
+      ...data,
+      phone: data.phone !== undefined ? this.toNullable(data.phone) : undefined,
+      address: data.address !== undefined ? this.toNullable(data.address) : undefined,
+      taxId: data.taxId !== undefined ? this.toNullable(data.taxId) : undefined,
+    });
+
     const investor = await prisma.investor.update({
       where: { id },
-      data,
+      data: updateData,
     });
 
     log.info('Investor updated', { investorId: id, updatedBy: userId });
@@ -224,7 +251,7 @@ export class InvestorsService {
         type: data.type,
         amount: data.amount,
         date: data.date,
-        note: data.note,
+        note: this.toNullable(data.note),
       },
       include: {
         investor: {
@@ -323,9 +350,14 @@ export class InvestorsService {
       throw errors.notFound('Cashflow not found');
     }
 
+    const updateData = this.filterUpdateData({
+      ...data,
+      note: data.note !== undefined ? this.toNullable(data.note) : undefined,
+    });
+
     const cashflow = await prisma.investorCashflow.update({
       where: { id },
-      data,
+      data: updateData,
       include: {
         investor: {
           select: {

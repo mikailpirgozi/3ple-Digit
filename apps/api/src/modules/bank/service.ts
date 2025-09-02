@@ -14,14 +14,34 @@ import { csvRowSchema } from './schema.js';
 
 export class BankService {
   /**
+   * Helper function to convert undefined to null for Prisma compatibility
+   */
+  private toNullable<T>(value: T | undefined): T | null {
+    return value === undefined ? null : value;
+  }
+
+  /**
+   * Helper function to filter out undefined values from update data
+   */
+  private filterUpdateData<T extends Record<string, any>>(data: T): any {
+    const filtered: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        (filtered as any)[key] = value;
+      }
+    }
+    return filtered;
+  }
+
+  /**
    * Create a new bank balance entry
    */
   async createBankBalance(data: CreateBankBalanceRequest, userId?: string): Promise<BankBalanceResponse> {
     const balance = await prisma.bankBalance.create({
       data: {
         accountName: data.accountName,
-        bankName: data.bankName,
-        accountType: data.accountType,
+        bankName: this.toNullable(data.bankName),
+        accountType: this.toNullable(data.accountType),
         amount: data.amount,
         currency: data.currency,
         date: data.date,
@@ -142,9 +162,15 @@ export class BankService {
       throw errors.notFound('Bank balance not found');
     }
 
+    const updateData = this.filterUpdateData({
+      ...data,
+      bankName: data.bankName !== undefined ? this.toNullable(data.bankName) : undefined,
+      accountType: data.accountType !== undefined ? this.toNullable(data.accountType) : undefined,
+    });
+
     const balance = await prisma.bankBalance.update({
       where: { id },
-      data,
+      data: updateData,
     });
 
     log.info('Bank balance updated', { balanceId: id, updatedBy: userId });
@@ -175,7 +201,12 @@ export class BankService {
    * Import bank balances from CSV
    */
   async importFromCsv(data: CsvImportRequest, userId?: string): Promise<CsvImportResult> {
-    const { file, delimiter, skipFirstRow, mapping } = data;
+    const { file, skipFirstRow, mapping } = data;
+    const delimiter = data.delimiter ?? ',';
+    
+    if (!delimiter) {
+      throw new Error('Delimiter is required');
+    }
 
     try {
       // Decode base64 CSV content
@@ -201,7 +232,7 @@ export class BankService {
         const row = dataRows[i];
         
         try {
-          const columns = this.parseCsvRow(row, delimiter);
+          const columns = this.parseCsvRow(row, delimiter as string);
           const rowData = this.mapCsvRow(columns, mapping);
           const validatedData = csvRowSchema.parse(rowData);
 
@@ -209,8 +240,8 @@ export class BankService {
           const balance = await prisma.bankBalance.create({
             data: {
               accountName: validatedData.accountName,
-              bankName: validatedData.bankName,
-              accountType: validatedData.accountType,
+              bankName: this.toNullable(validatedData.bankName),
+              accountType: this.toNullable(validatedData.accountType),
               amount: validatedData.amount,
               currency: validatedData.currency,
               date: validatedData.date,
@@ -231,7 +262,7 @@ export class BankService {
           results.errors.push({
             row: rowIndex,
             errors: errorMessages,
-            data: this.parseCsvRowSafe(row, delimiter),
+            data: this.parseCsvRowSafe(row, delimiter as string),
           });
         }
       }
@@ -275,8 +306,8 @@ export class BankService {
       if (!acc[balance.currency]) {
         acc[balance.currency] = { amount: 0, count: 0 };
       }
-      acc[balance.currency].amount += balance.amount;
-      acc[balance.currency].count++;
+      acc[balance.currency]!.amount += balance.amount;
+      acc[balance.currency]!.count++;
       return acc;
     }, {} as Record<string, { amount: number; count: number }>);
 
@@ -359,15 +390,15 @@ export class BankService {
     
     // Map optional fields
     if (mapping.bankName !== undefined && columns[mapping.bankName]) {
-      data.bankName = columns[mapping.bankName].trim();
+      data.bankName = columns[mapping.bankName]?.trim();
     }
     
     if (mapping.accountType !== undefined && columns[mapping.accountType]) {
-      data.accountType = columns[mapping.accountType].trim();
+      data.accountType = columns[mapping.accountType]?.trim();
     }
     
     if (mapping.currency !== undefined && columns[mapping.currency]) {
-      data.currency = columns[mapping.currency].trim().toUpperCase();
+      data.currency = columns[mapping.currency]?.trim().toUpperCase();
     } else {
       data.currency = 'EUR';
     }

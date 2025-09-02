@@ -6,6 +6,7 @@ import {
   getLiabilitiesQuerySchema,
 } from './schema.js';
 import { asyncHandler } from '@/core/error-handler.js';
+import { validateRequiredParam } from '@/core/validation.js';
 import { authenticate, adminOrInternal } from '@/modules/auth/middleware.js';
 
 const router = Router();
@@ -37,7 +38,7 @@ router.post('/', adminOrInternal, asyncHandler(async (req, res) => {
  * GET /api/liabilities/summary
  * Get liabilities summary
  */
-router.get('/summary', asyncHandler(async (req, res) => {
+router.get('/summary', asyncHandler(async (_req, res) => {
   const summary = await liabilitiesService.getLiabilitiesSummary();
   res.json(summary);
 }));
@@ -47,7 +48,7 @@ router.get('/summary', asyncHandler(async (req, res) => {
  * Get liability by ID
  */
 router.get('/:id', asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const liability = await liabilitiesService.getLiabilityById(id);
   res.json(liability);
 }));
@@ -57,7 +58,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
  * Update liability (Admin/Internal only)
  */
 router.put('/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const data = updateLiabilitySchema.parse(req.body);
   const liability = await liabilitiesService.updateLiability(id, data, req.user?.id);
   res.json(liability);
@@ -68,7 +69,7 @@ router.put('/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Delete liability (Admin/Internal only)
  */
 router.delete('/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   await liabilitiesService.deleteLiability(id, req.user?.id);
   res.status(204).send();
 }));

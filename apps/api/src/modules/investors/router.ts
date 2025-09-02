@@ -9,6 +9,7 @@ import {
   getCashflowsQuerySchema,
 } from './schema.js';
 import { asyncHandler } from '@/core/error-handler.js';
+import { validateRequiredParam } from '@/core/validation.js';
 import { authenticate, adminOrInternal } from '@/modules/auth/middleware.js';
 
 const router = Router();
@@ -41,7 +42,7 @@ router.post('/', adminOrInternal, asyncHandler(async (req, res) => {
  * Get investor by ID
  */
 router.get('/:id', asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const investor = await investorsService.getInvestorById(id);
   res.json(investor);
 }));
@@ -51,7 +52,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
  * Update investor (Admin/Internal only)
  */
 router.put('/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const data = updateInvestorSchema.parse(req.body);
   const investor = await investorsService.updateInvestor(id, data, req.user?.id);
   res.json(investor);
@@ -62,7 +63,7 @@ router.put('/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Delete investor (Admin only)
  */
 router.delete('/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   await investorsService.deleteInvestor(id, req.user?.id);
   res.status(204).send();
 }));
@@ -72,7 +73,7 @@ router.delete('/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Get investor capital summary
  */
 router.get('/:id/capital', asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const summary = await investorsService.getInvestorCapitalSummary(id);
   res.json(summary);
 }));
@@ -82,7 +83,7 @@ router.get('/:id/capital', asyncHandler(async (req, res) => {
  * Get cashflows for specific investor
  */
 router.get('/:id/cashflows', asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const query = getCashflowsQuerySchema.parse({ ...req.query, investorId: id });
   const result = await investorsService.getCashflows(query);
   res.json(result);
@@ -93,7 +94,7 @@ router.get('/:id/cashflows', asyncHandler(async (req, res) => {
  * Create a new cashflow for specific investor (Admin/Internal only)
  */
 router.post('/:id/cashflows', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const data = createCashflowSchema.parse({ ...req.body, investorId: id });
   const cashflow = await investorsService.createCashflow(data, req.user?.id);
   res.status(201).json(cashflow);
@@ -126,7 +127,7 @@ router.post('/cashflows', adminOrInternal, asyncHandler(async (req, res) => {
  * Update cashflow entry (Admin/Internal only)
  */
 router.put('/cashflows/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const data = updateCashflowSchema.parse(req.body);
   const cashflow = await investorsService.updateCashflow(id, data, req.user?.id);
   res.json(cashflow);
@@ -137,7 +138,7 @@ router.put('/cashflows/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Delete cashflow entry (Admin/Internal only)
  */
 router.delete('/cashflows/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   await investorsService.deleteCashflow(id, req.user?.id);
   res.status(204).send();
 }));

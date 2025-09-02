@@ -15,6 +15,26 @@ import type {
 
 export class AssetsService {
   /**
+   * Helper function to convert undefined to null for Prisma compatibility
+   */
+  private toNullable<T>(value: T | undefined): T | null {
+    return value === undefined ? null : value;
+  }
+
+  /**
+   * Helper function to filter out undefined values from update data
+   */
+  private filterUpdateData<T extends Record<string, any>>(data: T): any {
+    const filtered: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        filtered[key] = value;
+      }
+    }
+    return filtered;
+  }
+
+  /**
    * Create a new asset
    */
   async createAsset(data: CreateAssetRequest, userId?: string): Promise<AssetResponse> {
@@ -22,9 +42,9 @@ export class AssetsService {
       data: {
         name: data.name,
         type: data.type,
-        description: data.description,
+        description: this.toNullable(data.description),
         currentValue: data.currentValue,
-        acquiredPrice: data.acquiredPrice,
+        acquiredPrice: this.toNullable(data.acquiredPrice),
       },
     });
 
@@ -161,9 +181,17 @@ export class AssetsService {
       throw errors.notFound('Asset not found');
     }
 
+    const updateData = this.filterUpdateData({
+      ...data,
+      description: data.description !== undefined ? this.toNullable(data.description) : undefined,
+      acquiredPrice: data.acquiredPrice !== undefined ? this.toNullable(data.acquiredPrice) : undefined,
+      salePrice: data.salePrice !== undefined ? this.toNullable(data.salePrice) : undefined,
+      saleDate: data.saleDate !== undefined ? this.toNullable(data.saleDate) : undefined,
+    });
+
     const asset = await prisma.asset.update({
       where: { id },
-      data,
+      data: updateData,
     });
 
     log.info('Asset updated', { assetId: id, updatedBy: userId });
@@ -212,7 +240,7 @@ export class AssetsService {
           type: data.type,
           amount: data.amount,
           date: data.date,
-          note: data.note,
+          note: this.toNullable(data.note),
         },
         include: {
           asset: {
@@ -333,9 +361,14 @@ export class AssetsService {
       );
 
       // Update the event
+      const eventUpdateData = this.filterUpdateData({
+        ...data,
+        note: data.note !== undefined ? this.toNullable(data.note) : undefined,
+      });
+
       const updatedEvent = await tx.assetEvent.update({
         where: { id },
-        data,
+        data: eventUpdateData,
         include: {
           asset: {
             select: {

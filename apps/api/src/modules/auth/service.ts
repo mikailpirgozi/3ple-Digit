@@ -135,7 +135,7 @@ export class AuthService {
 
     const accessToken = jwt.sign(payload, this.jwtSecret, {
       expiresIn: this.jwtExpiresIn,
-    });
+    } as jwt.SignOptions);
 
     const refreshToken = jwt.sign(payload, this.jwtSecret, {
       expiresIn: '30d', // Longer expiry for refresh token

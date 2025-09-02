@@ -9,6 +9,7 @@ import {
   getAssetEventsQuerySchema,
 } from './schema.js';
 import { asyncHandler } from '@/core/error-handler.js';
+import { validateRequiredParam } from '@/core/validation.js';
 import { authenticate, adminOrInternal } from '@/modules/auth/middleware.js';
 
 const router = Router();
@@ -41,7 +42,7 @@ router.post('/', adminOrInternal, asyncHandler(async (req, res) => {
  * Get asset by ID
  */
 router.get('/:id', asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const asset = await assetsService.getAssetById(id);
   res.json(asset);
 }));
@@ -51,7 +52,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
  * Update asset (Admin/Internal only)
  */
 router.put('/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const data = updateAssetSchema.parse(req.body);
   const asset = await assetsService.updateAsset(id, data, req.user?.id);
   res.json(asset);
@@ -62,7 +63,7 @@ router.put('/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Delete asset (Admin/Internal only)
  */
 router.delete('/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   await assetsService.deleteAsset(id, req.user?.id);
   res.status(204).send();
 }));
@@ -72,7 +73,7 @@ router.delete('/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Mark asset as sold (Admin/Internal only)
  */
 router.post('/:id/mark-sold', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const { salePrice, date, note } = req.body;
   
   // Create a sale event
@@ -126,7 +127,7 @@ router.get('/:id/events', asyncHandler(async (req, res) => {
  * Create a new event for specific asset (Admin/Internal only)
  */
 router.post('/:id/events', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const data = createAssetEventSchema.parse({ ...req.body, assetId: id });
   const event = await assetsService.createAssetEvent(data, req.user?.id);
   res.status(201).json(event);
@@ -159,7 +160,7 @@ router.post('/events', adminOrInternal, asyncHandler(async (req, res) => {
  * Update asset event (Admin/Internal only)
  */
 router.put('/events/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const data = updateAssetEventSchema.parse(req.body);
   const event = await assetsService.updateAssetEvent(id, data, req.user?.id);
   res.json(event);
@@ -170,7 +171,7 @@ router.put('/events/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Delete asset event (Admin/Internal only)
  */
 router.delete('/events/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   await assetsService.deleteAssetEvent(id, req.user?.id);
   res.status(204).send();
 }));

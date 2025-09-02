@@ -6,6 +6,7 @@ import {
   getSnapshotsQuerySchema,
 } from './schema.js';
 import { asyncHandler } from '@/core/error-handler.js';
+import { validateRequiredParam } from '@/core/validation.js';
 import { authenticate, adminOrInternal } from '@/modules/auth/middleware.js';
 
 const router = Router();
@@ -17,7 +18,7 @@ router.use(authenticate);
  * GET /api/snapshots/nav/current
  * Get current NAV calculation (without creating snapshot)
  */
-router.get('/nav/current', asyncHandler(async (req, res) => {
+router.get('/nav/current', asyncHandler(async (_req, res) => {
   const navCalculation = await snapshotsService.calculateCurrentNav();
   res.json(navCalculation);
 }));
@@ -26,7 +27,7 @@ router.get('/nav/current', asyncHandler(async (req, res) => {
  * GET /api/snapshots/ownership/current
  * Get current investor ownership percentages
  */
-router.get('/ownership/current', asyncHandler(async (req, res) => {
+router.get('/ownership/current', asyncHandler(async (_req, res) => {
   const ownership = await snapshotsService.calculateInvestorOwnership();
   res.json(ownership);
 }));
@@ -55,12 +56,13 @@ router.post('/', adminOrInternal, asyncHandler(async (req, res) => {
  * GET /api/snapshots/latest
  * Get latest snapshot
  */
-router.get('/latest', asyncHandler(async (req, res) => {
+router.get('/latest', asyncHandler(async (_req, res): Promise<void> => {
   const snapshot = await snapshotsService.getLatestSnapshot();
   if (!snapshot) {
-    return res.status(404).json({ 
+    res.status(404).json({ 
       error: { code: 'NOT_FOUND', message: 'No snapshots found' } 
     });
+    return;
   }
   res.json(snapshot);
 }));
@@ -70,7 +72,7 @@ router.get('/latest', asyncHandler(async (req, res) => {
  * Get snapshot by ID
  */
 router.get('/:id', asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const snapshot = await snapshotsService.getSnapshotById(id);
   res.json(snapshot);
 }));
@@ -80,7 +82,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
  * Update snapshot (Admin/Internal only)
  */
 router.put('/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const data = updateSnapshotSchema.parse(req.body);
   const snapshot = await snapshotsService.updateSnapshot(id, data, req.user?.id);
   res.json(snapshot);
@@ -91,7 +93,7 @@ router.put('/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Delete snapshot (Admin/Internal only)
  */
 router.delete('/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   await snapshotsService.deleteSnapshot(id, req.user?.id);
   res.status(204).send();
 }));
@@ -101,7 +103,7 @@ router.delete('/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Get snapshots for specific investor
  */
 router.get('/investor/:investorId', asyncHandler(async (req, res) => {
-  const { investorId } = req.params;
+  const investorId = validateRequiredParam(req.params.investorId, 'investorId');
   const snapshots = await snapshotsService.getInvestorSnapshots(investorId);
   res.json(snapshots);
 }));

@@ -86,7 +86,9 @@ export const csvImportResultSchema = z.object({
 // Types
 export type CreateBankBalanceRequest = z.infer<typeof createBankBalanceSchema>;
 export type UpdateBankBalanceRequest = z.infer<typeof updateBankBalanceSchema>;
-export type CsvImportRequest = z.infer<typeof csvImportSchema>;
+export type CsvImportRequest = z.infer<typeof csvImportSchema> & {
+  delimiter: string; // Override to make delimiter required
+};
 export type CsvRowData = z.infer<typeof csvRowSchema>;
 export type GetBankBalancesQuery = z.infer<typeof getBankBalancesQuerySchema>;
 export type BankBalanceResponse = z.infer<typeof bankBalanceResponseSchema>;

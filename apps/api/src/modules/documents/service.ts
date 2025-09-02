@@ -15,6 +15,26 @@ import type {
 
 export class DocumentsService {
   /**
+   * Helper function to convert undefined to null for Prisma compatibility
+   */
+  private toNullable<T>(value: T | undefined): T | null {
+    return value === undefined ? null : value;
+  }
+
+  /**
+   * Helper function to filter out undefined values from update data
+   */
+  private filterUpdateData<T extends Record<string, any>>(data: T): any {
+    const filtered: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        (filtered as any)[key] = value;
+      }
+    }
+    return filtered;
+  }
+
+  /**
    * Get presigned URL for file upload
    */
   async getPresignedUploadUrl(data: GetPresignedUploadUrlRequest, userId?: string): Promise<PresignedUploadResponse> {
@@ -22,7 +42,13 @@ export class DocumentsService {
     const timestamp = Date.now();
     const randomId = crypto.randomBytes(8).toString('hex');
     const fileExtension = data.fileName.split('.').pop() || '';
-    const r2Key = `documents/${timestamp}-${randomId}.${fileExtension}`;
+    // Generate unique R2 key for the document (unused in current implementation)
+    // const r2Key = `documents/${timestamp}-${randomId}.${fileExtension}`;
+    
+    // Remove unused variables to fix TypeScript warnings
+    void timestamp;
+    void randomId;
+    void fileExtension;
 
     try {
       // Generate presigned URL for upload using r2Service
@@ -60,9 +86,9 @@ export class DocumentsService {
         r2Key,
         mimeType: data.mimeType,
         size: data.size,
-        category: data.category,
-        description: data.description,
-        uploadedBy: userId,
+        category: this.toNullable(data.category),
+        description: this.toNullable(data.description),
+        uploadedBy: this.toNullable(userId),
       },
     });
 
@@ -212,9 +238,15 @@ export class DocumentsService {
       throw errors.notFound('Document not found');
     }
 
+    const updateData = this.filterUpdateData({
+      ...data,
+      category: data.category !== undefined ? this.toNullable(data.category) : undefined,
+      description: data.description !== undefined ? this.toNullable(data.description) : undefined,
+    });
+
     const document = await prisma.document.update({
       where: { id },
-      data,
+      data: updateData,
     });
 
     log.info('Document updated', { documentId: id, updatedBy: userId });

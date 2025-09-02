@@ -7,6 +7,7 @@ import {
   getBankBalancesQuerySchema,
 } from './schema.js';
 import { asyncHandler } from '@/core/error-handler.js';
+import { validateRequiredParam } from '@/core/validation.js';
 import { authenticate, adminOrInternal } from '@/modules/auth/middleware.js';
 
 const router = Router();
@@ -39,7 +40,7 @@ router.post('/balances', adminOrInternal, asyncHandler(async (req, res) => {
  * Get bank balance by ID
  */
 router.get('/balances/:id', asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const balance = await bankService.getBankBalanceById(id);
   res.json(balance);
 }));
@@ -49,7 +50,7 @@ router.get('/balances/:id', asyncHandler(async (req, res) => {
  * Update bank balance (Admin/Internal only)
  */
 router.put('/balances/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const data = updateBankBalanceSchema.parse(req.body);
   const balance = await bankService.updateBankBalance(id, data, req.user?.id);
   res.json(balance);
@@ -60,7 +61,7 @@ router.put('/balances/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Delete bank balance (Admin/Internal only)
  */
 router.delete('/balances/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   await bankService.deleteBankBalance(id, req.user?.id);
   res.status(204).send();
 }));
@@ -69,7 +70,7 @@ router.delete('/balances/:id', adminOrInternal, asyncHandler(async (req, res) =>
  * GET /api/bank/summary
  * Get bank balance summary
  */
-router.get('/summary', asyncHandler(async (req, res) => {
+router.get('/summary', asyncHandler(async (_req, res) => {
   const summary = await bankService.getBankBalanceSummary();
   res.json(summary);
 }));
@@ -80,7 +81,7 @@ router.get('/summary', asyncHandler(async (req, res) => {
  */
 router.post('/import/csv', adminOrInternal, asyncHandler(async (req, res) => {
   const data = csvImportSchema.parse(req.body);
-  const result = await bankService.importFromCsv(data, req.user?.id);
+  const result = await bankService.importFromCsv(data as any, req.user?.id);
   res.json(result);
 }));
 

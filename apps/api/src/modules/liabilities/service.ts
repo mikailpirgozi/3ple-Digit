@@ -10,16 +10,36 @@ import type {
 
 export class LiabilitiesService {
   /**
+   * Helper function to convert undefined to null for Prisma compatibility
+   */
+  private toNullable<T>(value: T | undefined): T | null {
+    return value === undefined ? null : value;
+  }
+
+  /**
+   * Helper function to filter out undefined values from update data
+   */
+  private filterUpdateData<T extends Record<string, any>>(data: T): any {
+    const filtered: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        (filtered as any)[key] = value;
+      }
+    }
+    return filtered;
+  }
+
+  /**
    * Create a new liability
    */
   async createLiability(data: CreateLiabilityRequest, userId?: string): Promise<LiabilityResponse> {
     const liability = await prisma.liability.create({
       data: {
         name: data.name,
-        description: data.description,
+        description: this.toNullable(data.description),
         currentBalance: data.currentBalance,
-        interestRate: data.interestRate,
-        maturityDate: data.maturityDate,
+        interestRate: this.toNullable(data.interestRate),
+        maturityDate: this.toNullable(data.maturityDate),
       },
     });
 
@@ -121,9 +141,16 @@ export class LiabilitiesService {
       throw errors.notFound('Liability not found');
     }
 
+    const updateData = this.filterUpdateData({
+      ...data,
+      description: data.description !== undefined ? this.toNullable(data.description) : undefined,
+      interestRate: data.interestRate !== undefined ? this.toNullable(data.interestRate) : undefined,
+      maturityDate: data.maturityDate !== undefined ? this.toNullable(data.maturityDate) : undefined,
+    });
+
     const liability = await prisma.liability.update({
       where: { id },
-      data,
+      data: updateData,
     });
 
     log.info('Liability updated', { liabilityId: id, updatedBy: userId });

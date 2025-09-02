@@ -7,6 +7,7 @@ import {
   getDocumentsQuerySchema,
 } from './schema.js';
 import { asyncHandler } from '@/core/error-handler.js';
+import { validateRequiredParam } from '@/core/validation.js';
 import { authenticate, adminOrInternal } from '@/modules/auth/middleware.js';
 
 const router = Router();
@@ -49,7 +50,7 @@ router.post('/', adminOrInternal, asyncHandler(async (req, res) => {
  * GET /api/documents/categories
  * Get all document categories
  */
-router.get('/categories', asyncHandler(async (req, res) => {
+router.get('/categories', asyncHandler(async (_req, res) => {
   const categories = await documentsService.getDocumentCategories();
   res.json(categories);
 }));
@@ -58,7 +59,7 @@ router.get('/categories', asyncHandler(async (req, res) => {
  * GET /api/documents/stats
  * Get storage statistics
  */
-router.get('/stats', asyncHandler(async (req, res) => {
+router.get('/stats', asyncHandler(async (_req, res) => {
   const stats = await documentsService.getStorageStats();
   res.json(stats);
 }));
@@ -68,7 +69,7 @@ router.get('/stats', asyncHandler(async (req, res) => {
  * Get document by ID
  */
 router.get('/:id', asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const document = await documentsService.getDocumentById(id);
   res.json(document);
 }));
@@ -78,7 +79,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
  * Get presigned download URL
  */
 router.get('/:id/download', asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const result = await documentsService.getPresignedDownloadUrl(id, req.user?.id);
   res.json(result);
 }));
@@ -88,7 +89,7 @@ router.get('/:id/download', asyncHandler(async (req, res) => {
  * Update document metadata (Admin/Internal only)
  */
 router.put('/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   const data = updateDocumentSchema.parse(req.body);
   const document = await documentsService.updateDocument(id, data, req.user?.id);
   res.json(document);
@@ -99,7 +100,7 @@ router.put('/:id', adminOrInternal, asyncHandler(async (req, res) => {
  * Delete document (Admin/Internal only)
  */
 router.delete('/:id', adminOrInternal, asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  const id = validateRequiredParam(req.params.id, 'id');
   await documentsService.deleteDocument(id, req.user?.id);
   res.status(204).send();
 }));

@@ -13,6 +13,26 @@ import type {
 
 export class SnapshotsService {
   /**
+   * Helper function to convert undefined to null for Prisma compatibility
+   */
+  private toNullable<T>(value: T | undefined): T | null {
+    return value === undefined ? null : value;
+  }
+
+  /**
+   * Helper function to filter out undefined values from update data
+   */
+  private filterUpdateData<T extends Record<string, any>>(data: T): any {
+    const filtered: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        (filtered as any)[key] = value;
+      }
+    }
+    return filtered;
+  }
+
+  /**
    * Calculate current NAV (Net Asset Value)
    * NAV = Σ assets + Σ bank_balances - Σ liabilities
    */
@@ -158,8 +178,8 @@ export class SnapshotsService {
           totalBankBalance: navCalculation.totalBankBalance,
           totalLiabilities: navCalculation.totalLiabilities,
           nav: navCalculation.nav,
-          performanceFeeRate: data.performanceFeeRate,
-          totalPerformanceFee,
+          performanceFeeRate: this.toNullable(data.performanceFeeRate),
+          totalPerformanceFee: this.toNullable(totalPerformanceFee),
         },
       });
 
@@ -308,9 +328,14 @@ export class SnapshotsService {
       throw errors.notFound('Snapshot not found');
     }
 
+    const updateData = this.filterUpdateData({
+      ...data,
+      performanceFeeRate: data.performanceFeeRate !== undefined ? this.toNullable(data.performanceFeeRate) : undefined,
+    });
+
     const snapshot = await prisma.periodSnapshot.update({
       where: { id },
-      data,
+      data: updateData,
       include: {
         investorSnapshots: {
           include: {

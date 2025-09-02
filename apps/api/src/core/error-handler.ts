@@ -52,9 +52,9 @@ export const errors = {
 // Error handler middleware
 export const errorHandler = (
   error: Error | ApiError,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   let statusCode = 500;
   let code = 'INTERNAL_ERROR';
@@ -105,10 +105,10 @@ export const errorHandler = (
   const logMeta = {
     statusCode,
     code,
-    url: req.url,
-    method: req.method,
-    ip: req.ip,
-    userAgent: req.get('User-Agent'),
+    url: _req.url,
+    method: _req.method,
+    ip: _req.ip,
+    userAgent: _req.get('User-Agent'),
     stack: error.stack,
     details,
   };
@@ -124,7 +124,7 @@ export const errorHandler = (
     error: {
       code,
       message,
-      ...(details && { details }),
+      ...(details ? { details } : {}),
       ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
     },
   };
