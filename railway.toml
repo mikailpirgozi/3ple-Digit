@@ -1,0 +1,16 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd apps/api && pnpm install && pnpm build"
+
+[deploy]
+startCommand = "cd apps/api && pnpm db:deploy && pnpm start"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+[environments.production]
+variables = { NODE_ENV = "production" }
+
+[environments.staging]
+variables = { NODE_ENV = "staging" }

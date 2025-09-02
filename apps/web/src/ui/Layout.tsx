@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { useAuth } from '@/features/auth/context';
+import { ThemeToggle } from './ThemeToggle';
 
 interface LayoutProps {
   children: ReactNode;
@@ -36,6 +37,7 @@ export function Layout({ children }: LayoutProps) {
             </div>
             
             <div className="flex items-center space-x-4">
+              <ThemeToggle />
               {user && (
                 <>
                   <div className="text-sm text-muted-foreground">

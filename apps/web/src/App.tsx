@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth/context';
+import { ThemeProvider } from '@/lib/theme';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
@@ -15,8 +16,9 @@ import { ReportsPage } from '@/features/reports/ReportsPage';
 
 function App() {
   return (
-    <AuthProvider>
-      <Routes>
+    <ThemeProvider defaultTheme="system" storageKey="3ple-digit-theme">
+      <AuthProvider>
+        <Routes>
         {/* Auth routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -38,8 +40,9 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-      </Routes>
-    </AuthProvider>
+        </Routes>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
