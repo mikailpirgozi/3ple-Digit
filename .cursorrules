@@ -1,0 +1,75 @@
+# 3PLE DIGIT – CURSOR RULES
+
+## CONTEXT DETECTION
+- BACKEND edits → apply BACKEND rules (`/apps/api/src/**`, `/prisma/**`).
+- FRONTEND edits → apply FRONTEND rules (`/apps/web/src/**`).
+- If both: keep changes scoped per module; pick the safest approach and state why in 1–2 sentences.
+
+## UNIVERSAL
+- Language: odpovede po slovensky; kód/komentáre po anglicky.
+- TypeScript strict; **no `any`**. Use `unknown` + type guards/Zod.
+- Validation at boundaries: every API input/output must have Zod schema.
+- ESLint + Prettier + Husky pre-commit. Lint must be clean.
+- Conventional Commits, Commitlint. CI must pass tests & prisma migrate.
+- ENV only via typed loader `src/lib/env.ts` (fail fast if missing).
+- Structured logging (`log({reqId,userId,...}, msg)`), no raw `console.log`.
+- Security: Helmet, CORS (whitelist), rate-limit on write endpoints.
+- R2: use presigned uploads; store only `r2_key`, `mime`, `size`, `sha256`.
+
+## MODULARIZATION & FILE SIZE
+- Architecture: **by-feature** folders (investors, assets, bank, liabilities, snapshots, documents, reports, auth, core, ui).
+- Each backend module contains: `schema.ts` (Zod), `service.ts`, `router.ts` (or `controller.ts`), `tests/`.
+- Each frontend feature contains: `ui/` components (small), `api.ts` (clients), `hooks/`, `types/`, `tests/`.
+- Barrel `index.ts` exports only public surface.
+- **Limits:** No file > 300 LOC. UI component ~≤150 LOC. If larger, split into subcomponents/hooks.
+- Route-level code splitting: pages are lazy-loaded.
+
+## BACKEND
+- Stack: Node/TS (Express or tRPC) + Prisma + PostgreSQL.
+- Error handler returns `{ error: { code, message, details? } }` consistently.
+- Role guard: ADMIN/INTERNAL/INVESTOR. Server-side enforce investor scoping.
+- CSV import: robust parser with Zod; report per-line errors.
+- Prisma: all schema changes via migrations; never destructive ops without migration.
+- Tests: Vitest (unit) & supertest (integration). Provide seed data for tests.
+
+## FRONTEND
+- Stack: React + Vite + Tailwind + TanStack Query + RHF (with Zod resolver).
+- State: server state in Query, local UI state in hooks. No Redux.
+- Forms: shared `<FormField>`; inline validation errors; accessible labels.
+- Tables: server-side filtering + pagination. For very large datasets, propose keyset.
+- UX: dark/light, a11y (`jsx-a11y`), ErrorBoundary, sensible loading/empty states.
+- Optimistic updates: disabled for money-critical actions (snapshots, cashflows).
+
+## DOMAIN (MVP)
+- Entities: `investor`, `investor_cashflow`, `asset`, `asset_event`, `liability`, `bank_balance`, `period_snapshot`, `document`, `audit_log`.
+- NAV = Σ `asset.current_value` + Σ `bank_balance.amount` − Σ `liability.current_balance`.
+- Investor capital = Σ (deposits − withdrawals) + allocated PnL.
+- Ownership % = investor_capital / Σ investor_capital.
+- Performance fee: optional flat rate; allocate 50/50 for managers; no HWM in MVP.
+- Snapshot: manual action "Uložiť snapshot" → server computes & persists.
+
+## TESTS & QUALITY GATES
+- Unit (Vitest): NAV, ownership %, fee allocation, CSV parser, asset_event→current_value.
+- Integration (supertest): 
+  1) deposit → snapshot % change,
+  2) valuation+capex → NAV change,
+  3) snapshot → reports data.
+- E2E (Playwright): single smoke: add asset → valuation → snapshot.
+- CI must run lint, unit, integration; fail build on any error/warning (treat TS errors as fatal).
+
+## FILE SIZE & SPLIT
+- Ak súbor presiahne limit, Cursor MUSÍ navrhnúť rozdelenie (zoznam nových súborov + čo do ktorého ide) a urobiť to.
+
+## TEST-FIRST FOR CORE LOGIC
+- Pri nových výpočtoch (NAV, fee, ownership) najprv vytvor testy so vzorkami dát, až potom implementáciu.
+
+## COMMUNICATION WITH CURSOR
+- If multiple valid solutions: pick **safer/cleaner**, explain briefly; ask only when ambiguity risks breaking behavior.
+- Provide diffs and "how to test" steps with every larger change.
+- Prefer minimal diffs; for >200 LOC changes, outline a short refactor plan first.
+
+## DO / DON'T
+- ✅ Use typed helpers (`env`, `api`, `log`, `flags`), shared Zod schemas.
+- ✅ Keep modules isolated; export types from `/packages/types` if shared.
+- ✅ Keep components small; extract hooks for logic.
+- ❌ No secrets in code/rules. No `any`. No silent failures. No giant files.

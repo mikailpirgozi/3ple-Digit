@@ -1,0 +1,204 @@
+import { prisma } from '@/core/prisma.js';
+import { errors } from '@/core/error-handler.js';
+import { log } from '@/core/logger.js';
+import type {
+  CreateLiabilityRequest,
+  UpdateLiabilityRequest,
+  GetLiabilitiesQuery,
+  LiabilityResponse,
+} from './schema.js';
+
+export class LiabilitiesService {
+  /**
+   * Create a new liability
+   */
+  async createLiability(data: CreateLiabilityRequest, userId?: string): Promise<LiabilityResponse> {
+    const liability = await prisma.liability.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        currentBalance: data.currentBalance,
+        interestRate: data.interestRate,
+        maturityDate: data.maturityDate,
+      },
+    });
+
+    log.info('Liability created', { liabilityId: liability.id, createdBy: userId });
+
+    return this.formatLiabilityResponse(liability);
+  }
+
+  /**
+   * Get all liabilities with pagination and search
+   */
+  async getLiabilities(query: GetLiabilitiesQuery): Promise<{
+    liabilities: LiabilityResponse[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+    summary: {
+      totalBalance: number;
+      averageInterestRate: number;
+      count: number;
+    };
+  }> {
+    const { page, limit, search, sortBy, sortOrder } = query;
+    const skip = (page - 1) * limit;
+
+    // Build where clause for search
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' as const } },
+            { description: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : {};
+
+    // Get total count and liabilities
+    const [total, liabilities] = await Promise.all([
+      prisma.liability.count({ where }),
+      prisma.liability.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
+      }),
+    ]);
+
+    // Calculate summary
+    const allLiabilities = await prisma.liability.findMany({ where });
+    const totalBalance = allLiabilities.reduce((sum, liability) => sum + liability.currentBalance, 0);
+    const averageInterestRate = allLiabilities.length > 0
+      ? allLiabilities
+          .filter(l => l.interestRate !== null)
+          .reduce((sum, l) => sum + (l.interestRate || 0), 0) / allLiabilities.filter(l => l.interestRate !== null).length
+      : 0;
+
+    return {
+      liabilities: liabilities.map(liability => this.formatLiabilityResponse(liability)),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+      summary: {
+        totalBalance,
+        averageInterestRate: averageInterestRate || 0,
+        count: allLiabilities.length,
+      },
+    };
+  }
+
+  /**
+   * Get liability by ID
+   */
+  async getLiabilityById(id: string): Promise<LiabilityResponse> {
+    const liability = await prisma.liability.findUnique({
+      where: { id },
+    });
+
+    if (!liability) {
+      throw errors.notFound('Liability not found');
+    }
+
+    return this.formatLiabilityResponse(liability);
+  }
+
+  /**
+   * Update liability
+   */
+  async updateLiability(id: string, data: UpdateLiabilityRequest, userId?: string): Promise<LiabilityResponse> {
+    const existingLiability = await prisma.liability.findUnique({
+      where: { id },
+    });
+
+    if (!existingLiability) {
+      throw errors.notFound('Liability not found');
+    }
+
+    const liability = await prisma.liability.update({
+      where: { id },
+      data,
+    });
+
+    log.info('Liability updated', { liabilityId: id, updatedBy: userId });
+
+    return this.formatLiabilityResponse(liability);
+  }
+
+  /**
+   * Delete liability
+   */
+  async deleteLiability(id: string, userId?: string): Promise<void> {
+    const existingLiability = await prisma.liability.findUnique({
+      where: { id },
+    });
+
+    if (!existingLiability) {
+      throw errors.notFound('Liability not found');
+    }
+
+    await prisma.liability.delete({
+      where: { id },
+    });
+
+    log.info('Liability deleted', { liabilityId: id, deletedBy: userId });
+  }
+
+  /**
+   * Get liabilities summary
+   */
+  async getLiabilitiesSummary(): Promise<{
+    totalBalance: number;
+    averageInterestRate: number;
+    count: number;
+    upcomingMaturity: LiabilityResponse[];
+  }> {
+    const liabilities = await prisma.liability.findMany();
+
+    const totalBalance = liabilities.reduce((sum, liability) => sum + liability.currentBalance, 0);
+    const withInterestRate = liabilities.filter(l => l.interestRate !== null);
+    const averageInterestRate = withInterestRate.length > 0
+      ? withInterestRate.reduce((sum, l) => sum + (l.interestRate || 0), 0) / withInterestRate.length
+      : 0;
+
+    // Get liabilities maturing in the next 6 months
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+
+    const upcomingMaturity = liabilities
+      .filter(l => l.maturityDate && l.maturityDate <= sixMonthsFromNow)
+      .sort((a, b) => (a.maturityDate?.getTime() || 0) - (b.maturityDate?.getTime() || 0))
+      .map(liability => this.formatLiabilityResponse(liability));
+
+    return {
+      totalBalance,
+      averageInterestRate,
+      count: liabilities.length,
+      upcomingMaturity,
+    };
+  }
+
+  /**
+   * Format liability response
+   */
+  private formatLiabilityResponse(liability: any): LiabilityResponse {
+    return {
+      id: liability.id,
+      name: liability.name,
+      description: liability.description,
+      currentBalance: liability.currentBalance,
+      interestRate: liability.interestRate,
+      maturityDate: liability.maturityDate,
+      createdAt: liability.createdAt,
+      updatedAt: liability.updatedAt,
+    };
+  }
+}
+
+export const liabilitiesService = new LiabilitiesService();

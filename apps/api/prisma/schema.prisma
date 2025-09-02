@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User management with role-based access
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String   // Bcrypt hashed password
+  role      String @default("INVESTOR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  investorProfile Investor?
+  auditLogs       AuditLog[]
+
+  @@map("users")
+}
+
+// Investor entity with capital tracking
+model Investor {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  name      String
+  email     String
+  phone     String?
+  address   String?
+  taxId     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cashflows InvestorCashflow[]
+  snapshots InvestorSnapshot[]
+
+  @@map("investors")
+}
+
+// Investor deposits and withdrawals
+model InvestorCashflow {
+  id         String              @id @default(cuid())
+  investorId String
+  type       String
+  amount     Float
+  date       DateTime
+  note       String?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  // Relations
+  investor Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@map("investor_cashflows")
+}
+
+// Universal asset cards with different types
+model Asset {
+  id           String    @id @default(cuid())
+  name         String
+  type         String
+  description  String?
+  currentValue Float
+  status       String    @default("ACTIVE") // ACTIVE, SOLD
+  acquiredPrice Float?
+  salePrice    Float?
+  saleDate     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  events AssetEvent[]
+
+  @@map("assets")
+}
+
+// Asset events that change current_value
+model AssetEvent {
+  id        String          @id @default(cuid())
+  assetId   String
+  type      String
+  amount    Float
+  date      DateTime
+  note      String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  // Relations
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("asset_events")
+}
+
+// Simple liabilities with current balance
+model Liability {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  currentBalance Float
+  interestRate   Float?
+  maturityDate   DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("liabilities")
+}
+
+// Manual bank/cash balances
+model BankBalance {
+  id          String   @id @default(cuid())
+  accountName String
+  bankName    String?
+  accountType String?
+  amount      Float
+  currency    String   @default("EUR")
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("bank_balances")
+}
+
+// Monthly snapshots with NAV calculation
+model PeriodSnapshot {
+  id                String             @id @default(cuid())
+  date              DateTime
+  totalAssetValue   Float
+  totalBankBalance  Float
+  totalLiabilities  Float
+  nav               Float
+  performanceFeeRate Float?
+  totalPerformanceFee Float?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  // Relations
+  investorSnapshots InvestorSnapshot[]
+
+  @@map("period_snapshots")
+}
+
+// Investor ownership percentages in snapshots
+model InvestorSnapshot {
+  id               String          @id @default(cuid())
+  snapshotId       String
+  investorId       String
+  capitalAmount    Float
+  ownershipPercent Float
+  performanceFee   Float?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  // Relations
+  snapshot PeriodSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  investor Investor       @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@unique([snapshotId, investorId])
+  @@map("investor_snapshots")
+}
+
+// Document storage metadata (R2)
+model Document {
+  id           String      @id @default(cuid())
+  name         String
+  originalName String
+  r2Key        String      @unique
+  mimeType     String
+  size         Int
+  sha256       String?
+  category     String?
+  description  String?
+  uploadedBy   String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("documents")
+}
+
+// Audit log for tracking changes
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String
+  oldData   String?
+  newData   String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
