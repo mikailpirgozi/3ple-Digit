@@ -1,27 +1,34 @@
-import { prisma } from './prisma.js';
-import { log } from './logger.js';
 import bcrypt from 'bcrypt';
+import { log } from './logger.js';
+import { prisma } from './prisma.js';
 
 async function main() {
   log.info('🌱 Starting database seed...');
 
   try {
-    // Clean existing data (in development only)
-    if (process.env.NODE_ENV === 'development') {
-      log.info('🧹 Cleaning existing data...');
-      
-      await prisma.auditLog.deleteMany();
-      await prisma.document.deleteMany();
-      await prisma.investorSnapshot.deleteMany();
-      await prisma.periodSnapshot.deleteMany();
-      await prisma.bankBalance.deleteMany();
-      await prisma.liability.deleteMany();
-      await prisma.assetEvent.deleteMany();
-      await prisma.asset.deleteMany();
-      await prisma.investorCashflow.deleteMany();
-      await prisma.investor.deleteMany();
-      await prisma.user.deleteMany();
-    }
+      // Check if data already exists
+  const existingUsers = await prisma.user.count();
+  if (existingUsers > 0) {
+    log.info('✅ Database already seeded, skipping seed process');
+    return;
+  }
+
+  // Clean existing data (in development only)
+  if (process.env.NODE_ENV === 'development') {
+    log.info('🧹 Cleaning existing data...');
+    
+    await prisma.auditLog.deleteMany();
+    await prisma.document.deleteMany();
+    await prisma.investorSnapshot.deleteMany();
+    await prisma.periodSnapshot.deleteMany();
+    await prisma.bankBalance.deleteMany();
+    await prisma.liability.deleteMany();
+    await prisma.assetEvent.deleteMany();
+    await prisma.asset.deleteMany();
+    await prisma.investorCashflow.deleteMany();
+    await prisma.investor.deleteMany();
+    await prisma.user.deleteMany();
+  }
 
     // Create users
     log.info('👥 Creating users...');
