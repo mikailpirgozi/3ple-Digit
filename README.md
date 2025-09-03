@@ -48,39 +48,46 @@
 ## 🚀 Kľúčové funkcie
 
 ### 💼 **Investori**
+
 - Evidencia investorov s kapitálovými vkladmi/výbermi
 - Automatický prepočet % podielov
 - História transakcií a kapitálových zmien
 
 ### 🏢 **Aktíva**
+
 - Univerzálne karty pre rôzne typy aktív (nehnuteľnosti, pôžičky, akcie, vozidlá)
 - Asset events systém (VALUATION, CAPEX, PAYMENT_IN/OUT, NOTE)
 - Automatický prepočet current_value
 - Predaj aktív s PnL kalkuláciou
 
 ### 🏦 **Banka & Hotovosť**
+
 - Ručné zadávanie stavov účtov
 - CSV import parser s error reportingom
 - Multi-currency podpora (EUR focus)
 
 ### 📊 **Záväzky**
+
 - Jednoduchá evidencia úverov a hypoték
 - Maturity tracking
 - Current balance management
 
 ### 📈 **Snapshots (NAV)**
+
 - Jedným klikom prepočíta NAV = Σ assets + Σ bank - Σ liabilities
 - Uloží percentá investorov na daný mesiac
 - Voliteľný performance fee (50/50 split)
 - História NAV vývoja
 
 ### 📁 **Dokumenty**
+
 - Cloudflare R2 storage s presigned uploads
 - SHA256 checksums pre integritu
 - Kategorizácia podľa entít (asset, investor, liability)
 - Bezpečné download linky
 
 ### 📋 **Reporty**
+
 - Portfolio report (aktíva podľa kategórií)
 - Investor report (kapitál a % podiely)
 - Performance report (PnL analýza)
@@ -92,6 +99,7 @@
 ## 🛠️ Tech Stack
 
 ### **Frontend**
+
 - **React 18** + **Vite** - Moderný build tool
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Utility-first styling
@@ -100,6 +108,7 @@
 - **Aeonik Font** - Custom typography
 
 ### **Backend**
+
 - **Node.js** + **Express** - REST API server
 - **TypeScript** - Strict mode
 - **Prisma ORM** - Database toolkit
@@ -109,6 +118,7 @@
 - **Winston** - Structured logging
 
 ### **Infrastructure**
+
 - **Cloudflare R2** - Object storage
 - **Railway** - Backend hosting
 - **Vercel** - Frontend hosting
@@ -116,6 +126,7 @@
 - **Husky** + **lint-staged** - Git hooks
 
 ### **Testing & Quality**
+
 - **Vitest** - Unit testing
 - **Supertest** - API integration tests
 - **Playwright** - E2E testing
@@ -147,7 +158,7 @@ pnpm install
 ```bash
 # Backend
 cp apps/api/env.example apps/api/.env
-# Frontend  
+# Frontend
 cp apps/web/env.example apps/web/.env.local
 ```
 
@@ -175,6 +186,7 @@ pnpm start
 ```
 
 **Aplikácia bude dostupná na:**
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:4000
 - Prisma Studio: http://localhost:5555 (pnpm db:studio)
@@ -193,12 +205,14 @@ Password: password123
 ### Backend (Railway)
 
 1. **Vytvorte Railway projekt**
+
 ```bash
 railway login
 railway init
 ```
 
 2. **Nastavte environment variables**
+
 ```bash
 NODE_ENV=production
 DATABASE_URL=<postgresql-url>
@@ -211,6 +225,7 @@ R2_PUBLIC_URL=https://your-bucket.r2.dev
 ```
 
 3. **Deploy**
+
 ```bash
 railway up
 ```
@@ -219,6 +234,7 @@ railway up
 
 1. **Pripojte GitHub repository**
 2. **Nastavte build settings**
+
 ```bash
 Build Command: cd apps/web && pnpm build
 Output Directory: apps/web/dist
@@ -226,6 +242,7 @@ Install Command: pnpm install
 ```
 
 3. **Environment variables**
+
 ```bash
 VITE_API_URL=https://your-railway-app.railway.app
 ```
@@ -234,6 +251,7 @@ VITE_API_URL=https://your-railway-app.railway.app
 
 1. **Vytvorte R2 bucket**
 2. **Nastavte CORS policy**
+
 ```json
 [
   {
@@ -249,6 +267,7 @@ VITE_API_URL=https://your-railway-app.railway.app
 ## 📖 API Dokumentácia
 
 ### Base URL
+
 ```
 Development: http://localhost:4000
 Production: https://your-railway-app.railway.app
@@ -265,6 +284,7 @@ Authorization: Bearer <jwt-token>
 ### Core Endpoints
 
 #### **Auth**
+
 ```bash
 POST /api/auth/login      # Prihlásenie
 POST /api/auth/register   # Registrácia
@@ -272,6 +292,7 @@ GET  /api/auth/me         # Aktuálny user
 ```
 
 #### **Investors**
+
 ```bash
 GET    /api/investors                    # Zoznam investorov
 POST   /api/investors                    # Vytvorenie investora
@@ -282,6 +303,7 @@ GET    /api/investors/:id/overview       # Prehľad investora
 ```
 
 #### **Assets**
+
 ```bash
 GET    /api/assets                       # Zoznam aktív
 POST   /api/assets                       # Vytvorenie aktíva
@@ -292,6 +314,7 @@ POST   /api/assets/:id/mark-sold         # Označenie ako predané
 ```
 
 #### **Bank**
+
 ```bash
 GET    /api/bank/balances                # Bankové zostatky
 POST   /api/bank/balances                # Pridanie zostatku
@@ -299,6 +322,7 @@ POST   /api/bank/import/csv              # CSV import
 ```
 
 #### **Snapshots**
+
 ```bash
 GET    /api/snapshots                    # História snapshotov
 POST   /api/snapshots                    # Vytvorenie snapshot
@@ -306,6 +330,7 @@ GET    /api/snapshots/nav/current        # Aktuálny NAV
 ```
 
 #### **Documents**
+
 ```bash
 GET    /api/documents                    # Zoznam dokumentov
 POST   /api/documents/presign            # Presigned upload URL
@@ -313,9 +338,10 @@ DELETE /api/documents/:id                # Zmazanie dokumentu
 ```
 
 #### **Reports**
+
 ```bash
 GET    /api/reports/portfolio            # Portfolio report
-GET    /api/reports/investors            # Investor report  
+GET    /api/reports/investors            # Investor report
 GET    /api/reports/performance          # Performance report
 GET    /api/reports/cashflow             # Cashflow report
 ```
@@ -345,7 +371,7 @@ pnpm test
 # Unit testy
 pnpm test:unit
 
-# Integration testy  
+# Integration testy
 pnpm test:integration
 
 # E2E testy
@@ -480,3 +506,4 @@ MIT License - pozrite [LICENSE](LICENSE) súbor pre detaily.
 [![GitHub forks](https://img.shields.io/github/forks/username/3ple-digit?style=social)](../../network/members)
 
 </div>
+# Test deploy
