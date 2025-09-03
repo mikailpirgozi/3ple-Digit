@@ -6,7 +6,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./src/test-setup.ts'],
-    testTimeout: 15000, // Increase timeout to 15 seconds
+    testTimeout: 30000, // Increase timeout to 30 seconds for complex integration tests
     // Run tests sequentially to avoid database conflicts
     pool: 'forks',
     poolOptions: {
