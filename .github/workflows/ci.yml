@@ -43,21 +43,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # ✅ 1. BUILD CHECK (most critical - catches real TypeScript errors)
+      # ✅ 1. GENERATE PRISMA CLIENT (required for build)
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      # ✅ 2. BUILD CHECK (most critical - catches real TypeScript errors)
       - name: Build Check
         run: pnpm build
 
-      # ✅ 2. CORE TESTS ONLY (business logic)
+      # ✅ 3. CORE TESTS ONLY (business logic)
       - name: Core Tests
         run: |
-          pnpm db:generate
           pnpm --filter api db:migrate
           pnpm --filter api test
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
           JWT_SECRET: test-jwt-secret-key-for-ci-testing-only
 
-      # ✅ 3. LINT CHECK (warnings allowed, only errors fail)
+      # ✅ 4. LINT CHECK (warnings allowed, only errors fail)
       - name: Lint Check (Errors Only)
         run: pnpm lint || echo "⚠️ Lint warnings present but not blocking CI"
         continue-on-error: true
