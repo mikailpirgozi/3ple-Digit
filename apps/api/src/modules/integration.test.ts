@@ -405,7 +405,7 @@ describe('Integration Tests - Key Application Flows', () => {
       expect(navResponse.body.bankBreakdown).toHaveLength(1); // All EUR by default
 
       // Step 5: Add liability and verify NAV calculation
-      const _liabilityResponse = await request(app)
+      await request(app)
         .post('/api/liabilities')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
@@ -478,7 +478,7 @@ describe('Integration Tests - Key Application Flows', () => {
         })
         .expect(201);
 
-      const _asset1Id = asset1Response.body.id;
+      // Asset created successfully
       const asset2Id = asset2Response.body.id;
 
       // Step 2: Add bank balances
