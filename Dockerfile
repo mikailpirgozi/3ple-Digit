@@ -31,4 +31,4 @@ RUN pnpm build
 EXPOSE 4000
 
 # Start the application
-CMD ["pnpm", "start"]
+CMD ["node", "dist/index.js"]
