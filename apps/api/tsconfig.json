@@ -26,23 +26,14 @@
     "useUnknownInCatchVariables": true,
     "noPropertyAccessFromIndexSignature": false,
     "noUncheckedIndexedAccess": false,
-    "exactOptionalPropertyTypes": false,
-    "noImplicitAny": false,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitAny": true,
     "declaration": false,
     "declarationMap": false,
-    "strict": false
+    "strict": true,
+    "strictNullChecks": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "src/core/templates/**/*"
-  ],
-  "references": [
-    { "path": "../../packages/types" }
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "src/core/templates/**/*"],
+  "references": [{ "path": "../../packages/types" }]
 }

@@ -3,6 +3,14 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
+    screens: {
+      xs: '360px',
+      sm: '744px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1440px',
+      '2xl': '1728px',
+    },
     extend: {
       fontFamily: {
         sans: ['Aeonik', 'ui-sans-serif', 'system-ui', 'sans-serif'],

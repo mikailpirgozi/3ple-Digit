@@ -1,7 +1,13 @@
 import { Prisma } from '@prisma/client';
-import { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
-import { AppError, appError, createErrorResponse, isOperationalError, sanitizeError } from '../lib/error.js';
+import {
+  AppError,
+  appError,
+  createErrorResponse,
+  isOperationalError,
+  sanitizeError,
+} from '../lib/error.js';
 import { log } from './logger.js';
 
 // Re-export for backward compatibility
@@ -41,7 +47,8 @@ export const errorHandler = (
     message = error.message;
     details = error.details;
   } else if (error instanceof ZodError) {
-    const validationError = appError.validation('Validation failed', 
+    const validationError = appError.validation(
+      'Validation failed',
       error.errors.map(err => ({
         path: err.path.join('.'),
         message: err.message,
@@ -68,7 +75,7 @@ export const errorHandler = (
     code = internalError.code;
     message = internalError.message;
     details = null;
-    
+
     log.error('Unknown error occurred', sanitizeError(error));
   }
 
@@ -96,15 +103,16 @@ export const errorHandler = (
   }
 
   // Send standardized error response
-  const errorResponse = error instanceof AppError 
-    ? createErrorResponse(error)
-    : {
-        error: {
-          code,
-          message,
-          details: details || null,
-        },
-      };
-      
+  const errorResponse =
+    error instanceof AppError
+      ? createErrorResponse(error)
+      : {
+          error: {
+            code,
+            message,
+            details: details || null,
+          },
+        };
+
   res.status(statusCode).json(errorResponse);
 };

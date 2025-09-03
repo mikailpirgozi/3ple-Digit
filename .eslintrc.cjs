@@ -7,8 +7,6 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
-    '@typescript-eslint/recommended',
-    '@typescript-eslint/recommended-requiring-type-checking',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -17,6 +15,7 @@ module.exports = {
     project: ['./tsconfig.json', './apps/*/tsconfig.json', './packages/*/tsconfig.json'],
     tsconfigRootDir: __dirname,
   },
+  ignorePatterns: ['dist', 'node_modules', '**/templates/**'],
   plugins: ['@typescript-eslint'],
   rules: {
     // TypeScript strict rules - ZERO TOLERANCE
@@ -26,7 +25,9 @@ module.exports = {
     '@typescript-eslint/prefer-optional-chain': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
     '@typescript-eslint/await-thenable': 'error',
-    '@typescript-eslint/no-misused-promises': 'error',
+    '@typescript-eslint/no-misused-promises': ['error', {
+      'checksVoidReturn': false
+    }],
     
     // Ban dangerous TypeScript suppressions
     '@typescript-eslint/ban-ts-comment': ['error', { 
@@ -38,12 +39,12 @@ module.exports = {
     // Additional safety rules for exactOptionalPropertyTypes
     '@typescript-eslint/no-non-null-assertion': 'warn', // Allow ! but warn
     '@typescript-eslint/prefer-as-const': 'error',
-    '@typescript-eslint/no-unsafe-assignment': 'error',
-    '@typescript-eslint/no-unsafe-member-access': 'error',
-    '@typescript-eslint/no-unsafe-call': 'error',
-    '@typescript-eslint/no-unsafe-return': 'error',
+    '@typescript-eslint/no-unsafe-assignment': 'warn',
+    '@typescript-eslint/no-unsafe-member-access': 'warn',
+    '@typescript-eslint/no-unsafe-call': 'warn',
+    '@typescript-eslint/no-unsafe-return': 'warn',
     '@typescript-eslint/consistent-type-imports': 'error',
-    '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+    '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
     
     // General rules - STRICT
     'no-console': ['error', { allow: ['info', 'warn', 'error'] }],

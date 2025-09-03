@@ -4,7 +4,8 @@
  */
 
 import { Decimal } from '@prisma/client/runtime/library';
-import { Money, toMoney } from './types-helpers.js';
+import type { Money } from './types-helpers.js';
+import { toMoney } from './types-helpers.js';
 
 /**
  * Rounding modes for money calculations
@@ -211,10 +212,7 @@ export function money(value: string | number | Decimal | Money): MoneyCalculator
  * Sum multiple money values
  */
 export function sumMoney(values: (string | number | Decimal | Money)[]): MoneyCalculator {
-  return values.reduce(
-    (sum, value) => sum.add(value),
-    new MoneyCalculator(0)
-  );
+  return values.reduce((sum, value) => sum.add(value), new MoneyCalculator(0));
 }
 
 /**
@@ -226,9 +224,7 @@ export function calculateNAV(
   totalBankBalances: string | number | Decimal | Money,
   totalLiabilities: string | number | Decimal | Money
 ): MoneyCalculator {
-  return money(totalAssets)
-    .add(totalBankBalances)
-    .subtract(totalLiabilities);
+  return money(totalAssets).add(totalBankBalances).subtract(totalLiabilities);
 }
 
 /**
@@ -241,11 +237,8 @@ export function calculateOwnershipPercentage(
   if (money(totalCapital).isZero()) {
     return 0;
   }
-  
-  return money(investorCapital)
-    .divide(totalCapital)
-    .multiply(100)
-    .toNumber();
+
+  return money(investorCapital).divide(totalCapital).multiply(100).toNumber();
 }
 
 /**

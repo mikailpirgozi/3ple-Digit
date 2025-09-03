@@ -21,19 +21,17 @@ describe('Integration Tests - Key Application Flows', () => {
     await prisma.investorCashflow.deleteMany();
     await prisma.investor.deleteMany();
     await prisma.user.deleteMany({
-      where: { email: { contains: 'integration-test' } }
+      where: { email: { contains: 'integration-test' } },
     });
 
     // Create test user and get auth token
-    const registerResponse = await request(app)
-      .post('/api/auth/register')
-      .send({
-        email: 'integration-test@example.com',
-        password: 'testpass123',
-        name: 'Integration Test User',
-        role: 'ADMIN'
-      });
-    
+    const registerResponse = await request(app).post('/api/auth/register').send({
+      email: 'integration-test@example.com',
+      password: 'testpass123',
+      name: 'Integration Test User',
+      role: 'ADMIN',
+    });
+
     authToken = registerResponse.body.accessToken;
     testUserId = registerResponse.body.user.id;
   });
@@ -49,7 +47,7 @@ describe('Integration Tests - Key Application Flows', () => {
     await prisma.investorCashflow.deleteMany();
     await prisma.investor.deleteMany();
     await prisma.user.deleteMany({
-      where: { email: { contains: 'integration-test' } }
+      where: { email: { contains: 'integration-test' } },
     });
     await prisma.$disconnect();
   });
@@ -66,16 +64,14 @@ describe('Integration Tests - Key Application Flows', () => {
           email: 'alpha@test.com',
         })
         .expect(201);
-      
+
       // Create another user for second investor
-      const user2Response = await request(app)
-        .post('/api/auth/register')
-        .send({
-          email: 'integration-test2@example.com',
-          password: 'testpass123',
-          name: 'Integration Test User 2',
-          role: 'INVESTOR'
-        });
+      const user2Response = await request(app).post('/api/auth/register').send({
+        email: 'integration-test2@example.com',
+        password: 'testpass123',
+        name: 'Integration Test User 2',
+        role: 'INVESTOR',
+      });
 
       const investor2Response = await request(app)
         .post('/api/investors')
@@ -125,10 +121,14 @@ describe('Integration Tests - Key Application Flows', () => {
       // Verify equal ownership (50% each)
       const initialSnapshot = initialSnapshotResponse.body;
       expect(initialSnapshot.investorSnapshots).toHaveLength(2);
-      
-      const alpha1 = initialSnapshot.investorSnapshots.find((is: any) => is.investorId === investor1Id);
-      const beta1 = initialSnapshot.investorSnapshots.find((is: any) => is.investorId === investor2Id);
-      
+
+      const alpha1 = initialSnapshot.investorSnapshots.find(
+        (is: any) => is.investorId === investor1Id
+      );
+      const beta1 = initialSnapshot.investorSnapshots.find(
+        (is: any) => is.investorId === investor2Id
+      );
+
       expect(alpha1.ownershipPercent).toBe(50);
       expect(beta1.ownershipPercent).toBe(50);
       expect(alpha1.capitalAmount).toBe(100000);
@@ -157,9 +157,13 @@ describe('Integration Tests - Key Application Flows', () => {
 
       // Verify changed ownership percentages
       const secondSnapshot = secondSnapshotResponse.body;
-      const alpha2 = secondSnapshot.investorSnapshots.find((is: any) => is.investorId === investor1Id);
-      const beta2 = secondSnapshot.investorSnapshots.find((is: any) => is.investorId === investor2Id);
-      
+      const alpha2 = secondSnapshot.investorSnapshots.find(
+        (is: any) => is.investorId === investor1Id
+      );
+      const beta2 = secondSnapshot.investorSnapshots.find(
+        (is: any) => is.investorId === investor2Id
+      );
+
       // Alpha: 300k out of 400k total = 75%
       // Beta: 100k out of 400k total = 25%
       expect(alpha2.ownershipPercent).toBe(75);
@@ -316,12 +320,12 @@ describe('Integration Tests - Key Application Flows', () => {
 
       const soldAssets = portfolioReportResponse.body.soldAssets;
       expect(soldAssets).toHaveLength(1);
-      
+
       const soldAssetReport = soldAssets[0];
       expect(soldAssetReport.id).toBe(testAssetId);
       expect(soldAssetReport.acquiredPrice).toBe(500000);
       expect(soldAssetReport.salePrice).toBe(620000);
-      
+
       // PnL should be 120k (620k sale - 500k acquired)
       expect(soldAssetReport.pnl).toBe(120000);
       expect(soldAssetReport.pnlPercent).toBeCloseTo(24, 1); // 24% return
@@ -347,7 +351,7 @@ describe('Integration Tests - Key Application Flows', () => {
 
       // NAV should no longer include the sold asset
       expect(finalSnapshotResponse.body.totalAssetValue).toBe(0);
-      
+
       // But if we had bank balance from the sale, it would show up in bank balance
       // (This would require implementing the sale proceeds logic)
     });
@@ -356,7 +360,8 @@ describe('Integration Tests - Key Application Flows', () => {
   describe('Flow 4: CSV Bank Import → NAV Integration', () => {
     it('should import bank balances from CSV and verify NAV calculation', async () => {
       // Step 1: Prepare CSV data
-      const csvContent = 'Business Account,2025-01-15,250000\nSavings Account,2025-01-15,100000\nUSD Account,2025-01-15,75000';
+      const csvContent =
+        'Business Account,2025-01-15,250000\nSavings Account,2025-01-15,100000\nUSD Account,2025-01-15,75000';
       const base64Content = Buffer.from(csvContent).toString('base64');
 
       // Step 2: Import CSV
@@ -400,7 +405,7 @@ describe('Integration Tests - Key Application Flows', () => {
       expect(navResponse.body.bankBreakdown).toHaveLength(1); // All EUR by default
 
       // Step 5: Add liability and verify NAV calculation
-      const liabilityResponse = await request(app)
+      const _liabilityResponse = await request(app)
         .post('/api/liabilities')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
@@ -473,7 +478,7 @@ describe('Integration Tests - Key Application Flows', () => {
         })
         .expect(201);
 
-      const asset1Id = asset1Response.body.id;
+      const _asset1Id = asset1Response.body.id;
       const asset2Id = asset2Response.body.id;
 
       // Step 2: Add bank balances
@@ -534,7 +539,7 @@ describe('Integration Tests - Key Application Flows', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           userId: betaUserResponse.body.user.id,
-          name: 'Beta Investor', 
+          name: 'Beta Investor',
           email: betaUserResponse.body.user.email,
         })
         .expect(201);
@@ -617,16 +622,20 @@ describe('Integration Tests - Key Application Flows', () => {
       expect(secondSnapshot.body.totalPerformanceFee).toBe(27000); // 2% of 1,350,000
 
       // Step 7: Verify investor ownership remains consistent
-      const alpha = secondSnapshot.body.investorSnapshots.find((is: any) => is.investorId === investor1Id);
-      const beta = secondSnapshot.body.investorSnapshots.find((is: any) => is.investorId === investor2Id);
-      
+      const alpha = secondSnapshot.body.investorSnapshots.find(
+        (is: any) => is.investorId === investor1Id
+      );
+      const beta = secondSnapshot.body.investorSnapshots.find(
+        (is: any) => is.investorId === investor2Id
+      );
+
       // Ownership should still be 75% / 25% from earlier test
       expect(alpha.ownershipPercent).toBe(75);
       expect(beta.ownershipPercent).toBe(25);
 
       // Performance fees should be allocated proportionally
       expect(alpha.performanceFee).toBe(20250); // 75% of 27,000
-      expect(beta.performanceFee).toBe(6750);   // 25% of 27,000
+      expect(beta.performanceFee).toBe(6750); // 25% of 27,000
 
       // Step 7.5: Sell one asset to generate realized PnL
       await request(app)

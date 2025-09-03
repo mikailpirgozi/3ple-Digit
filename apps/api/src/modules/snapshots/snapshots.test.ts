@@ -5,7 +5,7 @@ import { prisma } from '../../core/prisma.js';
 
 describe('Snapshots API', () => {
   let authToken: string;
-  let testUserId: string;
+  // let _testUserId: string;
 
   beforeAll(async () => {
     // Clean up test data
@@ -15,21 +15,19 @@ describe('Snapshots API', () => {
     await prisma.bankBalance.deleteMany();
     await prisma.liability.deleteMany();
     await prisma.user.deleteMany({
-      where: { email: { contains: 'snapshot-test' } }
+      where: { email: { contains: 'snapshot-test' } },
     });
 
     // Create test user and get auth token
-    const registerResponse = await request(app)
-      .post('/api/auth/register')
-      .send({
-        email: 'snapshot-test@example.com',
-        password: 'testpass123',
-        name: 'Snapshot Test User',
-        role: 'ADMIN'
-      });
-    
+    const registerResponse = await request(app).post('/api/auth/register').send({
+      email: 'snapshot-test@example.com',
+      password: 'testpass123',
+      name: 'Snapshot Test User',
+      role: 'ADMIN',
+    });
+
     authToken = registerResponse.body.accessToken;
-    testUserId = registerResponse.body.user.id;
+    // _testUserId = registerResponse.body.user.id;
   });
 
   afterAll(async () => {
@@ -40,7 +38,7 @@ describe('Snapshots API', () => {
     await prisma.bankBalance.deleteMany();
     await prisma.liability.deleteMany();
     await prisma.user.deleteMany({
-      where: { email: { contains: 'snapshot-test' } }
+      where: { email: { contains: 'snapshot-test' } },
     });
     await prisma.$disconnect();
   });
@@ -68,7 +66,7 @@ describe('Snapshots API', () => {
           name: 'Test Asset',
           type: 'real_estate',
           currentValue: 100000,
-        }
+        },
       });
 
       // Create test bank balance
@@ -78,7 +76,7 @@ describe('Snapshots API', () => {
           amount: 50000,
           currency: 'EUR',
           date: new Date(),
-        }
+        },
       });
 
       // Create test liability
@@ -86,7 +84,7 @@ describe('Snapshots API', () => {
         data: {
           name: 'Test Liability',
           currentBalance: 30000,
-        }
+        },
       });
 
       const response = await request(app)
@@ -104,9 +102,7 @@ describe('Snapshots API', () => {
     });
 
     it('should require authentication', async () => {
-      const response = await request(app)
-        .get('/api/snapshots/nav/current')
-        .expect(401);
+      const response = await request(app).get('/api/snapshots/nav/current').expect(401);
 
       expect(response.body.error.code).toBe('UNAUTHORIZED');
     });
@@ -137,14 +133,12 @@ describe('Snapshots API', () => {
 
     it('should require admin/internal role', async () => {
       // Create investor user
-      const investorResponse = await request(app)
-        .post('/api/auth/register')
-        .send({
-          email: 'investor-test@example.com',
-          password: 'testpass123',
-          name: 'Investor User',
-          role: 'INVESTOR'
-        });
+      const investorResponse = await request(app).post('/api/auth/register').send({
+        email: 'investor-test@example.com',
+        password: 'testpass123',
+        name: 'Investor User',
+        role: 'INVESTOR',
+      });
 
       const response = await request(app)
         .post('/api/snapshots')

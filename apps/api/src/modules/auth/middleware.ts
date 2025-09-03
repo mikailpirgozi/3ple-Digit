@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { authService } from './service.js';
 import { errors } from '@/core/error-handler.js';
-import { UserRoleType } from './schema.js';
+import type { UserRoleType } from './schema.js';
 
 // Extend Express Request type to include user
 declare global {
@@ -19,18 +19,22 @@ declare global {
 /**
  * JWT Authentication middleware
  */
-export const authenticate = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+export const authenticate = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw errors.unauthorized('Access token required');
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
+
     const payload = await authService.verifyToken(token);
-    
+
     // Attach user info to request
     req.user = {
       id: payload.userId,
@@ -76,14 +80,18 @@ export const adminOrInternal = authorize(['ADMIN', 'INTERNAL']);
 /**
  * Optional authentication middleware (doesn't throw if no token)
  */
-export const optionalAuth = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+export const optionalAuth = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
       const payload = await authService.verifyToken(token);
-      
+
       req.user = {
         id: payload.userId,
         email: payload.email,

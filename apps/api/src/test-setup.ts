@@ -2,8 +2,7 @@ import { beforeAll, afterAll } from 'vitest';
 import { prisma } from './core/prisma.js';
 
 beforeAll(async () => {
-  // Test setup
-  console.log('Setting up tests...');
+  // Test setup - silent in production
 });
 
 // Note: Individual test files should handle their own cleanup
@@ -13,7 +12,7 @@ afterAll(async () => {
   // Final cleanup
   await cleanDatabase();
   await prisma.$disconnect();
-  console.log('Tests cleanup completed.');
+  // Tests cleanup completed - silent in production
 });
 
 async function cleanDatabase() {

@@ -396,10 +396,11 @@ export class ReportsService {
         case 'month':
           period = date.toISOString().substring(0, 7); // YYYY-MM
           break;
-        case 'quarter':
+        case 'quarter': {
           const quarter = Math.floor(date.getMonth() / 3) + 1;
           period = `${date.getFullYear()}-Q${quarter}`;
           break;
+        }
         case 'year':
           period = date.getFullYear().toString();
           break;
@@ -503,7 +504,7 @@ export class ReportsService {
     let csvData: string;
 
     switch (reportType) {
-      case 'portfolio':
+      case 'portfolio': {
         const portfolioReport = await this.getPortfolioReport({
           dateFrom,
           dateTo,
@@ -511,13 +512,15 @@ export class ReportsService {
         });
         csvData = this.portfolioToCsv(portfolioReport);
         break;
+      }
 
-      case 'investors':
+      case 'investors': {
         const investorReport = await this.getInvestorReport({ dateFrom, dateTo });
         csvData = this.investorsToCsv(investorReport);
         break;
+      }
 
-      case 'performance':
+      case 'performance': {
         const performanceReport = await this.getPerformanceReport({
           dateFrom,
           dateTo,
@@ -525,11 +528,13 @@ export class ReportsService {
         });
         csvData = this.performanceToCsv(performanceReport);
         break;
+      }
 
-      case 'cashflow':
+      case 'cashflow': {
         const cashflowReport = await this.getCashflowReport({ dateFrom, dateTo, groupBy: 'month' });
         csvData = this.cashflowToCsv(cashflowReport);
         break;
+      }
 
       default:
         throw new Error(`Unsupported report type: ${reportType}`);
@@ -562,7 +567,7 @@ export class ReportsService {
       item.type,
       item.count.toString(),
       item.totalValue.toFixed(2),
-      item.percentage.toFixed(2) + '%',
+      `${item.percentage.toFixed(2)}%`,
     ]);
 
     return [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -586,7 +591,7 @@ export class ReportsService {
       investor.totalDeposits.toFixed(2),
       investor.totalWithdrawals.toFixed(2),
       investor.capitalAmount.toFixed(2),
-      investor.ownershipPercent.toFixed(2) + '%',
+      `${investor.ownershipPercent.toFixed(2)}%`,
     ]);
 
     return [headers, ...rows].map(row => row.join(',')).join('\n');

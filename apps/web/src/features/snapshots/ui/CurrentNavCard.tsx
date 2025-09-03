@@ -55,9 +55,7 @@ export function CurrentNavCard({ onCreateSnapshot }: CurrentNavCardProps) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Aktuálny NAV</h2>
-          <p className="text-sm text-muted-foreground">
-            Stav k {formatDate(currentNav.asOfDate)}
-          </p>
+          <p className="text-sm text-muted-foreground">Stav k {formatDate(currentNav.asOfDate)}</p>
         </div>
         {onCreateSnapshot && (
           <button
@@ -70,26 +68,28 @@ export function CurrentNavCard({ onCreateSnapshot }: CurrentNavCardProps) {
       </div>
 
       {/* NAV Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="text-center p-4 bg-primary/5 border border-primary/20 rounded-lg">
-          <p className="text-sm text-muted-foreground mb-1">NAV</p>
-          <p className="text-2xl font-bold text-primary">{formatCurrency(currentNav.nav)}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="text-center p-3 sm:p-4 bg-primary/5 border border-primary/20 rounded-lg">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">NAV</p>
+          <p className="text-lg sm:text-2xl font-bold text-primary">
+            {formatCurrency(currentNav.nav)}
+          </p>
         </div>
-        <div className="text-center p-4 border border-border rounded-lg">
-          <p className="text-sm text-muted-foreground mb-1">Aktíva</p>
-          <p className="text-xl font-semibold text-green-600">
+        <div className="text-center p-3 sm:p-4 border border-border rounded-lg">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Aktíva</p>
+          <p className="text-lg sm:text-xl font-semibold text-green-600">
             {formatCurrency(currentNav.totals.assets)}
           </p>
         </div>
-        <div className="text-center p-4 border border-border rounded-lg">
-          <p className="text-sm text-muted-foreground mb-1">Hotovosť</p>
-          <p className="text-xl font-semibold text-blue-600">
+        <div className="text-center p-3 sm:p-4 border border-border rounded-lg">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Hotovosť</p>
+          <p className="text-lg sm:text-xl font-semibold text-blue-600">
             {formatCurrency(currentNav.totals.cash)}
           </p>
         </div>
-        <div className="text-center p-4 border border-border rounded-lg">
-          <p className="text-sm text-muted-foreground mb-1">Záväzky</p>
-          <p className="text-xl font-semibold text-red-600">
+        <div className="text-center p-3 sm:p-4 border border-border rounded-lg">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Záväzky</p>
+          <p className="text-lg sm:text-xl font-semibold text-red-600">
             -{formatCurrency(currentNav.totals.liabilities)}
           </p>
         </div>
@@ -121,8 +121,18 @@ export function CurrentNavCard({ onCreateSnapshot }: CurrentNavCardProps) {
 
       {/* Auto-refresh indicator */}
       <div className="flex items-center justify-center mt-4 text-xs text-muted-foreground">
-        <svg className="w-3 h-3 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        <svg
+          className="w-3 h-3 mr-1 animate-spin"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
         </svg>
         Automatické obnovenie každých 30 sekúnd
       </div>
