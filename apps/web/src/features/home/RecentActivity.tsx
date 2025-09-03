@@ -65,7 +65,7 @@ export function RecentActivity() {
   if (isLoading) {
     return (
       <div className="space-y-3">
-        {[...Array(3)].map((_, i) => (
+        {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 p-3 rounded-lg animate-pulse">
             <div className="w-8 h-8 bg-muted rounded-full flex-shrink-0"></div>
             <div className="flex-1 space-y-2">

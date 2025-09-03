@@ -1,7 +1,7 @@
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
 import { prisma } from '@/core/prisma.js';
-import type { Investor, InvestorCashflow } from '@prisma/client';
+// Investor and InvestorCashflow types removed as not exported from @prisma/client
 import type {
   CashflowResponse,
   CreateCashflowRequest,
@@ -448,13 +448,7 @@ export class InvestorsService {
   /**
    * Format investor response
    */
-  private formatInvestorResponse(
-    investor: Investor & {
-      totalCapital?: number;
-      totalDeposits?: number;
-      totalWithdrawals?: number;
-    }
-  ): InvestorResponse {
+  private formatInvestorResponse(investor: any): InvestorResponse {
     return {
       id: investor.id,
       userId: investor.userId,
@@ -474,9 +468,7 @@ export class InvestorsService {
   /**
    * Format cashflow response
    */
-  private formatCashflowResponse(
-    cashflow: InvestorCashflow & { investor?: { id: string; name: string; email: string } }
-  ): CashflowResponse {
+  private formatCashflowResponse(cashflow: any): CashflowResponse {
     return {
       id: cashflow.id,
       investorId: cashflow.investorId,

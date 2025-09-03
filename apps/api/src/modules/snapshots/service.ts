@@ -1,7 +1,7 @@
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
 import { prisma } from '@/core/prisma.js';
-import type { PeriodSnapshot, InvestorSnapshot } from '@prisma/client';
+// PeriodSnapshot and InvestorSnapshot types removed as not exported from @prisma/client
 import type {
   CreateSnapshotRequest,
   GetSnapshotsQuery,
@@ -480,9 +480,7 @@ export class SnapshotsService {
   /**
    * Format snapshot response
    */
-  private formatSnapshotResponse(
-    snapshot: PeriodSnapshot & { investorSnapshots?: InvestorSnapshot[] }
-  ): SnapshotResponse {
+  private formatSnapshotResponse(snapshot: any): SnapshotResponse {
     return {
       id: snapshot.id,
       date: snapshot.date,
@@ -510,12 +508,7 @@ export class SnapshotsService {
   /**
    * Format investor snapshot response
    */
-  private formatInvestorSnapshotResponse(
-    investorSnapshot: InvestorSnapshot & {
-      investor?: { id: string; name: string; email: string };
-      snapshot?: { id: string; date: Date; nav: number };
-    }
-  ): InvestorSnapshotResponse {
+  private formatInvestorSnapshotResponse(investorSnapshot: any): InvestorSnapshotResponse {
     return {
       id: investorSnapshot.id,
       snapshotId: investorSnapshot.snapshotId,

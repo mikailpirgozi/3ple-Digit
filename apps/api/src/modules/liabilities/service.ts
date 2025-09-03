@@ -1,7 +1,7 @@
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
 import { prisma } from '@/core/prisma.js';
-import type { Liability } from '@prisma/client';
+// Liability type removed as not exported from @prisma/client
 import type {
   CreateLiabilityRequest,
   GetLiabilitiesQuery,
@@ -228,7 +228,7 @@ export class LiabilitiesService {
   /**
    * Format liability response
    */
-  private formatLiabilityResponse(liability: Liability): LiabilityResponse {
+  private formatLiabilityResponse(liability: any): LiabilityResponse {
     return {
       id: liability.id,
       name: liability.name,

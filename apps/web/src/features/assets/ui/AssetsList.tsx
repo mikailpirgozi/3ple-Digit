@@ -118,8 +118,10 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
         return 0;
     }
 
-    if (sortBy === 'name' ?? sortBy === 'type') {
-      return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    if (sortBy === 'name' || sortBy === 'type') {
+      return sortOrder === 'asc'
+        ? (aValue as string).localeCompare(bValue as string)
+        : (bValue as string).localeCompare(aValue as string);
     } else {
       return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
     }

@@ -1,7 +1,7 @@
 import { prisma } from '@/core/prisma.js';
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
-import type { BankBalance } from '@prisma/client';
+// BankBalance type removed as not exported from @prisma/client
 import type {
   CreateBankBalanceRequest,
   UpdateBankBalanceRequest,
@@ -435,7 +435,7 @@ export class BankService {
   /**
    * Format bank balance response
    */
-  private formatBankBalanceResponse(balance: BankBalance): BankBalanceResponse {
+  private formatBankBalanceResponse(balance: any): BankBalanceResponse {
     return {
       id: balance.id,
       accountName: balance.accountName,

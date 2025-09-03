@@ -1,7 +1,7 @@
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
 import { prisma } from '@/core/prisma.js';
-import type { Asset, AssetEvent, Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import type {
   AssetEventResponse,
   AssetEventTypeEnum,
@@ -502,9 +502,7 @@ export class AssetsService {
   /**
    * Format asset response
    */
-  private formatAssetResponse(
-    asset: Asset & { eventsCount?: number; totalInflows?: number; totalOutflows?: number }
-  ): AssetResponse {
+  private formatAssetResponse(asset: any): AssetResponse {
     return {
       id: asset.id,
       name: asset.name,
@@ -526,9 +524,7 @@ export class AssetsService {
   /**
    * Format asset event response
    */
-  private formatAssetEventResponse(
-    event: AssetEvent & { asset?: { id: string; name: string; type: string } }
-  ): AssetEventResponse {
+  private formatAssetEventResponse(event: any): AssetEventResponse {
     return {
       id: event.id,
       assetId: event.assetId,

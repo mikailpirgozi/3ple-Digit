@@ -194,7 +194,7 @@ USD Account,2025-01-31,25000.00`;
                 </button>
                 <button
                   onClick={handleImport}
-                  disabled={!selectedFile ?? importCsvMutation.isPending}
+                  disabled={!selectedFile || importCsvMutation.isPending}
                   className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {importCsvMutation.isPending ? 'Importujem...' : 'Importovať'}

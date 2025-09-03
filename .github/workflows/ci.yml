@@ -81,6 +81,7 @@ jobs:
         run: pnpm test
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          JWT_SECRET: test-jwt-secret-key-for-ci-testing-only
 
   build:
     name: Build

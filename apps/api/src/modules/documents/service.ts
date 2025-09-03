@@ -2,7 +2,7 @@ import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
 import { prisma } from '@/core/prisma.js';
 import { r2Service } from '@/core/r2-client.js';
-import type { Document } from '@prisma/client';
+// Document type removed as not exported from @prisma/client
 import crypto from 'crypto';
 import type {
   CreateDocumentRequest,
@@ -366,7 +366,7 @@ export class DocumentsService {
   /**
    * Format document response
    */
-  private formatDocumentResponse(document: Document): DocumentResponse {
+  private formatDocumentResponse(document: any): DocumentResponse {
     return {
       id: document.id,
       name: document.name,

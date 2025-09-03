@@ -64,7 +64,7 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' ?? e.type === 'dragover') {
+    if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
     } else if (e.type === 'dragleave') {
       setDragActive(false);

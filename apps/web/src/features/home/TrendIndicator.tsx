@@ -11,7 +11,7 @@ export function TrendIndicator({
   formatValue = value => value.toString(),
   className = '',
 }: TrendIndicatorProps) {
-  if (previous === undefined ?? previous === 0) {
+  if (previous === undefined || previous === 0) {
     return (
       <div className={`flex items-center gap-1 ${className}`}>
         <span className="text-xs text-muted-foreground">—</span>

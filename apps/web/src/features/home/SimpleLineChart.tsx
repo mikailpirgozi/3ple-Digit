@@ -18,7 +18,7 @@ export function SimpleLineChart({
   className = '',
   formatValue = value => value.toString(),
 }: SimpleLineChartProps) {
-  if (!data ?? data.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div className={`flex items-center justify-center ${className}`} style={{ width, height }}>
         <p className="text-sm text-muted-foreground">Žiadne dáta na zobrazenie</p>
@@ -34,7 +34,7 @@ export function SimpleLineChart({
   const values = data.map(d => d.value);
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
-  const valueRange = maxValue - minValue ?? 1; // Avoid division by zero
+  const valueRange = maxValue - minValue || 1; // Avoid division by zero
 
   // Create points for the line
   const points = data.map((point, index) => {
@@ -143,7 +143,7 @@ export function SimpleLineChart({
         {/* X-axis labels */}
         <g className="text-xs fill-muted-foreground">
           {points.map((point, index) => {
-            if (index % Math.ceil(points.length / 4) === 0 ?? index === points.length - 1) {
+            if (index % Math.ceil(points.length / 4) === 0 || index === points.length - 1) {
               const date = new Date(point.date);
               const label = date.toLocaleDateString('sk-SK', {
                 month: 'short',

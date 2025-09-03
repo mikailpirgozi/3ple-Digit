@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+// Prisma import removed as not needed
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import {
@@ -59,10 +59,10 @@ export const errorHandler = (
     code = validationError.code;
     message = validationError.message;
     details = validationError.details;
-  } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+  } else if (error.constructor.name === 'PrismaClientKnownRequestError') {
     const dbError = appError.database('Database operation failed', {
-      code: error.code,
-      meta: error.meta,
+      code: (error as any).code,
+      meta: (error as any).meta,
     });
     statusCode = dbError.statusCode;
     code = dbError.code;

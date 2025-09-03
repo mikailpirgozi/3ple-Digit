@@ -122,7 +122,7 @@ export function CashflowReportCard({ filters }: CashflowReportCardProps) {
       </div>
 
       {/* Top Inflows and Outflows */}
-      {(report.topInflows.length > 0 ?? report.topOutflows.length > 0) && (
+      {(report.topInflows.length > 0 || report.topOutflows.length > 0) && (
         <div className="space-y-4 mb-6">
           <h3 className="text-lg font-medium text-foreground">Najväčšie toky</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
