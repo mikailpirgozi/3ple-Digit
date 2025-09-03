@@ -19,7 +19,7 @@ export const queryClient = new QueryClient({
         return failureCount < 2;
       },
       // Refetch on window focus in production
-      refetchOnWindowFocus: process.env.NODE_ENV === 'production',
+      refetchOnWindowFocus: (process.env as any).NODE_ENV === 'production',
     },
     mutations: {
       // Retry failed mutations once
