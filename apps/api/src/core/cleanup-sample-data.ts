@@ -9,6 +9,21 @@ async function cleanupSampleData() {
   console.log('🧹 Starting cleanup of sample data...');
 
   try {
+    // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isRailwayEnv = process.env.RAILWAY_ENVIRONMENT === 'production';
+    const hasProductionUrl =
+      process.env.DATABASE_URL?.includes('railway.app') ||
+      process.env.DATABASE_URL?.includes('rlwy.net');
+
+    if (isProduction || isRailwayEnv || hasProductionUrl) {
+      log.error('🚨 CLEANUP BLOCKED: Cannot cleanup production database!');
+      log.error('Environment:', {
+        NODE_ENV: process.env.NODE_ENV,
+        RAILWAY_ENV: process.env.RAILWAY_ENVIRONMENT,
+      });
+      throw new Error('PRODUCTION CLEANUP BLOCKED: Use manual data management for production');
+    }
     // Získame počty záznamov pred vymazaním
     const beforeCounts = {
       users: await prisma.user.count(),
