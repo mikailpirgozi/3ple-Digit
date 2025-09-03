@@ -1,0 +1,18 @@
+[providers]
+node = "18"
+
+[phases.setup]
+nixPkgs = ["nodejs-18_x", "pnpm"]
+
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile"]
+
+[phases.build]
+cmds = [
+  "cd apps/api",
+  "pnpm db:generate",
+  "pnpm build"
+]
+
+[start]
+cmd = "cd apps/api && pnpm start"
