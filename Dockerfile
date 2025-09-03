@@ -1,5 +1,8 @@
-# Use Node.js 18 Alpine
-FROM node:18-alpine
+# Use Node.js 18 (Debian-based for better Prisma compatibility)
+FROM node:18
+
+# Set OpenSSL configuration for Prisma
+ENV OPENSSL_CONF=/dev/null
 
 # Install pnpm
 RUN npm install -g pnpm
