@@ -21,7 +21,7 @@ export const documentsApi = {
 
   // Get presigned upload URL
   getPresignedUpload: (data: PresignUploadRequest): Promise<PresignUploadResponse> =>
-    api.post('/documents/presign', data),
+    api.post('/documents/upload-url', data),
 
   // Get presigned download URL
   getPresignedDownload: (id: string): Promise<{ downloadUrl: string }> =>

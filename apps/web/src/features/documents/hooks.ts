@@ -64,12 +64,9 @@ export function useUploadDocument() {
 
       // Get presigned upload URL
       const presignData: PresignUploadRequest = {
-        title,
-        linkedType,
-        linkedId,
-        mime: file.type,
-        size: file.size,
-        sha256,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
       };
 
       const presignResponse = await documentsApi.getPresignedUpload(presignData);

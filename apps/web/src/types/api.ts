@@ -218,12 +218,10 @@ export interface Document {
 }
 
 export interface PresignUploadRequest {
-  title: string;
-  linkedType: DocumentLinkedType;
-  linkedId: string;
-  mime: string;
-  size: number;
-  sha256: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  category?: string;
 }
 
 export interface PresignUploadResponse {
