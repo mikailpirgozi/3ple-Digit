@@ -21,6 +21,13 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+logs/
+*.log
+
+# Database exports and backups
+*.sql
+*export*.json
+backups/
 
 # Runtime data
 pids
