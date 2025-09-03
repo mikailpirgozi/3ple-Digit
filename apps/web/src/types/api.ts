@@ -32,11 +32,17 @@ export interface AuthResponse {
 // Investor types
 export interface Investor {
   id: string;
-  userId?: string;
-  displayName: string;
-  status: 'active' | 'inactive';
+  userId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  taxId?: string;
   createdAt: string;
   updatedAt: string;
+  totalCapital: number;
+  totalDeposits: number;
+  totalWithdrawals: number;
 }
 
 export interface InvestorCashflow {
@@ -61,7 +67,11 @@ export interface InvestorOverview {
 }
 
 export interface CreateInvestorRequest {
-  displayName: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  taxId?: string;
 }
 
 export interface CreateCashflowRequest {
@@ -176,24 +186,43 @@ export interface CsvImportResponse {
 // Snapshot types
 export interface PeriodSnapshot {
   id: string;
-  period: string; // 'YYYY-MM'
+  date: string;
+  totalAssetValue: number;
+  totalBankBalance: number;
+  totalLiabilities: number;
   nav: number;
-  totals: {
-    assets: number;
-    cash: number;
-    liabilities: number;
-  };
-  ownership: Record<string, number>; // investorId -> capital
-  fee?: {
-    rate: number;
-    amount: number;
-    allocation: Record<string, number>;
-  };
+  performanceFeeRate?: number;
+  totalPerformanceFee?: number;
   createdAt: string;
+  updatedAt: string;
+  investorSnapshots: InvestorSnapshot[];
+}
+
+export interface InvestorSnapshot {
+  id: string;
+  investorId: string;
+  capitalAmount: number;
+  ownershipPercent: number;
+  performanceFee?: number;
+  investor: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export interface SnapshotsResponse {
+  snapshots: PeriodSnapshot[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface CreateSnapshotRequest {
-  period: string;
+  date: string;
   performanceFeeRate?: number;
 }
 
@@ -356,6 +385,75 @@ export interface PaginatedResponse<T> {
   total: number;
   page: number;
   size: number;
+}
+
+export interface InvestorsResponse {
+  investors: Investor[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// Assets Response
+export interface AssetsResponse {
+  assets: Asset[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// Bank Response
+export interface BankBalancesResponse {
+  balances: BankBalance[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  summary: {
+    totalAmount: number;
+    byCurrency: Record<string, number>;
+  };
+}
+
+// Liabilities Response
+export interface LiabilitiesResponse {
+  liabilities: Liability[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  summary: {
+    totalBalance: number;
+    averageInterestRate: number;
+    count: number;
+  };
+}
+
+// Documents Response
+export interface DocumentsResponse {
+  documents: Document[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  summary: {
+    totalSize: number;
+    totalCount: number;
+    byCategory: Record<string, number>;
+    byMimeType: Record<string, number>;
+  };
 }
 
 // Common filters

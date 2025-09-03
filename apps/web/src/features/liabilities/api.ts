@@ -1,18 +1,12 @@
 import { api } from '@/lib/api-client';
-import { 
-  Liability,
-  CreateLiabilityRequest,
-  PaginatedResponse
-} from '@/types/api';
+import { Liability, CreateLiabilityRequest, LiabilitiesResponse } from '@/types/api';
 
 export const liabilitiesApi = {
   // Get all liabilities
-  getLiabilities: (): Promise<PaginatedResponse<Liability>> =>
-    api.get('/liabilities'),
+  getLiabilities: (): Promise<LiabilitiesResponse> => api.get('/liabilities'),
 
   // Get liability by ID
-  getLiability: (id: string): Promise<Liability> =>
-    api.get(`/liabilities/${id}`),
+  getLiability: (id: string): Promise<Liability> => api.get(`/liabilities/${id}`),
 
   // Create new liability
   createLiability: (data: CreateLiabilityRequest): Promise<Liability> =>
@@ -23,6 +17,5 @@ export const liabilitiesApi = {
     api.put(`/liabilities/${id}`, data),
 
   // Delete liability
-  deleteLiability: (id: string): Promise<void> =>
-    api.delete(`/liabilities/${id}`),
+  deleteLiability: (id: string): Promise<void> => api.delete(`/liabilities/${id}`),
 };

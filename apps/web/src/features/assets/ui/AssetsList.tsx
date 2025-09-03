@@ -89,7 +89,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
     );
   }
 
-  const assets = assetsData?.items || [];
+  const assets = assetsData?.assets || [];
 
   return (
     <div className="space-y-6">
@@ -97,8 +97,8 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
       <div className="flex flex-wrap gap-4">
         <select
           value={filters.type || ''}
-          onChange={(e) =>
-            setFilters({ ...filters, type: e.target.value as AssetType || undefined })
+          onChange={e =>
+            setFilters({ ...filters, type: (e.target.value as AssetType) || undefined })
           }
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         >
@@ -112,8 +112,8 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
 
         <select
           value={filters.status || ''}
-          onChange={(e) =>
-            setFilters({ ...filters, status: e.target.value as 'ACTIVE' | 'SOLD' || undefined })
+          onChange={e =>
+            setFilters({ ...filters, status: (e.target.value as 'ACTIVE' | 'SOLD') || undefined })
           }
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         >
@@ -126,7 +126,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
           type="text"
           placeholder="Hľadať podľa názvu..."
           value={filters.q || ''}
-          onChange={(e) => setFilters({ ...filters, q: e.target.value || undefined })}
+          onChange={e => setFilters({ ...filters, q: e.target.value || undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
@@ -146,7 +146,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
             )}
           </div>
         ) : (
-          assets.map((asset) => {
+          assets.map(asset => {
             const pnlData = calculatePnL(asset);
             return (
               <div
@@ -171,7 +171,10 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
                     )}
                     Aktuálna hodnota: {formatCurrency(asset.currentValue)}
                     {asset.expectedSalePrice && (
-                      <span> • Očakávaná predajná cena: {formatCurrency(asset.expectedSalePrice)}</span>
+                      <span>
+                        {' '}
+                        • Očakávaná predajná cena: {formatCurrency(asset.expectedSalePrice)}
+                      </span>
                     )}
                   </div>
                 </div>

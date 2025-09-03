@@ -47,8 +47,11 @@ export function LiabilitiesList({ onCreateLiability, onEditLiability }: Liabilit
     );
   }
 
-  const liabilities = liabilitiesData?.items || [];
-  const totalLiabilities = liabilities.reduce((sum, liability) => sum + liability.currentBalance, 0);
+  const liabilities = liabilitiesData?.liabilities || [];
+  const totalLiabilities = liabilities.reduce(
+    (sum, liability) => sum + liability.currentBalance,
+    0
+  );
 
   return (
     <div className="space-y-6">
@@ -71,8 +74,18 @@ export function LiabilitiesList({ onCreateLiability, onEditLiability }: Liabilit
         {liabilities.length === 0 ? (
           <div className="text-center py-8">
             <div className="space-y-2">
-              <svg className="w-12 h-12 text-muted-foreground mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <svg
+                className="w-12 h-12 text-muted-foreground mx-auto"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
               </svg>
               <p className="text-muted-foreground">Žiadne záväzky nenájdené</p>
               <p className="text-sm text-muted-foreground">Skvelé! Nemáte žiadne záväzky.</p>
@@ -90,7 +103,7 @@ export function LiabilitiesList({ onCreateLiability, onEditLiability }: Liabilit
           <div className="space-y-3">
             {liabilities
               .sort((a, b) => b.currentBalance - a.currentBalance) // Sort by balance descending
-              .map((liability) => (
+              .map(liability => (
                 <div
                   key={liability.id}
                   className="flex items-center justify-between p-4 border border-border rounded-lg bg-card hover:shadow-md transition-shadow"
@@ -144,7 +157,12 @@ export function LiabilitiesList({ onCreateLiability, onEditLiability }: Liabilit
         <div className="bg-muted/50 border border-border rounded-lg p-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span>
               Záväzky sú zoradené podľa výšky zostatku. Celkové záväzky sa odpočítavaju od NAV.

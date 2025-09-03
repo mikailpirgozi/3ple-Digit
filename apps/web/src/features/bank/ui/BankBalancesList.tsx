@@ -8,9 +8,13 @@ interface BankBalancesListProps {
   onImportCsv?: () => void;
 }
 
-export function BankBalancesList({ onCreateBalance, onEditBalance, onImportCsv }: BankBalancesListProps) {
+export function BankBalancesList({
+  onCreateBalance,
+  onEditBalance,
+  onImportCsv,
+}: BankBalancesListProps) {
   const [filters, setFilters] = useState<BankFilters>({});
-  
+
   const { data: balancesData, isLoading, error } = useBankBalances(filters);
   const { data: accountNames } = useAccountNames();
   const deleteBalanceMutation = useDeleteBankBalance();
@@ -38,21 +42,26 @@ export function BankBalancesList({ onCreateBalance, onEditBalance, onImportCsv }
 
   // Group balances by account name and get latest balance for each account
   const getAccountSummary = () => {
-    if (!balancesData?.items) return [];
+    if (!balancesData?.balances) return [];
 
-    const accountGroups = balancesData.items.reduce((acc, balance) => {
-      if (!acc[balance.accountName]) {
-        acc[balance.accountName] = [];
-      }
-      acc[balance.accountName].push(balance);
-      return acc;
-    }, {} as Record<string, BankBalance[]>);
+    const accountGroups = balancesData.balances.reduce(
+      (acc, balance) => {
+        if (!acc[balance.accountName]) {
+          acc[balance.accountName] = [];
+        }
+        acc[balance.accountName].push(balance);
+        return acc;
+      },
+      {} as Record<string, BankBalance[]>
+    );
 
     return Object.entries(accountGroups).map(([accountName, balances]) => {
-      const sortedBalances = balances.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const sortedBalances = balances.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
       const latestBalance = sortedBalances[0];
       const totalBalance = balances.reduce((sum, b) => sum + b.amount, 0);
-      
+
       return {
         accountName,
         latestBalance,
@@ -81,7 +90,10 @@ export function BankBalancesList({ onCreateBalance, onEditBalance, onImportCsv }
 
   const balances = balancesData?.items || [];
   const accountSummary = getAccountSummary();
-  const totalAmount = accountSummary.reduce((sum, account) => sum + account.latestBalance.amount, 0);
+  const totalAmount = accountSummary.reduce(
+    (sum, account) => sum + account.latestBalance.amount,
+    0
+  );
 
   return (
     <div className="space-y-6">
@@ -104,13 +116,11 @@ export function BankBalancesList({ onCreateBalance, onEditBalance, onImportCsv }
         <div className="flex flex-wrap gap-4">
           <select
             value={filters.accountName || ''}
-            onChange={(e) =>
-              setFilters({ ...filters, accountName: e.target.value || undefined })
-            }
+            onChange={e => setFilters({ ...filters, accountName: e.target.value || undefined })}
             className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             <option value="">Všetky účty</option>
-            {accountNames?.map((name) => (
+            {accountNames?.map(name => (
               <option key={name} value={name}>
                 {name}
               </option>
@@ -121,7 +131,7 @@ export function BankBalancesList({ onCreateBalance, onEditBalance, onImportCsv }
             type="date"
             placeholder="Od dátumu"
             value={filters.dateFrom || ''}
-            onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
+            onChange={e => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
             className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
 
@@ -129,7 +139,7 @@ export function BankBalancesList({ onCreateBalance, onEditBalance, onImportCsv }
             type="date"
             placeholder="Do dátumu"
             value={filters.dateTo || ''}
-            onChange={(e) => setFilters({ ...filters, dateTo: e.target.value || undefined })}
+            onChange={e => setFilters({ ...filters, dateTo: e.target.value || undefined })}
             className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
@@ -159,7 +169,7 @@ export function BankBalancesList({ onCreateBalance, onEditBalance, onImportCsv }
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-foreground">Prehľad účtov</h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {accountSummary.map((account) => (
+            {accountSummary.map(account => (
               <div
                 key={account.accountName}
                 className="p-4 border border-border rounded-lg bg-card hover:shadow-md transition-shadow"
@@ -222,7 +232,7 @@ export function BankBalancesList({ onCreateBalance, onEditBalance, onImportCsv }
           <div className="space-y-2">
             {balances
               .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              .map((balance) => (
+              .map(balance => (
                 <div
                   key={balance.id}
                   className="flex items-center justify-between p-4 border border-border rounded-lg bg-card"

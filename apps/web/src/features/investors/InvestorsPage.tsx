@@ -74,7 +74,7 @@ export function InvestorsPage() {
     );
   }
 
-  const investors = investorsData?.items || [];
+  const investors = investorsData?.investors || [];
 
   return (
     <div className="space-y-6">
@@ -137,10 +137,10 @@ export function InvestorsPage() {
               >
                 <div className="flex-1">
                   <h3 className="font-medium text-foreground text-sm sm:text-base">
-                    {investor.displayName}
+                    {investor.name}
                   </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Status: {investor.status === 'active' ? 'Aktívny' : 'Neaktívny'}
+                    Kapitál: €{investor.totalCapital.toLocaleString('sk-SK')}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Vytvorený: {new Date(investor.createdAt).toLocaleDateString('sk-SK')}

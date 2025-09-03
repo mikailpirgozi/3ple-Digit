@@ -5,7 +5,11 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const investorSchema = z.object({
-  displayName: z.string().min(2, 'Meno musí mať aspoň 2 znaky'),
+  name: z.string().min(2, 'Meno musí mať aspoň 2 znaky'),
+  email: z.string().email('Neplatný email'),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  taxId: z.string().optional(),
 });
 
 type InvestorFormData = z.infer<typeof investorSchema>;
@@ -35,18 +39,42 @@ export const InvestorForm: React.FC<InvestorFormProps> = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
-        <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
           Meno investora
         </label>
         <input
-          {...register('displayName')}
+          {...register('name')}
           type="text"
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           placeholder="Zadajte meno investora"
         />
-        {errors.displayName && (
-          <p className="mt-1 text-sm text-red-600">{errors.displayName.message}</p>
-        )}
+        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          Email
+        </label>
+        <input
+          {...register('email')}
+          type="email"
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          placeholder="Zadajte email"
+        />
+        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+          Telefón (voliteľné)
+        </label>
+        <input
+          {...register('phone')}
+          type="tel"
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          placeholder="Zadajte telefón"
+        />
+        {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
       </div>
 
       <div className="flex flex-col sm:flex-row justify-end gap-3 sm:space-x-3 sm:gap-0">

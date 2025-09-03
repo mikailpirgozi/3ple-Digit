@@ -1,5 +1,5 @@
 import { api } from '@/lib/api-client';
-import { 
+import {
   Asset,
   AssetEvent,
   CreateAssetRequest,
@@ -7,41 +7,39 @@ import {
   MarkAssetSoldRequest,
   AssetSaleResponse,
   AssetFilters,
-  PaginatedResponse
+  AssetsResponse,
 } from '@/types/api';
 
 export const assetsApi = {
   // Get all assets with optional filtering
-  getAssets: (filters?: AssetFilters): Promise<PaginatedResponse<Asset>> =>
-    api.get('/assets', filters),
+  getAssets: (filters?: AssetFilters): Promise<AssetsResponse> => api.get('/assets', filters),
 
   // Get asset by ID
-  getAsset: (id: string): Promise<Asset> =>
-    api.get(`/assets/${id}`),
+  getAsset: (id: string): Promise<Asset> => api.get(`/assets/${id}`),
 
   // Create new asset
-  createAsset: (data: CreateAssetRequest): Promise<Asset> =>
-    api.post('/assets', data),
+  createAsset: (data: CreateAssetRequest): Promise<Asset> => api.post('/assets', data),
 
   // Update asset
   updateAsset: (id: string, data: Partial<CreateAssetRequest>): Promise<Asset> =>
     api.put(`/assets/${id}`, data),
 
   // Delete asset
-  deleteAsset: (id: string): Promise<void> =>
-    api.delete(`/assets/${id}`),
+  deleteAsset: (id: string): Promise<void> => api.delete(`/assets/${id}`),
 
   // Get asset events
-  getAssetEvents: (id: string): Promise<AssetEvent[]> =>
-    api.get(`/assets/${id}/events`),
+  getAssetEvents: (id: string): Promise<AssetEvent[]> => api.get(`/assets/${id}/events`),
 
   // Create asset event
   createAssetEvent: (id: string, data: CreateAssetEventRequest): Promise<AssetEvent> =>
     api.post(`/assets/${id}/events`, data),
 
   // Update asset event
-  updateAssetEvent: (assetId: string, eventId: string, data: Partial<CreateAssetEventRequest>): Promise<AssetEvent> =>
-    api.put(`/assets/${assetId}/events/${eventId}`, data),
+  updateAssetEvent: (
+    assetId: string,
+    eventId: string,
+    data: Partial<CreateAssetEventRequest>
+  ): Promise<AssetEvent> => api.put(`/assets/${assetId}/events/${eventId}`, data),
 
   // Delete asset event
   deleteAssetEvent: (assetId: string, eventId: string): Promise<void> =>

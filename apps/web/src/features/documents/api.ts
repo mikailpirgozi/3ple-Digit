@@ -1,23 +1,20 @@
 import { api } from '@/lib/api-client';
-import { 
+import {
   Document,
   PresignUploadRequest,
   PresignUploadResponse,
-  PaginatedResponse
+  DocumentsResponse,
 } from '@/types/api';
 
 export const documentsApi = {
   // Get all documents
-  getDocuments: (): Promise<PaginatedResponse<Document>> =>
-    api.get('/documents'),
+  getDocuments: (): Promise<DocumentsResponse> => api.get('/documents'),
 
   // Get document by ID
-  getDocument: (id: string): Promise<Document> =>
-    api.get(`/documents/${id}`),
+  getDocument: (id: string): Promise<Document> => api.get(`/documents/${id}`),
 
   // Delete document
-  deleteDocument: (id: string): Promise<void> =>
-    api.delete(`/documents/${id}`),
+  deleteDocument: (id: string): Promise<void> => api.delete(`/documents/${id}`),
 
   // Get presigned upload URL
   getPresignedUpload: (data: PresignUploadRequest): Promise<PresignUploadResponse> =>
@@ -28,16 +25,20 @@ export const documentsApi = {
     api.get(`/documents/${id}/download`),
 
   // Upload file to R2 using presigned URL
-  uploadFile: async (uploadUrl: string, file: File, fields?: Record<string, string>): Promise<void> => {
+  uploadFile: async (
+    uploadUrl: string,
+    file: File,
+    fields?: Record<string, string>
+  ): Promise<void> => {
     const formData = new FormData();
-    
+
     // Add fields first (if any)
     if (fields) {
       Object.entries(fields).forEach(([key, value]) => {
         formData.append(key, value);
       });
     }
-    
+
     // Add file last
     formData.append('file', file);
 

@@ -30,10 +30,13 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
     }).format(amount);
   };
 
-  const formatPeriod = (period: string) => {
-    const [year, month] = period.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('sk-SK', { year: 'numeric', month: 'long' });
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('sk-SK', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
   const toggleExpanded = (snapshotId: string) => {
@@ -56,7 +59,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
     );
   }
 
-  const snapshots = snapshotsData?.items || [];
+  const snapshots = snapshotsData?.snapshots || [];
 
   return (
     <div className="space-y-6">
@@ -66,7 +69,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
           type="month"
           placeholder="Obdobie"
           value={filters.period || ''}
-          onChange={(e) => setFilters({ ...filters, period: e.target.value || undefined })}
+          onChange={e => setFilters({ ...filters, period: e.target.value || undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
 
@@ -74,7 +77,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
           type="date"
           placeholder="Od dátumu"
           value={filters.dateFrom || ''}
-          onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
+          onChange={e => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
 
@@ -82,7 +85,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
           type="date"
           placeholder="Do dátumu"
           value={filters.dateTo || ''}
-          onChange={(e) => setFilters({ ...filters, dateTo: e.target.value || undefined })}
+          onChange={e => setFilters({ ...filters, dateTo: e.target.value || undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
@@ -92,11 +95,23 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
         {snapshots.length === 0 ? (
           <div className="text-center py-8">
             <div className="space-y-2">
-              <svg className="w-12 h-12 text-muted-foreground mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <svg
+                className="w-12 h-12 text-muted-foreground mx-auto"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
               </svg>
               <p className="text-muted-foreground">Žiadne snapshots nenájdené</p>
-              <p className="text-sm text-muted-foreground">Vytvorte prvý snapshot pre uloženie aktuálneho NAV</p>
+              <p className="text-sm text-muted-foreground">
+                Vytvorte prvý snapshot pre uloženie aktuálneho NAV
+              </p>
             </div>
             {onCreateSnapshot && (
               <button
@@ -111,7 +126,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
           <div className="space-y-3">
             {snapshots
               .sort((a, b) => b.period.localeCompare(a.period)) // Sort by period descending
-              .map((snapshot) => (
+              .map(snapshot => (
                 <div
                   key={snapshot.id}
                   className="border border-border rounded-lg bg-card overflow-hidden"
@@ -122,7 +137,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                       <div className="flex-1">
                         <div className="flex items-center gap-4">
                           <h3 className="text-lg font-semibold text-foreground">
-                            {formatPeriod(snapshot.period)}
+                            {formatDate(snapshot.date)}
                           </h3>
                           <div className="text-right">
                             <p className="text-xl font-bold text-primary">
@@ -131,14 +146,14 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                             <p className="text-sm text-muted-foreground">NAV</p>
                           </div>
                         </div>
-                        
+
                         {/* Quick Summary */}
                         <div className="mt-2 flex items-center gap-6 text-sm text-muted-foreground">
-                          <span>Aktíva: {formatCurrency(snapshot.totals.assets)}</span>
-                          <span>Hotovosť: {formatCurrency(snapshot.totals.cash)}</span>
-                          <span>Záväzky: {formatCurrency(snapshot.totals.liabilities)}</span>
-                          {snapshot.fee && (
-                            <span>Fee: {formatCurrency(snapshot.fee.totalFee)}</span>
+                          <span>Aktíva: {formatCurrency(snapshot.totalAssetValue)}</span>
+                          <span>Hotovosť: {formatCurrency(snapshot.totalBankBalance)}</span>
+                          <span>Záväzky: {formatCurrency(snapshot.totalLiabilities)}</span>
+                          {snapshot.totalPerformanceFee && (
+                            <span>Fee: {formatCurrency(snapshot.totalPerformanceFee)}</span>
                           )}
                         </div>
                       </div>
@@ -171,32 +186,63 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                             Rozdelenie podielov
                           </h4>
                           <div className="space-y-2">
-                            {Object.entries(snapshot.ownership).map(([investorId, capital]) => {
-                              const percentage = (capital / snapshot.nav) * 100;
+                            {snapshot.investorSnapshots.map(investorSnapshot => {
                               return (
                                 <div
-                                  key={investorId}
+                                  key={investorSnapshot.id}
                                   className="flex items-center justify-between p-2 bg-background rounded border border-border"
                                 >
                                   <span className="text-sm font-medium text-foreground">
-                                    Investor {investorId.slice(-6)}
+                                    {investorSnapshot.investor.name}
                                   </span>
                                   <div className="text-right">
                                     <span className="text-sm font-medium text-foreground">
-                                      {percentage.toFixed(2)}%
+                                      {investorSnapshot.ownershipPercent.toFixed(2)}%
                                     </span>
                                     <span className="text-xs text-muted-foreground ml-2">
-                                      ({formatCurrency(capital)})
+                                      ({formatCurrency(investorSnapshot.capitalAmount)})
                                     </span>
                                   </div>
                                 </div>
                               );
                             })}
                           </div>
+
+                          {/* Summary */}
+                          <div className="mt-4 pt-3 border-t border-border">
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm font-medium">
+                                <span className="text-muted-foreground">Celkový kapitál:</span>
+                                <span className="text-foreground">
+                                  {formatCurrency(
+                                    snapshot.investorSnapshots.reduce(
+                                      (sum, inv) => sum + inv.capitalAmount,
+                                      0
+                                    )
+                                  )}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-sm font-medium">
+                                <span className="text-muted-foreground">Celkové %:</span>
+                                <span className="text-foreground">
+                                  {snapshot.investorSnapshots
+                                    .reduce((sum, inv) => sum + inv.ownershipPercent, 0)
+                                    .toFixed(2)}
+                                  %
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-sm font-medium">
+                                <span className="text-muted-foreground">Počet investorov:</span>
+                                <span className="text-foreground">
+                                  {snapshot.investorSnapshots.length}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Performance Fee Details */}
-                        {snapshot.fee && (
+                        {snapshot.performanceFeeRate && snapshot.totalPerformanceFee && (
                           <div>
                             <h4 className="text-sm font-medium text-foreground mb-3">
                               Performance Fee
@@ -204,24 +250,14 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                             <div className="space-y-2">
                               <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Sadzba:</span>
-                                <span className="text-foreground">{snapshot.fee.rate}%</span>
+                                <span className="text-foreground">
+                                  {snapshot.performanceFeeRate}%
+                                </span>
                               </div>
                               <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Celkový fee:</span>
                                 <span className="text-foreground">
-                                  {formatCurrency(snapshot.fee.totalFee)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Pre manažérov:</span>
-                                <span className="text-foreground">
-                                  {formatCurrency(snapshot.fee.managerShare)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Pre investorov:</span>
-                                <span className="text-foreground">
-                                  {formatCurrency(snapshot.fee.investorShare)}
+                                  {formatCurrency(snapshot.totalPerformanceFee)}
                                 </span>
                               </div>
                             </div>
