@@ -30,5 +30,5 @@ RUN pnpm build
 # Expose port
 EXPOSE 4000
 
-# Start the application
-CMD ["node", "dist/index.js"]
+# Start the application (run migrations first, then start server)
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
