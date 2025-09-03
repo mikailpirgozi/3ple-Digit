@@ -1,6 +1,7 @@
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
 import { prisma } from '@/core/prisma.js';
+import type { Asset, AssetEvent } from '@prisma/client';
 import type {
   AssetEventResponse,
   AssetEventTypeEnum,
@@ -24,8 +25,8 @@ export class AssetsService {
   /**
    * Helper function to filter out undefined values from update data
    */
-  private filterUpdateData<T extends Record<string, any>>(data: T): any {
-    const filtered: any = {};
+  private filterUpdateData<T extends Record<string, unknown>>(data: T): Record<string, unknown> {
+    const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
         filtered[key] = value;
@@ -501,7 +502,9 @@ export class AssetsService {
   /**
    * Format asset response
    */
-  private formatAssetResponse(asset: any): AssetResponse {
+  private formatAssetResponse(
+    asset: Asset & { eventsCount?: number; totalInflows?: number; totalOutflows?: number }
+  ): AssetResponse {
     return {
       id: asset.id,
       name: asset.name,
@@ -523,7 +526,9 @@ export class AssetsService {
   /**
    * Format asset event response
    */
-  private formatAssetEventResponse(event: any): AssetEventResponse {
+  private formatAssetEventResponse(
+    event: AssetEvent & { asset?: { id: string; name: string; type: string } }
+  ): AssetEventResponse {
     return {
       id: event.id,
       assetId: event.assetId,

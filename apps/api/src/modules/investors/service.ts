@@ -1,15 +1,16 @@
-import { prisma } from '@/core/prisma.js';
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
+import { prisma } from '@/core/prisma.js';
+import type { Investor, InvestorCashflow } from '@prisma/client';
 import type {
-  CreateInvestorRequest,
-  UpdateInvestorRequest,
-  CreateCashflowRequest,
-  UpdateCashflowRequest,
-  GetInvestorsQuery,
-  GetCashflowsQuery,
-  InvestorResponse,
   CashflowResponse,
+  CreateCashflowRequest,
+  CreateInvestorRequest,
+  GetCashflowsQuery,
+  GetInvestorsQuery,
+  InvestorResponse,
+  UpdateCashflowRequest,
+  UpdateInvestorRequest,
 } from './schema.js';
 
 export class InvestorsService {
@@ -23,8 +24,8 @@ export class InvestorsService {
   /**
    * Helper function to filter out undefined values from update data
    */
-  private filterUpdateData<T extends Record<string, any>>(data: T): any {
-    const filtered: any = {};
+  private filterUpdateData<T extends Record<string, unknown>>(data: T): Record<string, unknown> {
+    const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
         (filtered as any)[key] = value;
@@ -120,11 +121,11 @@ export class InvestorsService {
       const totalDeposits = investor.cashflows
         .filter(cf => cf.type === 'DEPOSIT')
         .reduce((sum, cf) => sum + cf.amount, 0);
-      
+
       const totalWithdrawals = investor.cashflows
         .filter(cf => cf.type === 'WITHDRAWAL')
         .reduce((sum, cf) => sum + cf.amount, 0);
-      
+
       const totalCapital = totalDeposits - totalWithdrawals;
 
       return this.formatInvestorResponse({
@@ -169,11 +170,11 @@ export class InvestorsService {
     const totalDeposits = investor.cashflows
       .filter(cf => cf.type === 'DEPOSIT')
       .reduce((sum, cf) => sum + cf.amount, 0);
-    
+
     const totalWithdrawals = investor.cashflows
       .filter(cf => cf.type === 'WITHDRAWAL')
       .reduce((sum, cf) => sum + cf.amount, 0);
-    
+
     const totalCapital = totalDeposits - totalWithdrawals;
 
     return this.formatInvestorResponse({
@@ -187,7 +188,11 @@ export class InvestorsService {
   /**
    * Update investor
    */
-  async updateInvestor(id: string, data: UpdateInvestorRequest, userId?: string): Promise<InvestorResponse> {
+  async updateInvestor(
+    id: string,
+    data: UpdateInvestorRequest,
+    userId?: string
+  ): Promise<InvestorResponse> {
     const existingInvestor = await prisma.investor.findUnique({
       where: { id },
     });
@@ -264,12 +269,12 @@ export class InvestorsService {
       },
     });
 
-    log.info('Cashflow created', { 
-      cashflowId: cashflow.id, 
+    log.info('Cashflow created', {
+      cashflowId: cashflow.id,
       investorId: data.investorId,
       type: data.type,
       amount: data.amount,
-      createdBy: userId 
+      createdBy: userId,
     });
 
     return this.formatCashflowResponse(cashflow);
@@ -292,15 +297,15 @@ export class InvestorsService {
 
     // Build where clause
     const where: any = {};
-    
+
     if (investorId) {
       where.investorId = investorId;
     }
-    
+
     if (type) {
       where.type = type;
     }
-    
+
     if (dateFrom || dateTo) {
       where.date = {};
       if (dateFrom) where.date.gte = dateFrom;
@@ -341,7 +346,11 @@ export class InvestorsService {
   /**
    * Update cashflow entry
    */
-  async updateCashflow(id: string, data: UpdateCashflowRequest, userId?: string): Promise<CashflowResponse> {
+  async updateCashflow(
+    id: string,
+    data: UpdateCashflowRequest,
+    userId?: string
+  ): Promise<CashflowResponse> {
     const existingCashflow = await prisma.investorCashflow.findUnique({
       where: { id },
     });
@@ -421,11 +430,11 @@ export class InvestorsService {
     const totalDeposits = investor.cashflows
       .filter(cf => cf.type === 'DEPOSIT')
       .reduce((sum, cf) => sum + cf.amount, 0);
-    
+
     const totalWithdrawals = investor.cashflows
       .filter(cf => cf.type === 'WITHDRAWAL')
       .reduce((sum, cf) => sum + cf.amount, 0);
-    
+
     const totalCapital = totalDeposits - totalWithdrawals;
 
     return {
@@ -439,7 +448,13 @@ export class InvestorsService {
   /**
    * Format investor response
    */
-  private formatInvestorResponse(investor: any): InvestorResponse {
+  private formatInvestorResponse(
+    investor: Investor & {
+      totalCapital?: number;
+      totalDeposits?: number;
+      totalWithdrawals?: number;
+    }
+  ): InvestorResponse {
     return {
       id: investor.id,
       userId: investor.userId,
@@ -459,7 +474,9 @@ export class InvestorsService {
   /**
    * Format cashflow response
    */
-  private formatCashflowResponse(cashflow: any): CashflowResponse {
+  private formatCashflowResponse(
+    cashflow: InvestorCashflow & { investor?: { id: string; name: string; email: string } }
+  ): CashflowResponse {
     return {
       id: cashflow.id,
       investorId: cashflow.investorId,

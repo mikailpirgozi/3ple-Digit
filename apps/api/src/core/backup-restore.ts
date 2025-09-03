@@ -2,20 +2,33 @@ import fs from 'fs/promises';
 import path from 'path';
 import { log } from './logger.js';
 import { prisma } from './prisma.js';
+import type {
+  User,
+  Investor,
+  InvestorCashflow,
+  Asset,
+  AssetEvent,
+  Liability,
+  BankBalance,
+  PeriodSnapshot,
+  InvestorSnapshot,
+  Document,
+  AuditLog,
+} from '@prisma/client';
 
 interface BackupData {
   timestamp: string;
-  users: any[];
-  investors: any[];
-  investorCashflows: any[];
-  assets: any[];
-  assetEvents: any[];
-  liabilities: any[];
-  bankBalances: any[];
-  periodSnapshots: any[];
-  investorSnapshots: any[];
-  documents: any[];
-  auditLogs: any[];
+  users: User[];
+  investors: Investor[];
+  investorCashflows: InvestorCashflow[];
+  assets: Asset[];
+  assetEvents: AssetEvent[];
+  liabilities: Liability[];
+  bankBalances: BankBalance[];
+  periodSnapshots: PeriodSnapshot[];
+  investorSnapshots: InvestorSnapshot[];
+  documents: Document[];
+  auditLogs: AuditLog[];
 }
 
 /**

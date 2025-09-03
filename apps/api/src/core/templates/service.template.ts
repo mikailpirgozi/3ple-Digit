@@ -20,8 +20,8 @@ export class TemplateService {
    * Helper function to filter out undefined values from update data
    * MANDATORY: Use this for all Prisma update operations
    */
-  private filterUpdateData<T extends Record<string, any>>(data: T): any {
-    const filtered: any = {};
+  private filterUpdateData<T extends Record<string, unknown>>(data: T): Record<string, unknown> {
+    const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
         filtered[key] = value;
@@ -33,7 +33,10 @@ export class TemplateService {
   /**
    * Example create method - ALWAYS use toNullable for optional fields
    */
-  async createExample(data: any, userId?: string): Promise<any> {
+  async createExample(
+    data: Record<string, unknown>,
+    userId?: string
+  ): Promise<Record<string, unknown>> {
     const example = await prisma.example.create({
       data: {
         name: data.name, // Required field - direct assignment
@@ -51,7 +54,11 @@ export class TemplateService {
   /**
    * Example update method - ALWAYS use filterUpdateData
    */
-  async updateExample(id: string, data: any, userId?: string): Promise<any> {
+  async updateExample(
+    id: string,
+    data: Record<string, unknown>,
+    userId?: string
+  ): Promise<Record<string, unknown>> {
     // Check if exists
     const existing = await prisma.example.findUnique({ where: { id } });
     if (!existing) {

@@ -72,7 +72,7 @@ export const errorHandler = (
     }));
   } else if ('code' in error && 'meta' in error) {
     // Handle Prisma known request errors
-    const prismaError = error as { code: string; meta?: any };
+    const prismaError = error as { code: string; meta?: Record<string, unknown> };
     switch (prismaError.code) {
       case 'P2002':
         statusCode = 409;

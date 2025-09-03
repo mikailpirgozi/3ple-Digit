@@ -1,14 +1,15 @@
-import { prisma } from '@/core/prisma.js';
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
+import { prisma } from '@/core/prisma.js';
+import type { PeriodSnapshot, InvestorSnapshot } from '@prisma/client';
 import type {
   CreateSnapshotRequest,
-  UpdateSnapshotRequest,
   GetSnapshotsQuery,
-  SnapshotResponse,
+  InvestorOwnership,
   InvestorSnapshotResponse,
   NavCalculation,
-  InvestorOwnership,
+  SnapshotResponse,
+  UpdateSnapshotRequest,
 } from './schema.js';
 
 export class SnapshotsService {
@@ -22,8 +23,8 @@ export class SnapshotsService {
   /**
    * Helper function to filter out undefined values from update data
    */
-  private filterUpdateData<T extends Record<string, any>>(data: T): any {
-    const filtered: any = {};
+  private filterUpdateData<T extends Record<string, unknown>>(data: T): Record<string, unknown> {
+    const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
         (filtered as any)[key] = value;
@@ -74,9 +75,14 @@ export class SnapshotsService {
 
     // Calculate totals
     const totalAssetValue = assets.reduce((sum, asset) => sum + asset.currentValue, 0);
-    const totalBankBalance = Array.from(latestBankBalances.values())
-      .reduce((sum, balance) => sum + balance.amount, 0);
-    const totalLiabilities = liabilities.reduce((sum, liability) => sum + liability.currentBalance, 0);
+    const totalBankBalance = Array.from(latestBankBalances.values()).reduce(
+      (sum, balance) => sum + balance.amount,
+      0
+    );
+    const totalLiabilities = liabilities.reduce(
+      (sum, liability) => sum + liability.currentBalance,
+      0
+    );
     const nav = totalAssetValue + totalBankBalance - totalLiabilities;
 
     // Create breakdowns
@@ -121,11 +127,11 @@ export class SnapshotsService {
       const totalDeposits = investor.cashflows
         .filter(cf => cf.type === 'DEPOSIT')
         .reduce((sum, cf) => sum + cf.amount, 0);
-      
+
       const totalWithdrawals = investor.cashflows
         .filter(cf => cf.type === 'WITHDRAWAL')
         .reduce((sum, cf) => sum + cf.amount, 0);
-      
+
       const capitalAmount = totalDeposits - totalWithdrawals;
       totalCapital += capitalAmount;
 
@@ -143,9 +149,8 @@ export class SnapshotsService {
 
     // Calculate ownership percentages
     investorOwnerships.forEach(ownership => {
-      ownership.ownershipPercent = totalCapital > 0 
-        ? (ownership.capitalAmount / totalCapital) * 100 
-        : 0;
+      ownership.ownershipPercent =
+        totalCapital > 0 ? (ownership.capitalAmount / totalCapital) * 100 : 0;
     });
 
     return investorOwnerships;
@@ -157,7 +162,7 @@ export class SnapshotsService {
   async createSnapshot(data: CreateSnapshotRequest, userId?: string): Promise<SnapshotResponse> {
     // Calculate current NAV
     const navCalculation = await this.calculateCurrentNav();
-    
+
     // Calculate investor ownership
     const investorOwnerships = await this.calculateInvestorOwnership();
 
@@ -169,7 +174,7 @@ export class SnapshotsService {
     }
 
     // Create snapshot and investor snapshots in transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async tx => {
       // Create the main snapshot
       const snapshot = await tx.periodSnapshot.create({
         data: {
@@ -217,11 +222,11 @@ export class SnapshotsService {
       return { snapshot, investorSnapshots };
     });
 
-    log.info('Snapshot created', { 
-      snapshotId: result.snapshot.id, 
+    log.info('Snapshot created', {
+      snapshotId: result.snapshot.id,
       nav: navCalculation.nav,
       investorCount: investorOwnerships.length,
-      createdBy: userId 
+      createdBy: userId,
     });
 
     return this.formatSnapshotResponse({
@@ -319,7 +324,11 @@ export class SnapshotsService {
   /**
    * Update snapshot
    */
-  async updateSnapshot(id: string, data: UpdateSnapshotRequest, userId?: string): Promise<SnapshotResponse> {
+  async updateSnapshot(
+    id: string,
+    data: UpdateSnapshotRequest,
+    userId?: string
+  ): Promise<SnapshotResponse> {
     const existingSnapshot = await prisma.periodSnapshot.findUnique({
       where: { id },
     });
@@ -330,7 +339,10 @@ export class SnapshotsService {
 
     const updateData = this.filterUpdateData({
       ...data,
-      performanceFeeRate: data.performanceFeeRate !== undefined ? this.toNullable(data.performanceFeeRate) : undefined,
+      performanceFeeRate:
+        data.performanceFeeRate !== undefined
+          ? this.toNullable(data.performanceFeeRate)
+          : undefined,
     });
 
     const snapshot = await prisma.periodSnapshot.update({
@@ -432,7 +444,7 @@ export class SnapshotsService {
    */
   private createAssetBreakdown(assets: Array<{ type: string; currentValue: number }>) {
     const breakdown = new Map<string, { count: number; totalValue: number }>();
-    
+
     assets.forEach(asset => {
       if (!breakdown.has(asset.type)) {
         breakdown.set(asset.type, { count: 0, totalValue: 0 });
@@ -454,7 +466,7 @@ export class SnapshotsService {
    */
   private createBankBreakdown(balances: Array<{ currency: string; amount: number }>) {
     const breakdown = new Map<string, number>();
-    
+
     balances.forEach(balance => {
       breakdown.set(balance.currency, (breakdown.get(balance.currency) || 0) + balance.amount);
     });
@@ -468,7 +480,9 @@ export class SnapshotsService {
   /**
    * Format snapshot response
    */
-  private formatSnapshotResponse(snapshot: any): SnapshotResponse {
+  private formatSnapshotResponse(
+    snapshot: PeriodSnapshot & { investorSnapshots?: InvestorSnapshot[] }
+  ): SnapshotResponse {
     return {
       id: snapshot.id,
       date: snapshot.date,
@@ -480,21 +494,28 @@ export class SnapshotsService {
       totalPerformanceFee: snapshot.totalPerformanceFee,
       createdAt: snapshot.createdAt,
       updatedAt: snapshot.updatedAt,
-      investorSnapshots: snapshot.investorSnapshots?.map((is: any) => ({
-        id: is.id,
-        investorId: is.investorId,
-        capitalAmount: is.capitalAmount,
-        ownershipPercent: is.ownershipPercent,
-        performanceFee: is.performanceFee,
-        investor: is.investor,
-      })),
+      investorSnapshots: snapshot.investorSnapshots
+        ?.filter((is: any) => is.investor)
+        ?.map((is: any) => ({
+          id: is.id,
+          investorId: is.investorId,
+          capitalAmount: is.capitalAmount,
+          ownershipPercent: is.ownershipPercent,
+          performanceFee: is.performanceFee,
+          investor: is.investor,
+        })),
     };
   }
 
   /**
    * Format investor snapshot response
    */
-  private formatInvestorSnapshotResponse(investorSnapshot: any): InvestorSnapshotResponse {
+  private formatInvestorSnapshotResponse(
+    investorSnapshot: InvestorSnapshot & {
+      investor?: { id: string; name: string; email: string };
+      snapshot?: { id: string; date: Date; nav: number };
+    }
+  ): InvestorSnapshotResponse {
     return {
       id: investorSnapshot.id,
       snapshotId: investorSnapshot.snapshotId,

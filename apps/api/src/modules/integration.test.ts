@@ -123,10 +123,10 @@ describe('Integration Tests - Key Application Flows', () => {
       expect(initialSnapshot.investorSnapshots).toHaveLength(2);
 
       const alpha1 = initialSnapshot.investorSnapshots.find(
-        (is: any) => is.investorId === investor1Id
+        (is: { investorId: string }) => is.investorId === investor1Id
       );
       const beta1 = initialSnapshot.investorSnapshots.find(
-        (is: any) => is.investorId === investor2Id
+        (is: { investorId: string }) => is.investorId === investor2Id
       );
 
       expect(alpha1.ownershipPercent).toBe(50);
@@ -158,10 +158,10 @@ describe('Integration Tests - Key Application Flows', () => {
       // Verify changed ownership percentages
       const secondSnapshot = secondSnapshotResponse.body;
       const alpha2 = secondSnapshot.investorSnapshots.find(
-        (is: any) => is.investorId === investor1Id
+        (is: { investorId: string }) => is.investorId === investor1Id
       );
       const beta2 = secondSnapshot.investorSnapshots.find(
-        (is: any) => is.investorId === investor2Id
+        (is: { investorId: string }) => is.investorId === investor2Id
       );
 
       // Alpha: 300k out of 400k total = 75%
@@ -623,10 +623,10 @@ describe('Integration Tests - Key Application Flows', () => {
 
       // Step 7: Verify investor ownership remains consistent
       const alpha = secondSnapshot.body.investorSnapshots.find(
-        (is: any) => is.investorId === investor1Id
+        (is: { investorId: string }) => is.investorId === investor1Id
       );
       const beta = secondSnapshot.body.investorSnapshots.find(
-        (is: any) => is.investorId === investor2Id
+        (is: { investorId: string }) => is.investorId === investor2Id
       );
 
       // Ownership should still be 75% / 25% from earlier test

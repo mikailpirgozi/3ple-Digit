@@ -1,11 +1,12 @@
-import { prisma } from '@/core/prisma.js';
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
+import { prisma } from '@/core/prisma.js';
+import type { Liability } from '@prisma/client';
 import type {
   CreateLiabilityRequest,
-  UpdateLiabilityRequest,
   GetLiabilitiesQuery,
   LiabilityResponse,
+  UpdateLiabilityRequest,
 } from './schema.js';
 
 export class LiabilitiesService {
@@ -19,11 +20,11 @@ export class LiabilitiesService {
   /**
    * Helper function to filter out undefined values from update data
    */
-  private filterUpdateData<T extends Record<string, any>>(data: T): any {
-    const filtered: any = {};
+  private filterUpdateData<T extends Record<string, unknown>>(data: T): Record<string, unknown> {
+    const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
-        (filtered as any)[key] = value;
+        filtered[key] = value;
       }
     }
     return filtered;
@@ -91,12 +92,17 @@ export class LiabilitiesService {
 
     // Calculate summary
     const allLiabilities = await prisma.liability.findMany({ where });
-    const totalBalance = allLiabilities.reduce((sum, liability) => sum + liability.currentBalance, 0);
-    const averageInterestRate = allLiabilities.length > 0
-      ? allLiabilities
-          .filter(l => l.interestRate !== null)
-          .reduce((sum, l) => sum + (l.interestRate || 0), 0) / allLiabilities.filter(l => l.interestRate !== null).length
-      : 0;
+    const totalBalance = allLiabilities.reduce(
+      (sum, liability) => sum + liability.currentBalance,
+      0
+    );
+    const averageInterestRate =
+      allLiabilities.length > 0
+        ? allLiabilities
+            .filter(l => l.interestRate !== null)
+            .reduce((sum, l) => sum + (l.interestRate || 0), 0) /
+          allLiabilities.filter(l => l.interestRate !== null).length
+        : 0;
 
     return {
       liabilities: liabilities.map(liability => this.formatLiabilityResponse(liability)),
@@ -132,7 +138,11 @@ export class LiabilitiesService {
   /**
    * Update liability
    */
-  async updateLiability(id: string, data: UpdateLiabilityRequest, userId?: string): Promise<LiabilityResponse> {
+  async updateLiability(
+    id: string,
+    data: UpdateLiabilityRequest,
+    userId?: string
+  ): Promise<LiabilityResponse> {
     const existingLiability = await prisma.liability.findUnique({
       where: { id },
     });
@@ -144,8 +154,10 @@ export class LiabilitiesService {
     const updateData = this.filterUpdateData({
       ...data,
       description: data.description !== undefined ? this.toNullable(data.description) : undefined,
-      interestRate: data.interestRate !== undefined ? this.toNullable(data.interestRate) : undefined,
-      maturityDate: data.maturityDate !== undefined ? this.toNullable(data.maturityDate) : undefined,
+      interestRate:
+        data.interestRate !== undefined ? this.toNullable(data.interestRate) : undefined,
+      maturityDate:
+        data.maturityDate !== undefined ? this.toNullable(data.maturityDate) : undefined,
     });
 
     const liability = await prisma.liability.update({
@@ -190,9 +202,11 @@ export class LiabilitiesService {
 
     const totalBalance = liabilities.reduce((sum, liability) => sum + liability.currentBalance, 0);
     const withInterestRate = liabilities.filter(l => l.interestRate !== null);
-    const averageInterestRate = withInterestRate.length > 0
-      ? withInterestRate.reduce((sum, l) => sum + (l.interestRate || 0), 0) / withInterestRate.length
-      : 0;
+    const averageInterestRate =
+      withInterestRate.length > 0
+        ? withInterestRate.reduce((sum, l) => sum + (l.interestRate || 0), 0) /
+          withInterestRate.length
+        : 0;
 
     // Get liabilities maturing in the next 6 months
     const sixMonthsFromNow = new Date();
@@ -214,7 +228,7 @@ export class LiabilitiesService {
   /**
    * Format liability response
    */
-  private formatLiabilityResponse(liability: any): LiabilityResponse {
+  private formatLiabilityResponse(liability: Liability): LiabilityResponse {
     return {
       id: liability.id,
       name: liability.name,

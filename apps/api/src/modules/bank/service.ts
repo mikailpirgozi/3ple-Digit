@@ -1,6 +1,7 @@
 import { prisma } from '@/core/prisma.js';
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
+import type { BankBalance } from '@prisma/client';
 import type {
   CreateBankBalanceRequest,
   UpdateBankBalanceRequest,
@@ -23,8 +24,8 @@ export class BankService {
   /**
    * Helper function to filter out undefined values from update data
    */
-  private filterUpdateData<T extends Record<string, any>>(data: T): any {
-    const filtered: any = {};
+  private filterUpdateData<T extends Record<string, unknown>>(data: T): Record<string, unknown> {
+    const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
         (filtered as any)[key] = value;
@@ -36,7 +37,10 @@ export class BankService {
   /**
    * Create a new bank balance entry
    */
-  async createBankBalance(data: CreateBankBalanceRequest, userId?: string): Promise<BankBalanceResponse> {
+  async createBankBalance(
+    data: CreateBankBalanceRequest,
+    userId?: string
+  ): Promise<BankBalanceResponse> {
     const balance = await prisma.bankBalance.create({
       data: {
         accountName: data.accountName,
@@ -69,12 +73,23 @@ export class BankService {
       byCurrency: Record<string, number>;
     };
   }> {
-    const { page, limit, search, currency, accountName, bankName, dateFrom, dateTo, sortBy, sortOrder } = query;
+    const {
+      page,
+      limit,
+      search,
+      currency,
+      accountName,
+      bankName,
+      dateFrom,
+      dateTo,
+      sortBy,
+      sortOrder,
+    } = query;
     const skip = (page - 1) * limit;
 
     // Build where clause
     const where: any = {};
-    
+
     if (search) {
       where.OR = [
         { accountName: { contains: search } },
@@ -82,19 +97,19 @@ export class BankService {
         { accountType: { contains: search } },
       ];
     }
-    
+
     if (currency) {
       where.currency = currency;
     }
-    
+
     if (accountName) {
       where.accountName = { contains: accountName };
     }
-    
+
     if (bankName) {
       where.bankName = { contains: bankName };
     }
-    
+
     if (dateFrom || dateTo) {
       where.date = {};
       if (dateFrom) where.date.gte = dateFrom;
@@ -115,10 +130,13 @@ export class BankService {
     // Calculate summary
     const allBalances = await prisma.bankBalance.findMany({ where });
     const totalAmount = allBalances.reduce((sum, balance) => sum + balance.amount, 0);
-    const byCurrency = allBalances.reduce((acc, balance) => {
-      acc[balance.currency] = (acc[balance.currency] || 0) + balance.amount;
-      return acc;
-    }, {} as Record<string, number>);
+    const byCurrency = allBalances.reduce(
+      (acc, balance) => {
+        acc[balance.currency] = (acc[balance.currency] || 0) + balance.amount;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     return {
       balances: balances.map(balance => this.formatBankBalanceResponse(balance)),
@@ -153,7 +171,11 @@ export class BankService {
   /**
    * Update bank balance
    */
-  async updateBankBalance(id: string, data: UpdateBankBalanceRequest, userId?: string): Promise<BankBalanceResponse> {
+  async updateBankBalance(
+    id: string,
+    data: UpdateBankBalanceRequest,
+    userId?: string
+  ): Promise<BankBalanceResponse> {
     const existingBalance = await prisma.bankBalance.findUnique({
       where: { id },
     });
@@ -203,7 +225,7 @@ export class BankService {
   async importFromCsv(data: CsvImportRequest, userId?: string): Promise<CsvImportResult> {
     const { file, skipFirstRow, mapping } = data;
     const delimiter = data.delimiter ?? ',';
-    
+
     if (!delimiter) {
       throw new Error('Delimiter is required');
     }
@@ -230,7 +252,7 @@ export class BankService {
       for (let i = 0; i < dataRows.length; i++) {
         const rowIndex = skipFirstRow ? i + 2 : i + 1; // Account for header and 1-based indexing
         const row = dataRows[i];
-        
+
         try {
           const columns = this.parseCsvRow(row, delimiter as string);
           const rowData = this.mapCsvRow(columns, mapping);
@@ -250,10 +272,9 @@ export class BankService {
 
           results.importedBalances.push(this.formatBankBalanceResponse(balance));
           results.successfulRows++;
-
         } catch (error) {
           results.failedRows++;
-          
+
           let errorMessages: string[] = [];
           if (error instanceof Error) {
             errorMessages = [error.message];
@@ -275,11 +296,10 @@ export class BankService {
       });
 
       return results;
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       log.error('CSV import failed', { error: errorMessage, userId });
-      
+
       // Re-throw the original error if it's our custom error, otherwise wrap it
       if (error instanceof Error && error.message === 'CSV file is empty') {
         throw error;
@@ -294,7 +314,12 @@ export class BankService {
   async getBankBalanceSummary(): Promise<{
     totalBalance: number;
     byCurrency: Record<string, { amount: number; count: number }>;
-    byAccount: Array<{ accountName: string; bankName: string | null; amount: number; currency: string }>;
+    byAccount: Array<{
+      accountName: string;
+      bankName: string | null;
+      amount: number;
+      currency: string;
+    }>;
   }> {
     const balances = await prisma.bankBalance.findMany({
       orderBy: { date: 'desc' },
@@ -302,14 +327,17 @@ export class BankService {
 
     const totalBalance = balances.reduce((sum, balance) => sum + balance.amount, 0);
 
-    const byCurrency = balances.reduce((acc, balance) => {
-      if (!acc[balance.currency]) {
-        acc[balance.currency] = { amount: 0, count: 0 };
-      }
-      acc[balance.currency]!.amount += balance.amount;
-      acc[balance.currency]!.count++;
-      return acc;
-    }, {} as Record<string, { amount: number; count: number }>);
+    const byCurrency = balances.reduce(
+      (acc, balance) => {
+        if (!acc[balance.currency]) {
+          acc[balance.currency] = { amount: 0, count: 0 };
+        }
+        acc[balance.currency]!.amount += balance.amount;
+        acc[balance.currency]!.count++;
+        return acc;
+      },
+      {} as Record<string, { amount: number; count: number }>
+    );
 
     // Group by account (latest balance per account)
     const accountMap = new Map<string, any>();
@@ -344,7 +372,7 @@ export class BankService {
 
     for (let i = 0; i < row.length; i++) {
       const char = row[i];
-      
+
       if (char === '"') {
         inQuotes = !inQuotes;
       } else if (char === delimiter && !inQuotes) {
@@ -354,7 +382,7 @@ export class BankService {
         current += char;
       }
     }
-    
+
     columns.push(current.trim());
     return columns;
   }
@@ -365,10 +393,13 @@ export class BankService {
   private parseCsvRowSafe(row: string, delimiter: string): Record<string, unknown> {
     try {
       const columns = this.parseCsvRow(row, delimiter);
-      return columns.reduce((acc, col, index) => {
-        acc[`column_${index}`] = col;
-        return acc;
-      }, {} as Record<string, unknown>);
+      return columns.reduce(
+        (acc, col, index) => {
+          acc[`column_${index}`] = col;
+          return acc;
+        },
+        {} as Record<string, unknown>
+      );
     } catch {
       return { raw: row };
     }
@@ -378,29 +409,24 @@ export class BankService {
    * Map CSV columns to bank balance data
    */
   private mapCsvRow(columns: string[], mapping: CsvImportRequest['mapping']): CsvRowData {
-    const data: any = {};
+    const data: CsvRowData = {
+      accountName: columns[mapping.accountName]?.trim() || '',
+      amount: parseFloat(columns[mapping.amount]?.replace(/[^\d.-]/g, '') || '0'),
+      date: new Date(columns[mapping.date]?.trim() || ''),
+      currency: 'EUR',
+    };
 
-    // Map required fields
-    data.accountName = columns[mapping.accountName]?.trim() || '';
-    data.amount = parseFloat(columns[mapping.amount]?.replace(/[^\d.-]/g, '') || '0');
-    
-    // Parse date
-    const dateStr = columns[mapping.date]?.trim() || '';
-    data.date = new Date(dateStr);
-    
     // Map optional fields
     if (mapping.bankName !== undefined && columns[mapping.bankName]) {
       data.bankName = columns[mapping.bankName]?.trim();
     }
-    
+
     if (mapping.accountType !== undefined && columns[mapping.accountType]) {
       data.accountType = columns[mapping.accountType]?.trim();
     }
-    
+
     if (mapping.currency !== undefined && columns[mapping.currency]) {
       data.currency = columns[mapping.currency]?.trim().toUpperCase();
-    } else {
-      data.currency = 'EUR';
     }
 
     return data;
@@ -409,7 +435,7 @@ export class BankService {
   /**
    * Format bank balance response
    */
-  private formatBankBalanceResponse(balance: any): BankBalanceResponse {
+  private formatBankBalanceResponse(balance: BankBalance): BankBalanceResponse {
     return {
       id: balance.id,
       accountName: balance.accountName,

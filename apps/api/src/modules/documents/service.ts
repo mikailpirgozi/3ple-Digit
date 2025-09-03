@@ -1,16 +1,17 @@
-import { prisma } from '@/core/prisma.js';
-import { r2Service } from '@/core/r2-client.js';
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
+import { prisma } from '@/core/prisma.js';
+import { r2Service } from '@/core/r2-client.js';
+import type { Document } from '@prisma/client';
 import crypto from 'crypto';
 import type {
   CreateDocumentRequest,
-  UpdateDocumentRequest,
-  GetPresignedUploadUrlRequest,
-  GetDocumentsQuery,
   DocumentResponse,
-  PresignedUploadResponse,
+  GetDocumentsQuery,
+  GetPresignedUploadUrlRequest,
   PresignedDownloadResponse,
+  PresignedUploadResponse,
+  UpdateDocumentRequest,
 } from './schema.js';
 
 export class DocumentsService {
@@ -24,8 +25,8 @@ export class DocumentsService {
   /**
    * Helper function to filter out undefined values from update data
    */
-  private filterUpdateData<T extends Record<string, any>>(data: T): any {
-    const filtered: any = {};
+  private filterUpdateData<T extends Record<string, unknown>>(data: T): Record<string, unknown> {
+    const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
         (filtered as any)[key] = value;
@@ -37,14 +38,17 @@ export class DocumentsService {
   /**
    * Get presigned URL for file upload
    */
-  async getPresignedUploadUrl(data: GetPresignedUploadUrlRequest, userId?: string): Promise<PresignedUploadResponse> {
+  async getPresignedUploadUrl(
+    data: GetPresignedUploadUrlRequest,
+    userId?: string
+  ): Promise<PresignedUploadResponse> {
     // Generate unique R2 key
     const timestamp = Date.now();
     const randomId = crypto.randomBytes(8).toString('hex');
     const fileExtension = data.fileName.split('.').pop() || '';
     // Generate unique R2 key for the document (unused in current implementation)
     // const r2Key = `documents/${timestamp}-${randomId}.${fileExtension}`;
-    
+
     // Remove unused variables to fix TypeScript warnings
     void timestamp;
     void randomId;
@@ -58,11 +62,11 @@ export class DocumentsService {
         size: data.fileSize,
       });
 
-      log.info('Presigned upload URL generated', { 
-        r2Key: uploadData.r2Key, 
+      log.info('Presigned upload URL generated', {
+        r2Key: uploadData.r2Key,
         fileName: data.fileName,
         fileSize: data.fileSize,
-        requestedBy: userId 
+        requestedBy: userId,
       });
 
       return {
@@ -70,7 +74,11 @@ export class DocumentsService {
         r2Key: uploadData.r2Key,
       };
     } catch (error) {
-      log.error('Failed to generate presigned upload URL', { error, fileName: data.fileName, userId });
+      log.error('Failed to generate presigned upload URL', {
+        error,
+        fileName: data.fileName,
+        userId,
+      });
       throw errors.internal('Failed to generate upload URL');
     }
   }
@@ -78,7 +86,11 @@ export class DocumentsService {
   /**
    * Create document record after successful upload
    */
-  async createDocument(data: CreateDocumentRequest, r2Key: string, userId?: string): Promise<DocumentResponse> {
+  async createDocument(
+    data: CreateDocumentRequest,
+    r2Key: string,
+    userId?: string
+  ): Promise<DocumentResponse> {
     const document = await prisma.document.create({
       data: {
         name: data.name,
@@ -119,8 +131,8 @@ export class DocumentsService {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
-    
+    const where: Record<string, unknown> = {};
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -128,11 +140,11 @@ export class DocumentsService {
         { description: { contains: search, mode: 'insensitive' } },
       ];
     }
-    
+
     if (category) {
       where.category = category;
     }
-    
+
     if (mimeType) {
       where.mimeType = { contains: mimeType, mode: 'insensitive' };
     }
@@ -151,17 +163,23 @@ export class DocumentsService {
     // Calculate summary
     const allDocuments = await prisma.document.findMany({ where });
     const totalSize = allDocuments.reduce((sum, doc) => sum + doc.size, 0);
-    
-    const byCategory = allDocuments.reduce((acc, doc) => {
-      const cat = doc.category || 'uncategorized';
-      acc[cat] = (acc[cat] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    
-    const byMimeType = allDocuments.reduce((acc, doc) => {
-      acc[doc.mimeType] = (acc[doc.mimeType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+
+    const byCategory = allDocuments.reduce(
+      (acc, doc) => {
+        const cat = doc.category || 'uncategorized';
+        acc[cat] = (acc[cat] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    const byMimeType = allDocuments.reduce(
+      (acc, doc) => {
+        acc[doc.mimeType] = (acc[doc.mimeType] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     return {
       documents: documents.map(doc => this.formatDocumentResponse(doc)),
@@ -210,10 +228,10 @@ export class DocumentsService {
     try {
       const downloadUrl = await r2Service.generatePresignedDownload(document.r2Key, 60); // 1 hour
 
-      log.info('Presigned download URL generated', { 
-        documentId: id, 
+      log.info('Presigned download URL generated', {
+        documentId: id,
         r2Key: document.r2Key,
-        requestedBy: userId 
+        requestedBy: userId,
       });
 
       return {
@@ -229,7 +247,11 @@ export class DocumentsService {
   /**
    * Update document metadata
    */
-  async updateDocument(id: string, data: UpdateDocumentRequest, userId?: string): Promise<DocumentResponse> {
+  async updateDocument(
+    id: string,
+    data: UpdateDocumentRequest,
+    userId?: string
+  ): Promise<DocumentResponse> {
     const existingDocument = await prisma.document.findUnique({
       where: { id },
     });
@@ -275,10 +297,10 @@ export class DocumentsService {
         where: { id },
       });
 
-      log.info('Document deleted', { 
-        documentId: id, 
+      log.info('Document deleted', {
+        documentId: id,
         r2Key: existingDocument.r2Key,
-        deletedBy: userId 
+        deletedBy: userId,
       });
     } catch (error) {
       log.error('Failed to delete document', { error, documentId: id, userId });
@@ -319,23 +341,24 @@ export class DocumentsService {
     const totalDocuments = documents.length;
     const totalSize = documents.reduce((sum, doc) => sum + doc.size, 0);
     const averageSize = totalDocuments > 0 ? totalSize / totalDocuments : 0;
-    
-    const largestDocument = documents.length > 0 
-      ? documents.reduce((largest, doc) => doc.size > largest.size ? doc : largest)
-      : null;
 
-    const recentUploads = documents
-      .slice(0, 5)
-      .map(doc => this.formatDocumentResponse(doc));
+    const largestDocument =
+      documents.length > 0
+        ? documents.reduce((largest, doc) => (doc.size > largest.size ? doc : largest))
+        : null;
+
+    const recentUploads = documents.slice(0, 5).map(doc => this.formatDocumentResponse(doc));
 
     return {
       totalDocuments,
       totalSize,
       averageSize,
-      largestDocument: largestDocument ? {
-        name: largestDocument.name,
-        size: largestDocument.size,
-      } : null,
+      largestDocument: largestDocument
+        ? {
+            name: largestDocument.name,
+            size: largestDocument.size,
+          }
+        : null,
       recentUploads,
     };
   }
@@ -343,7 +366,7 @@ export class DocumentsService {
   /**
    * Format document response
    */
-  private formatDocumentResponse(document: any): DocumentResponse {
+  private formatDocumentResponse(document: Document): DocumentResponse {
     return {
       id: document.id,
       name: document.name,

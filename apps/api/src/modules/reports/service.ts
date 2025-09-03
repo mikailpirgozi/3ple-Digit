@@ -475,7 +475,7 @@ export class ReportsService {
       ...assetEvents
         .filter(ae => ae.type === 'PAYMENT_IN')
         .map(ae => ({
-          source: `Payment from ${ae.asset.name}`,
+          source: `Payment from ${ae.asset?.name || 'Unknown Asset'}`,
           amount: ae.amount,
           date: ae.date,
         })),
@@ -494,7 +494,7 @@ export class ReportsService {
       ...assetEvents
         .filter(ae => ae.type === 'PAYMENT_OUT')
         .map(ae => ({
-          destination: `Payment for ${ae.asset.name}`,
+          destination: `Payment for ${ae.asset?.name || 'Unknown Asset'}`,
           amount: Math.abs(ae.amount),
           date: ae.date,
         })),
