@@ -3,7 +3,7 @@ builder = "nixpacks"
 buildCommand = "pnpm install && cd apps/api && pnpm db:generate && pnpm build"
 
 [deploy]
-startCommand = "cd apps/api && npx prisma db push --accept-data-loss && npx tsx src/core/seed.ts && pnpm start"
+startCommand = "cd apps/api && npx prisma migrate deploy && pnpm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
