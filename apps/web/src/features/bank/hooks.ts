@@ -50,9 +50,9 @@ export function useCreateBankBalance() {
   return useMutation({
     mutationFn: (data: CreateBankBalanceRequest) => bankApi.createBankBalance(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
-      queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
-      queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
     },
   });
 }
@@ -64,10 +64,10 @@ export function useUpdateBankBalance() {
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateBankBalanceRequest> }) =>
       bankApi.updateBankBalance(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: bankKeys.balance(id) });
-      queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
-      queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
-      queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.balance(id) });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
     },
   });
 }
@@ -78,9 +78,9 @@ export function useDeleteBankBalance() {
   return useMutation({
     mutationFn: (id: string) => bankApi.deleteBankBalance(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
-      queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
-      queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
     },
   });
 }
@@ -91,9 +91,9 @@ export function useImportCsv() {
   return useMutation({
     mutationFn: (file: File) => bankApi.importCsv(file),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
-      queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
-      queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
+      void queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
     },
   });
 }

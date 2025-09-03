@@ -46,7 +46,7 @@ export const useCreateInvestor = () => {
     mutationFn: (data: CreateInvestorRequest) => investorsApi.createInvestor(data),
     onSuccess: () => {
       // Invalidate investors list
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
     },
   });
 };
@@ -60,8 +60,8 @@ export const useUpdateInvestor = () => {
       investorsApi.updateInvestor(id, data),
     onSuccess: (_, { id }) => {
       // Invalidate specific investor and list
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
     },
   });
 };
@@ -74,7 +74,7 @@ export const useDeleteInvestor = () => {
     mutationFn: (id: string) => investorsApi.deleteInvestor(id),
     onSuccess: () => {
       // Invalidate investors list
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
     },
   });
 };
@@ -88,9 +88,9 @@ export const useCreateCashflow = () => {
       investorsApi.createCashflow(id, data),
     onSuccess: (_, { id }) => {
       // Invalidate investor data
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.cashflows(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.overview(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.cashflows(id) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.overview(id) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
     },
   });
 };
@@ -111,9 +111,9 @@ export const useUpdateCashflow = () => {
     }) => investorsApi.updateCashflow(investorId, cashflowId, data),
     onSuccess: (_, { investorId }) => {
       // Invalidate investor data
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.cashflows(investorId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.overview(investorId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.cashflows(investorId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.overview(investorId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
     },
   });
 };
@@ -127,9 +127,9 @@ export const useDeleteCashflow = () => {
       investorsApi.deleteCashflow(investorId, cashflowId),
     onSuccess: (_, { investorId }) => {
       // Invalidate investor data
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.cashflows(investorId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.overview(investorId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.cashflows(investorId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.overview(investorId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.investors.all() });
     },
   });
 };

@@ -27,7 +27,7 @@ const translateAssetType = (type: string) => {
     inventory: 'Zásoby',
     share_in_company: 'Podiel v spoločnosti',
   };
-  return translations[type] || type;
+  return translations[type] ?? type;
 };
 
 // Loading skeleton component
@@ -68,7 +68,7 @@ export function HomePage() {
 
   // Get previous values for trend calculation
   const previousSnapshot = snapshotsData?.snapshots?.[1];
-  const currentSnapshot = snapshotsData?.snapshots?.[0];
+  // const currentSnapshot = snapshotsData?.snapshots?.[0]; // Unused for now
 
   return (
     <div className="space-y-6">
@@ -93,12 +93,12 @@ export function HomePage() {
                 <div className="ml-3 sm:ml-4">
                   <p className="text-xs sm:text-sm font-medium text-muted-foreground">NAV</p>
                   <p className="text-lg sm:text-2xl font-bold text-foreground">
-                    {formatCurrency(navData?.nav || 0)}
+                    {formatCurrency(navData?.nav ?? 0)}
                   </p>
                 </div>
               </div>
               <TrendIndicator
-                current={navData?.nav || 0}
+                current={navData?.nav ?? 0}
                 previous={previousSnapshot?.nav}
                 formatValue={formatCurrency}
               />
@@ -119,12 +119,12 @@ export function HomePage() {
                 <div className="ml-3 sm:ml-4">
                   <p className="text-xs sm:text-sm font-medium text-muted-foreground">Aktíva</p>
                   <p className="text-lg sm:text-2xl font-bold text-foreground">
-                    {formatCurrency(navData?.totalAssetValue || 0)}
+                    {formatCurrency(navData?.totalAssetValue ?? 0)}
                   </p>
                 </div>
               </div>
               <TrendIndicator
-                current={navData?.totalAssetValue || 0}
+                current={navData?.totalAssetValue ?? 0}
                 previous={previousSnapshot?.totalAssetValue}
                 formatValue={formatCurrency}
               />
@@ -145,12 +145,12 @@ export function HomePage() {
                 <div className="ml-3 sm:ml-4">
                   <p className="text-xs sm:text-sm font-medium text-muted-foreground">Banka</p>
                   <p className="text-lg sm:text-2xl font-bold text-foreground">
-                    {formatCurrency(bankData?.totalBalance || 0)}
+                    {formatCurrency(bankData?.totalBalance ?? 0)}
                   </p>
                 </div>
               </div>
               <TrendIndicator
-                current={bankData?.totalBalance || 0}
+                current={bankData?.totalBalance ?? 0}
                 previous={previousSnapshot?.totalBankBalance}
                 formatValue={formatCurrency}
               />
@@ -171,12 +171,12 @@ export function HomePage() {
                 <div className="ml-3 sm:ml-4">
                   <p className="text-xs sm:text-sm font-medium text-muted-foreground">Záväzky</p>
                   <p className="text-lg sm:text-2xl font-bold text-destructive">
-                    {formatCurrency(liabilitiesData?.totalBalance || 0)}
+                    {formatCurrency(liabilitiesData?.totalBalance ?? 0)}
                   </p>
                 </div>
               </div>
               <TrendIndicator
-                current={liabilitiesData?.totalBalance || 0}
+                current={liabilitiesData?.totalBalance ?? 0}
                 previous={previousSnapshot?.totalLiabilities}
                 formatValue={formatCurrency}
               />
@@ -224,7 +224,7 @@ export function HomePage() {
                     </div>
                     <span className="text-sm font-medium">{formatCurrency(account.amount)}</span>
                   </div>
-                )) || <p className="text-sm text-muted-foreground">Žiadne bankové účty</p>}
+                )) ?? <p className="text-sm text-muted-foreground">Žiadne bankové účty</p>}
             </div>
           </div>
         </div>

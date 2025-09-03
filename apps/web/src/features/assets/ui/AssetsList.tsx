@@ -43,7 +43,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
   const handleMarkAsSold = async (asset: Asset) => {
     const salePrice = window.prompt(
       `Zadajte predajnú cenu pre ${asset.name}:`,
-      asset.expectedSalePrice?.toString() || asset.currentValue.toString()
+      asset.expectedSalePrice?.toString() ?? asset.currentValue.toString()
     );
 
     if (salePrice && !isNaN(Number(salePrice))) {
@@ -91,16 +91,16 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
     );
   }
 
-  const assets = assetsData?.assets || [];
+  const assets = assetsData?.assets ?? [];
 
   // Sort assets based on selected criteria
   const sortedAssets = [...assets].sort((a, b) => {
-    let aValue: any, bValue: any;
+    let aValue: string | number, bValue: string | number;
 
     switch (sortBy) {
       case 'currentValue':
-        aValue = a.currentValue || 0;
-        bValue = b.currentValue || 0;
+        aValue = a.currentValue ?? 0;
+        bValue = b.currentValue ?? 0;
         break;
       case 'name':
         aValue = a.name.toLowerCase();
@@ -118,7 +118,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
         return 0;
     }
 
-    if (sortBy === 'name' || sortBy === 'type') {
+    if (sortBy === 'name' ?? sortBy === 'type') {
       return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
     } else {
       return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
@@ -130,9 +130,9 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
       {/* Filters */}
       <div className="flex flex-wrap gap-4">
         <select
-          value={filters.type || ''}
+          value={filters.type ?? ''}
           onChange={e =>
-            setFilters({ ...filters, type: (e.target.value as AssetType) || undefined })
+            setFilters({ ...filters, type: (e.target.value as AssetType) ?? undefined })
           }
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         >
@@ -145,9 +145,9 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
         </select>
 
         <select
-          value={filters.status || ''}
+          value={filters.status ?? ''}
           onChange={e =>
-            setFilters({ ...filters, status: (e.target.value as 'ACTIVE' | 'SOLD') || undefined })
+            setFilters({ ...filters, status: (e.target.value as 'ACTIVE' | 'SOLD') ?? undefined })
           }
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         >
@@ -159,8 +159,8 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
         <input
           type="text"
           placeholder="Hľadať podľa názvu..."
-          value={filters.q || ''}
-          onChange={e => setFilters({ ...filters, q: e.target.value || undefined })}
+          value={filters.q ?? ''}
+          onChange={e => setFilters({ ...filters, q: e.target.value ?? undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
 

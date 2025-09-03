@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Liability } from '@/types/api';
+import type { Liability, CreateLiabilityRequest, UpdateLiabilityRequest } from '@/types/api';
 import { useCreateLiability, useUpdateLiability } from './hooks';
 import { LiabilitiesList } from './ui/LiabilitiesList';
 import { LiabilityForm } from './ui/LiabilityForm';
@@ -11,7 +11,7 @@ export function LiabilitiesPage() {
   const createLiabilityMutation = useCreateLiability();
   const updateLiabilityMutation = useUpdateLiability();
 
-  const handleCreateLiability = async (data: any) => {
+  const handleCreateLiability = async (data: CreateLiabilityRequest) => {
     try {
       await createLiabilityMutation.mutateAsync(data);
       setShowForm(false);
@@ -20,7 +20,7 @@ export function LiabilitiesPage() {
     }
   };
 
-  const handleUpdateLiability = async (data: any) => {
+  const handleUpdateLiability = async (data: UpdateLiabilityRequest) => {
     if (!editingLiability) return;
 
     try {
@@ -62,10 +62,10 @@ export function LiabilitiesPage() {
       {showForm ? (
         <div className="rounded-lg border border-border bg-card p-6">
           <LiabilityForm
-            liability={editingLiability || undefined}
+            liability={editingLiability ?? undefined}
             onSubmit={editingLiability ? handleUpdateLiability : handleCreateLiability}
             onCancel={handleCancelForm}
-            isLoading={createLiabilityMutation.isPending || updateLiabilityMutation.isPending}
+            isLoading={createLiabilityMutation.isPending ?? updateLiabilityMutation.isPending}
           />
         </div>
       ) : (

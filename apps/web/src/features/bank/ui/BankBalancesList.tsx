@@ -92,7 +92,7 @@ export function BankBalancesList({
     );
   }
 
-  const balances = balancesData?.items || [];
+  const balances = balancesData?.items ?? [];
   const accountSummary = getAccountSummary();
   const totalAmount = accountSummary.reduce(
     (sum, account) => sum + account.latestBalance.amount,
@@ -101,12 +101,12 @@ export function BankBalancesList({
 
   // Sort balances based on selected criteria
   const sortedBalances = [...balances].sort((a, b) => {
-    let aValue: any, bValue: any;
+    let aValue: string | number, bValue: string | number;
 
     switch (sortBy) {
       case 'amount':
-        aValue = a.amount || 0;
-        bValue = b.amount || 0;
+        aValue = a.amount ?? 0;
+        bValue = b.amount ?? 0;
         break;
       case 'date':
         aValue = new Date(a.date).getTime();
@@ -147,8 +147,8 @@ export function BankBalancesList({
       <div className="flex flex-wrap gap-4 items-center justify-between">
         <div className="flex flex-wrap gap-4">
           <select
-            value={filters.accountName || ''}
-            onChange={e => setFilters({ ...filters, accountName: e.target.value || undefined })}
+            value={filters.accountName ?? ''}
+            onChange={e => setFilters({ ...filters, accountName: e.target.value ?? undefined })}
             className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             <option value="">Všetky účty</option>
@@ -162,16 +162,16 @@ export function BankBalancesList({
           <input
             type="date"
             placeholder="Od dátumu"
-            value={filters.dateFrom || ''}
-            onChange={e => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
+            value={filters.dateFrom ?? ''}
+            onChange={e => setFilters({ ...filters, dateFrom: e.target.value ?? undefined })}
             className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
 
           <input
             type="date"
             placeholder="Do dátumu"
-            value={filters.dateTo || ''}
-            onChange={e => setFilters({ ...filters, dateTo: e.target.value || undefined })}
+            value={filters.dateTo ?? ''}
+            onChange={e => setFilters({ ...filters, dateTo: e.target.value ?? undefined })}
             className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
 

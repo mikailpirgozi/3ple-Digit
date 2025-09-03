@@ -28,7 +28,7 @@ export function SimplePieChart({
   className = '',
   formatValue = value => value.toString(),
 }: SimplePieChartProps) {
-  if (!data || data.length === 0) {
+  if (!data ?? data.length === 0) {
     return (
       <div
         className={`flex items-center justify-center ${className}`}
@@ -86,7 +86,7 @@ export function SimplePieChart({
       ...item,
       pathData,
       percentage,
-      color: item.color || defaultColors[index % defaultColors.length],
+      color: item.color ?? defaultColors[index % defaultColors.length],
       startAngle,
       endAngle,
     };

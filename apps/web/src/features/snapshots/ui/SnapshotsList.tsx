@@ -63,20 +63,20 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
     );
   }
 
-  const snapshots = snapshotsData?.snapshots || [];
+  const snapshots = snapshotsData?.snapshots ?? [];
 
   // Sort snapshots based on selected criteria
   const sortedSnapshots = [...snapshots].sort((a, b) => {
-    let aValue: any, bValue: any;
+    let aValue: string | number, bValue: string | number;
 
     switch (sortBy) {
       case 'nav':
-        aValue = a.nav || 0;
-        bValue = b.nav || 0;
+        aValue = a.nav ?? 0;
+        bValue = b.nav ?? 0;
         break;
       case 'totalAssetValue':
-        aValue = a.totalAssetValue || 0;
-        bValue = b.totalAssetValue || 0;
+        aValue = a.totalAssetValue ?? 0;
+        bValue = b.totalAssetValue ?? 0;
         break;
       case 'date':
         aValue = new Date(a.date).getTime();
@@ -96,24 +96,24 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
         <input
           type="month"
           placeholder="Obdobie"
-          value={filters.period || ''}
-          onChange={e => setFilters({ ...filters, period: e.target.value || undefined })}
+          value={filters.period ?? ''}
+          onChange={e => setFilters({ ...filters, period: e.target.value ?? undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
 
         <input
           type="date"
           placeholder="Od dátumu"
-          value={filters.dateFrom || ''}
-          onChange={e => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
+          value={filters.dateFrom ?? ''}
+          onChange={e => setFilters({ ...filters, dateFrom: e.target.value ?? undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
 
         <input
           type="date"
           placeholder="Do dátumu"
-          value={filters.dateTo || ''}
-          onChange={e => setFilters({ ...filters, dateTo: e.target.value || undefined })}
+          value={filters.dateTo ?? ''}
+          onChange={e => setFilters({ ...filters, dateTo: e.target.value ?? undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
 

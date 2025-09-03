@@ -5,22 +5,24 @@ import { z } from 'zod';
 import { useAuth } from './context';
 import { Link, Navigate } from 'react-router-dom';
 
-const registerSchema = z.object({
-  name: z.string().min(2, 'Meno musí mať aspoň 2 znaky'),
-  email: z.string().email('Neplatná emailová adresa'),
-  password: z.string().min(6, 'Heslo musí mať aspoň 6 znakov'),
-  confirmPassword: z.string(),
-  role: z.enum(['ADMIN', 'INTERNAL', 'INVESTOR']).default('INVESTOR'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Heslá sa nezhodujú',
-  path: ['confirmPassword'],
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(2, 'Meno musí mať aspoň 2 znaky'),
+    email: z.string().email('Neplatná emailová adresa'),
+    password: z.string().min(6, 'Heslo musí mať aspoň 6 znakov'),
+    confirmPassword: z.string(),
+    role: z.enum(['ADMIN', 'INTERNAL', 'INVESTOR']).default('INVESTOR'),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: 'Heslá sa nezhodujú',
+    path: ['confirmPassword'],
+  });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export const RegisterPage: React.FC = () => {
   const { register: registerUser, isAuthenticated, isLoading } = useAuth();
-  
+
   const {
     register,
     handleSubmit,
@@ -40,11 +42,11 @@ export const RegisterPage: React.FC = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const { confirmPassword, ...registerData } = data;
+      const { confirmPassword: _, ...registerData } = data;
       await registerUser(registerData);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError('root', {
-        message: error.message || 'Registrácia sa nepodarila',
+        message: (error as Error).message ?? 'Registrácia sa nepodarila',
       });
     }
   };
@@ -58,15 +60,12 @@ export const RegisterPage: React.FC = () => {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Alebo{' '}
-            <Link
-              to="/login"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
+            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
               sa prihláste do existujúceho účtu
             </Link>
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div>
@@ -80,9 +79,7 @@ export const RegisterPage: React.FC = () => {
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Zadajte vaše celé meno"
               />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-              )}
+              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
             </div>
 
             <div>
@@ -96,9 +93,7 @@ export const RegisterPage: React.FC = () => {
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Zadajte váš email"
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
             </div>
 
             <div>
@@ -113,11 +108,9 @@ export const RegisterPage: React.FC = () => {
                 <option value="INTERNAL">Interný používateľ</option>
                 <option value="ADMIN">Administrátor</option>
               </select>
-              {errors.role && (
-                <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
-              )}
+              {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>}
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Heslo

@@ -43,11 +43,11 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
       ? {
           type: asset.type,
           name: asset.name,
-          category: asset.category || '',
-          acquiredPrice: asset.acquiredPrice || undefined,
+          category: asset.category ?? '',
+          acquiredPrice: asset.acquiredPrice ?? undefined,
           currentValue: asset.currentValue,
-          expectedSalePrice: asset.expectedSalePrice || undefined,
-          meta: asset.meta || {},
+          expectedSalePrice: asset.expectedSalePrice ?? undefined,
+          meta: asset.meta ?? {},
         }
       : {
           type: 'real_estate',
@@ -56,12 +56,12 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
         },
   });
 
-  const selectedType = watch('type');
+  // const selectedType = watch('type'); // Unused for now
 
   const handleFormSubmit = (data: AssetFormData) => {
     onSubmit({
       ...data,
-      meta: data.meta || {},
+      meta: data.meta ?? {},
     });
   };
 

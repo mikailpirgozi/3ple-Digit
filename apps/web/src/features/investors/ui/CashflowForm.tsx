@@ -36,7 +36,7 @@ export const CashflowForm: React.FC<CashflowFormProps> = ({
     resolver: zodResolver(cashflowSchema),
     defaultValues: {
       ...initialData,
-      date: initialData?.date || new Date().toISOString().split('T')[0],
+      date: initialData?.date ?? new Date().toISOString().split('T')[0],
     },
   });
 

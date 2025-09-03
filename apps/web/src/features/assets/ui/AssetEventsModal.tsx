@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import type { Asset, AssetEvent, AssetEventKind } from '@/types/api';
+import type {
+  Asset,
+  AssetEvent,
+  AssetEventKind,
+  CreateAssetEventRequest,
+  UpdateAssetEventRequest,
+} from '@/types/api';
 import {
   useAssetEvents,
   useCreateAssetEvent,
@@ -30,7 +36,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
   const updateEventMutation = useUpdateAssetEvent();
   const deleteEventMutation = useDeleteAssetEvent();
 
-  const handleCreateEvent = async (data: any) => {
+  const handleCreateEvent = async (data: CreateAssetEventRequest) => {
     try {
       await createEventMutation.mutateAsync({ id: asset.id, data });
       setShowForm(false);
@@ -39,7 +45,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
     }
   };
 
-  const handleUpdateEvent = async (data: any) => {
+  const handleUpdateEvent = async (data: UpdateAssetEventRequest) => {
     if (!editingEvent) return;
 
     try {
@@ -106,13 +112,13 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           {showForm ? (
             <AssetEventForm
-              event={editingEvent || undefined}
+              event={editingEvent ?? undefined}
               onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent}
               onCancel={() => {
                 setShowForm(false);
                 setEditingEvent(null);
               }}
-              isLoading={createEventMutation.isPending || updateEventMutation.isPending}
+              isLoading={createEventMutation.isPending ?? updateEventMutation.isPending}
             />
           ) : (
             <div className="space-y-6">

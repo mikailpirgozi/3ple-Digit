@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useCreateSnapshot } from '@/features/snapshots/hooks';
 import { useCreateAsset } from '@/features/assets/hooks';
 import { useNavigate } from 'react-router-dom';
@@ -112,7 +112,7 @@ function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         type: formData.type,
         acquiredPrice: formData.acquiredPrice ? parseFloat(formData.acquiredPrice) : undefined,
         currentValue: parseFloat(formData.currentValue),
-        description: formData.description || undefined,
+        description: formData.description ?? undefined,
       });
       onClose();
       setFormData({

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { BankBalance } from '@/types/api';
+import type { BankBalance, CreateBankBalanceRequest, UpdateBankBalanceRequest } from '@/types/api';
 import { useCreateBankBalance, useUpdateBankBalance } from './hooks';
 import { BankBalancesList } from './ui/BankBalancesList';
 import { BankBalanceForm } from './ui/BankBalanceForm';
@@ -13,7 +13,7 @@ export function BankPage() {
   const createBalanceMutation = useCreateBankBalance();
   const updateBalanceMutation = useUpdateBankBalance();
 
-  const handleCreateBalance = async (data: any) => {
+  const handleCreateBalance = async (data: CreateBankBalanceRequest) => {
     try {
       await createBalanceMutation.mutateAsync(data);
       setShowForm(false);
@@ -22,7 +22,7 @@ export function BankPage() {
     }
   };
 
-  const handleUpdateBalance = async (data: any) => {
+  const handleUpdateBalance = async (data: UpdateBankBalanceRequest) => {
     if (!editingBalance) return;
 
     try {
@@ -72,10 +72,10 @@ export function BankPage() {
       {showForm ? (
         <div className="rounded-lg border border-border bg-card p-6">
           <BankBalanceForm
-            balance={editingBalance || undefined}
+            balance={editingBalance ?? undefined}
             onSubmit={editingBalance ? handleUpdateBalance : handleCreateBalance}
             onCancel={handleCancelForm}
-            isLoading={createBalanceMutation.isPending || updateBalanceMutation.isPending}
+            isLoading={createBalanceMutation.isPending ?? updateBalanceMutation.isPending}
           />
         </div>
       ) : (

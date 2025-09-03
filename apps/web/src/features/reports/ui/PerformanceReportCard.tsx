@@ -20,11 +20,11 @@ export function PerformanceReportCard({ filters }: PerformanceReportCardProps) {
     return `${sign}${value.toFixed(2)}%`;
   };
 
-  const formatPeriod = (period: string) => {
-    const [year, month] = period.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('sk-SK', { year: 'numeric', month: 'long' });
-  };
+  // const formatPeriod = (period: string) => {
+  //   const [year, month] = period.split('-');
+  //   const date = new Date(parseInt(year), parseInt(month) - 1);
+  //   return date.toLocaleDateString('sk-SK', { year: 'numeric', month: 'long' });
+  // };
 
   const handleExport = () => {
     exportMutation.mutate(filters);
@@ -84,7 +84,7 @@ export function PerformanceReportCard({ filters }: PerformanceReportCardProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div
           className={`rounded-lg p-4 border ${
-            (report.navChange || 0) >= 0
+            (report.navChange ?? 0) >= 0
               ? 'bg-green-50 border-green-200'
               : 'bg-red-50 border-red-200'
           }`}
@@ -93,18 +93,18 @@ export function PerformanceReportCard({ filters }: PerformanceReportCardProps) {
             <p className="text-sm text-muted-foreground mb-1">Zmena NAV</p>
             <p
               className={`text-xl font-bold ${
-                (report.navChange || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                (report.navChange ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
               }`}
             >
-              {(report.navChange || 0) >= 0 ? '+' : ''}
-              {formatCurrency(report.navChange || 0)}
+              {(report.navChange ?? 0) >= 0 ? '+' : ''}
+              {formatCurrency(report.navChange ?? 0)}
             </p>
             <p
               className={`text-sm ${
-                (report.navChangePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                (report.navChangePercent ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
               }`}
             >
-              {formatPercentage(report.navChangePercent || 0)}
+              {formatPercentage(report.navChangePercent ?? 0)}
             </p>
           </div>
         </div>
@@ -139,7 +139,7 @@ export function PerformanceReportCard({ filters }: PerformanceReportCardProps) {
             <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
               <span className="text-sm text-muted-foreground">Predchádzajúci NAV</span>
               <span className="font-medium text-foreground">
-                {formatCurrency(report.previousNav || 0)}
+                {formatCurrency(report.previousNav ?? 0)}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
@@ -155,21 +155,21 @@ export function PerformanceReportCard({ filters }: PerformanceReportCardProps) {
               <span className="text-sm text-muted-foreground">Absolútna zmena</span>
               <span
                 className={`font-medium ${
-                  (report.navChange || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                  (report.navChange ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}
               >
-                {(report.navChange || 0) >= 0 ? '+' : ''}
-                {formatCurrency(report.navChange || 0)}
+                {(report.navChange ?? 0) >= 0 ? '+' : ''}
+                {formatCurrency(report.navChange ?? 0)}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
               <span className="text-sm text-muted-foreground">Percentuálna zmena</span>
               <span
                 className={`font-medium ${
-                  (report.navChangePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                  (report.navChangePercent ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}
               >
-                {formatPercentage(report.navChangePercent || 0)}
+                {formatPercentage(report.navChangePercent ?? 0)}
               </span>
             </div>
           </div>

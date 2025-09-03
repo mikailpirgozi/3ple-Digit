@@ -32,9 +32,9 @@ export const LoginPage: React.FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError('root', {
-        message: error.message || 'Prihlásenie sa nepodarilo',
+        message: (error as Error).message ?? 'Prihlásenie sa nepodarilo',
       });
     }
   };

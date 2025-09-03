@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Asset } from '@/types/api';
+import type { Asset, CreateAssetRequest, UpdateAssetRequest } from '@/types/api';
 import { useCreateAsset, useUpdateAsset } from './hooks';
 import { AssetsList } from './ui/AssetsList';
 import { AssetForm } from './ui/AssetForm';
@@ -11,7 +11,7 @@ export function AssetsPage() {
   const createAssetMutation = useCreateAsset();
   const updateAssetMutation = useUpdateAsset();
 
-  const handleCreateAsset = async (data: any) => {
+  const handleCreateAsset = async (data: CreateAssetRequest) => {
     try {
       await createAssetMutation.mutateAsync(data);
       setShowForm(false);
@@ -20,7 +20,7 @@ export function AssetsPage() {
     }
   };
 
-  const handleUpdateAsset = async (data: any) => {
+  const handleUpdateAsset = async (data: UpdateAssetRequest) => {
     if (!editingAsset) return;
 
     try {
@@ -62,10 +62,10 @@ export function AssetsPage() {
       {showForm ? (
         <div className="rounded-lg border border-border bg-card p-6">
           <AssetForm
-            asset={editingAsset || undefined}
+            asset={editingAsset ?? undefined}
             onSubmit={editingAsset ? handleUpdateAsset : handleCreateAsset}
             onCancel={handleCancelForm}
-            isLoading={createAssetMutation.isPending || updateAssetMutation.isPending}
+            isLoading={createAssetMutation.isPending ?? updateAssetMutation.isPending}
           />
         </div>
       ) : (

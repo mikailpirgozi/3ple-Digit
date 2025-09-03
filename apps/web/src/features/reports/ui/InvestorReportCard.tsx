@@ -91,7 +91,7 @@ export function InvestorReportCard({ filters }: InvestorReportCardProps) {
                   <div className="flex items-center gap-3 mb-1">
                     <h4 className="font-medium text-foreground">{investor.name}</h4>
                     <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded">
-                      {investor.ownershipPercent?.toFixed(2) || '0.00'}%
+                      {investor.ownershipPercent?.toFixed(2) ?? '0.00'}%
                     </span>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -108,7 +108,7 @@ export function InvestorReportCard({ filters }: InvestorReportCardProps) {
                   <div className="w-full bg-muted rounded-full h-2">
                     <div
                       className="bg-primary h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min(investor.ownershipPercent || 0, 100)}%` }}
+                      style={{ width: `${Math.min(investor.ownershipPercent ?? 0, 100)}%` }}
                     />
                   </div>
                 </div>

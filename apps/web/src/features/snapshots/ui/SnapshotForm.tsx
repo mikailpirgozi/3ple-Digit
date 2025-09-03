@@ -38,7 +38,7 @@ export function SnapshotForm({ onSubmit, onCancel, isLoading }: SnapshotFormProp
   const handleFormSubmit = (data: SnapshotFormData) => {
     onSubmit({
       ...data,
-      performanceFeeRate: data.performanceFeeRate || undefined,
+      performanceFeeRate: data.performanceFeeRate ?? undefined,
     });
   };
 

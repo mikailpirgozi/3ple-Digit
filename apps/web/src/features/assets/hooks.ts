@@ -6,7 +6,7 @@ import type {
   MarkAssetSoldRequest,
   AssetFilters,
 } from '@/types/api';
-import { Asset, AssetEvent } from '@/types/api';
+// Asset and AssetEvent types removed as unused
 
 // Query keys factory
 export const assetsKeys = {
@@ -49,7 +49,7 @@ export function useCreateAsset() {
   return useMutation({
     mutationFn: (data: CreateAssetRequest) => assetsApi.createAsset(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
     },
   });
 }
@@ -61,8 +61,8 @@ export function useUpdateAsset() {
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateAssetRequest> }) =>
       assetsApi.updateAsset(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: assetsKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
     },
   });
 }
@@ -73,7 +73,7 @@ export function useDeleteAsset() {
   return useMutation({
     mutationFn: (id: string) => assetsApi.deleteAsset(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
     },
   });
 }
@@ -86,9 +86,9 @@ export function useCreateAssetEvent() {
     mutationFn: ({ id, data }: { id: string; data: CreateAssetEventRequest }) =>
       assetsApi.createAssetEvent(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: assetsKeys.events(id) });
-      queryClient.invalidateQueries({ queryKey: assetsKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.events(id) });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
     },
   });
 }
@@ -107,9 +107,9 @@ export function useUpdateAssetEvent() {
       data: Partial<CreateAssetEventRequest>;
     }) => assetsApi.updateAssetEvent(assetId, eventId, data),
     onSuccess: (_, { assetId }) => {
-      queryClient.invalidateQueries({ queryKey: assetsKeys.events(assetId) });
-      queryClient.invalidateQueries({ queryKey: assetsKeys.detail(assetId) });
-      queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.events(assetId) });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.detail(assetId) });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
     },
   });
 }
@@ -121,9 +121,9 @@ export function useDeleteAssetEvent() {
     mutationFn: ({ assetId, eventId }: { assetId: string; eventId: string }) =>
       assetsApi.deleteAssetEvent(assetId, eventId),
     onSuccess: (_, { assetId }) => {
-      queryClient.invalidateQueries({ queryKey: assetsKeys.events(assetId) });
-      queryClient.invalidateQueries({ queryKey: assetsKeys.detail(assetId) });
-      queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.events(assetId) });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.detail(assetId) });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
     },
   });
 }
@@ -135,8 +135,8 @@ export function useMarkAssetSold() {
     mutationFn: ({ id, data }: { id: string; data: MarkAssetSoldRequest }) =>
       assetsApi.markAsSold(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: assetsKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: assetsKeys.lists() });
     },
   });
 }

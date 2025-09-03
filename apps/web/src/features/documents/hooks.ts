@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { documentsApi } from './api';
 import type { PresignUploadRequest } from '@/types/api';
-import { Document } from '@/types/api';
+// Document type removed as unused
 
 // Query keys factory
 export const documentsKeys = {
@@ -35,7 +35,7 @@ export function useDeleteDocument() {
   return useMutation({
     mutationFn: (id: string) => documentsApi.deleteDocument(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: documentsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: documentsKeys.lists() });
     },
   });
 }
@@ -46,10 +46,10 @@ export function useUploadDocument() {
   return useMutation({
     mutationFn: async ({
       file,
-      title,
-      linkedType,
-      linkedId,
-      note,
+      title: _title,
+      linkedType: _linkedType,
+      linkedId: _linkedId,
+      note: _note,
     }: {
       file: File;
       title: string;
@@ -58,7 +58,7 @@ export function useUploadDocument() {
       note?: string;
     }) => {
       // Calculate SHA256 hash
-      const sha256 = await documentsApi.calculateSHA256(file);
+      const _sha256 = await documentsApi.calculateSHA256(file);
 
       // Get presigned upload URL
       const presignData: PresignUploadRequest = {
@@ -75,7 +75,7 @@ export function useUploadDocument() {
       return presignResponse.document;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: documentsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: documentsKeys.lists() });
     },
   });
 }

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useImportCsv } from '../hooks';
 
 interface CsvImportModalProps {
@@ -74,7 +74,12 @@ USD Account,2025-01-31,25000.00`;
             className="text-muted-foreground hover:text-foreground focus:outline-none"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -87,9 +92,7 @@ USD Account,2025-01-31,25000.00`;
               <div className="space-y-3">
                 <h3 className="text-lg font-medium text-foreground">Formát CSV súboru</h3>
                 <div className="bg-muted p-4 rounded-lg">
-                  <pre className="text-sm text-foreground whitespace-pre-wrap">
-                    {csvTemplate}
-                  </pre>
+                  <pre className="text-sm text-foreground whitespace-pre-wrap">{csvTemplate}</pre>
                 </div>
                 <button
                   onClick={downloadTemplate}
@@ -111,20 +114,25 @@ USD Account,2025-01-31,25000.00`;
                     className="hidden"
                     id="csv-file-input"
                   />
-                  <label
-                    htmlFor="csv-file-input"
-                    className="cursor-pointer block"
-                  >
+                  <label htmlFor="csv-file-input" className="cursor-pointer block">
                     <div className="space-y-2">
-                      <svg className="w-12 h-12 text-muted-foreground mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      <svg
+                        className="w-12 h-12 text-muted-foreground mx-auto"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
                       </svg>
                       <p className="text-foreground font-medium">
                         {selectedFile ? selectedFile.name : 'Kliknite pre výber CSV súboru'}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        Alebo pretiahnite súbor sem
-                      </p>
+                      <p className="text-sm text-muted-foreground">Alebo pretiahnite súbor sem</p>
                     </div>
                   </label>
                 </div>
@@ -132,8 +140,18 @@ USD Account,2025-01-31,25000.00`;
                 {selectedFile && (
                   <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                     <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        className="w-5 h-5 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                       <span className="text-sm text-green-800">{selectedFile.name}</span>
                     </div>
@@ -141,8 +159,18 @@ USD Account,2025-01-31,25000.00`;
                       onClick={handleReset}
                       className="text-green-600 hover:text-green-800 focus:outline-none"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -159,7 +187,7 @@ USD Account,2025-01-31,25000.00`;
                 </button>
                 <button
                   onClick={handleImport}
-                  disabled={!selectedFile || importCsvMutation.isPending}
+                  disabled={!selectedFile ?? importCsvMutation.isPending}
                   className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {importCsvMutation.isPending ? 'Importujem...' : 'Importovať'}
@@ -170,11 +198,21 @@ USD Account,2025-01-31,25000.00`;
             /* Import Results */
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-foreground">Výsledky importu</h3>
-              
+
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-5 h-5 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   <span className="text-green-800 font-medium">
                     Úspešne importovaných: {importResult.imported} záznamov

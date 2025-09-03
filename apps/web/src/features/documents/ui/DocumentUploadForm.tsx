@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -64,7 +64,7 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
+    if (e.type === 'dragenter' ?? e.type === 'dragover') {
       setDragActive(true);
     } else if (e.type === 'dragleave') {
       setDragActive(false);
@@ -106,9 +106,9 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
     const type = file.type.toLowerCase();
     if (type.includes('pdf')) return '📄';
     if (type.includes('image')) return '🖼️';
-    if (type.includes('word') || type.includes('document')) return '📝';
-    if (type.includes('excel') || type.includes('spreadsheet')) return '📊';
-    if (type.includes('zip') || type.includes('rar')) return '📦';
+    if (type.includes('word') ?? type.includes('document')) return '📝';
+    if (type.includes('excel') ?? type.includes('spreadsheet')) return '📊';
+    if (type.includes('zip') ?? type.includes('rar')) return '📦';
     return '📎';
   };
 
@@ -281,7 +281,7 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
           </button>
           <button
             type="submit"
-            disabled={isLoading || !selectedFile}
+            disabled={isLoading ?? !selectedFile}
             className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Nahrávam...' : 'Nahrať dokument'}

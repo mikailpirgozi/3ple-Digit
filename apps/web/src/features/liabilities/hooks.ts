@@ -43,8 +43,8 @@ export function useCreateLiability() {
   return useMutation({
     mutationFn: (data: CreateLiabilityRequest) => liabilitiesApi.createLiability(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: liabilitiesKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: liabilitiesKeys.summary() });
+      void queryClient.invalidateQueries({ queryKey: liabilitiesKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: liabilitiesKeys.summary() });
     },
   });
 }
@@ -56,9 +56,9 @@ export function useUpdateLiability() {
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateLiabilityRequest> }) =>
       liabilitiesApi.updateLiability(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: liabilitiesKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: liabilitiesKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: liabilitiesKeys.summary() });
+      void queryClient.invalidateQueries({ queryKey: liabilitiesKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: liabilitiesKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: liabilitiesKeys.summary() });
     },
   });
 }
@@ -69,8 +69,8 @@ export function useDeleteLiability() {
   return useMutation({
     mutationFn: (id: string) => liabilitiesApi.deleteLiability(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: liabilitiesKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: liabilitiesKeys.summary() });
+      void queryClient.invalidateQueries({ queryKey: liabilitiesKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: liabilitiesKeys.summary() });
     },
   });
 }

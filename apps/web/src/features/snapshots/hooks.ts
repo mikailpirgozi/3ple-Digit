@@ -51,8 +51,8 @@ export function useCreateSnapshot() {
   return useMutation({
     mutationFn: (data: CreateSnapshotRequest) => snapshotsApi.createSnapshot(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: snapshotsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: snapshotsKeys.currentNav() });
+      void queryClient.invalidateQueries({ queryKey: snapshotsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: snapshotsKeys.currentNav() });
     },
   });
 }
@@ -63,8 +63,8 @@ export function useDeleteSnapshot() {
   return useMutation({
     mutationFn: (id: string) => snapshotsApi.deleteSnapshot(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: snapshotsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: snapshotsKeys.currentNav() });
+      void queryClient.invalidateQueries({ queryKey: snapshotsKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: snapshotsKeys.currentNav() });
     },
   });
 }

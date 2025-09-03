@@ -63,11 +63,9 @@ export function ReportsPage() {
 
       {/* Report Tabs */}
       <div className="rounded-lg border border-border bg-card p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-4">
-          Dostupné reporty
-        </h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">Dostupné reporty</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {reportTabs.map((tab) => (
+          {reportTabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveReport(tab.id)}
@@ -93,8 +91,8 @@ export function ReportsPage() {
             <input
               id="period"
               type="month"
-              value={filters.period as string || ''}
-              onChange={(e) => setFilters({ ...filters, period: e.target.value || undefined })}
+              value={(filters.period as string) ?? ''}
+              onChange={e => setFilters({ ...filters, period: e.target.value ?? undefined })}
               className="px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
@@ -106,8 +104,8 @@ export function ReportsPage() {
             <input
               id="dateFrom"
               type="date"
-              value={filters.dateFrom as string || ''}
-              onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value || undefined })}
+              value={(filters.dateFrom as string) ?? ''}
+              onChange={e => setFilters({ ...filters, dateFrom: e.target.value ?? undefined })}
               className="px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
@@ -119,8 +117,8 @@ export function ReportsPage() {
             <input
               id="dateTo"
               type="date"
-              value={filters.dateTo as string || ''}
-              onChange={(e) => setFilters({ ...filters, dateTo: e.target.value || undefined })}
+              value={(filters.dateTo as string) ?? ''}
+              onChange={e => setFilters({ ...filters, dateTo: e.target.value ?? undefined })}
               className="px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>

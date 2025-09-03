@@ -17,7 +17,7 @@ export function InvestorsPage() {
     isLoading,
     error,
   } = useInvestors({
-    q: searchQuery || undefined,
+    q: searchQuery ?? undefined,
   });
   const createInvestorMutation = useCreateInvestor();
   const deleteInvestorMutation = useDeleteInvestor();
@@ -71,14 +71,14 @@ export function InvestorsPage() {
         </div>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-sm sm:text-base text-red-800">
-            Chyba pri načítavaní investorov: {(error as any)?.message || 'Neznáma chyba'}
+            Chyba pri načítavaní investorov: {(error as any)?.message ?? 'Neznáma chyba'}
           </p>
         </div>
       </div>
     );
   }
 
-  const investors = investorsData?.investors || [];
+  const investors = investorsData?.investors ?? [];
 
   // Sort investors based on selected criteria
   const sortedInvestors = [...investors].sort((a, b) => {
@@ -86,8 +86,8 @@ export function InvestorsPage() {
 
     switch (sortBy) {
       case 'totalCapital':
-        aValue = a.totalCapital || 0;
-        bValue = b.totalCapital || 0;
+        aValue = a.totalCapital ?? 0;
+        bValue = b.totalCapital ?? 0;
         break;
       case 'name':
         aValue = a.name.toLowerCase();

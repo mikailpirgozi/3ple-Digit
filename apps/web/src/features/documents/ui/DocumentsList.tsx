@@ -63,9 +63,9 @@ export function DocumentsList({ onUploadDocument }: DocumentsListProps) {
     const type = mime.toLowerCase();
     if (type.includes('pdf')) return '📄';
     if (type.includes('image')) return '🖼️';
-    if (type.includes('word') || type.includes('document')) return '📝';
-    if (type.includes('excel') || type.includes('spreadsheet')) return '📊';
-    if (type.includes('zip') || type.includes('rar')) return '📦';
+    if (type.includes('word') ?? type.includes('document')) return '📝';
+    if (type.includes('excel') ?? type.includes('spreadsheet')) return '📊';
+    if (type.includes('zip') ?? type.includes('rar')) return '📦';
     return '📎';
   };
 
@@ -98,7 +98,7 @@ export function DocumentsList({ onUploadDocument }: DocumentsListProps) {
     );
   }
 
-  const documents = documentsData?.documents || [];
+  const documents = documentsData?.documents ?? [];
   const groupedDocuments = groupDocumentsByType(documents);
   const totalSize = documents.reduce((sum, doc) => sum + doc.size, 0);
 
@@ -178,7 +178,7 @@ export function DocumentsList({ onUploadDocument }: DocumentsListProps) {
 
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>{formatFileSize(document.size)}</span>
-                        <span>{document.mime || 'Neznámy typ'}</span>
+                        <span>{document.mime ?? 'Neznámy typ'}</span>
                         <span>{formatDate(document.createdAt)}</span>
                       </div>
 

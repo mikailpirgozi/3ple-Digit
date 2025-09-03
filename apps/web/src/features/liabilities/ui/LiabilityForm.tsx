@@ -29,7 +29,7 @@ export function LiabilityForm({ liability, onSubmit, onCancel, isLoading }: Liab
       ? {
           name: liability.name,
           currentBalance: liability.currentBalance,
-          note: liability.note || '',
+          note: liability.note ?? '',
         }
       : {
           currentBalance: 0,
@@ -40,7 +40,7 @@ export function LiabilityForm({ liability, onSubmit, onCancel, isLoading }: Liab
   const handleFormSubmit = (data: LiabilityFormData) => {
     onSubmit({
       ...data,
-      note: data.note || undefined,
+      note: data.note ?? undefined,
     });
   };
 

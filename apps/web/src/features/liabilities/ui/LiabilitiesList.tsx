@@ -47,7 +47,7 @@ export function LiabilitiesList({ onCreateLiability, onEditLiability }: Liabilit
     );
   }
 
-  const liabilities = liabilitiesData?.liabilities || [];
+  const liabilities = liabilitiesData?.liabilities ?? [];
   const totalLiabilities = liabilities.reduce(
     (sum, liability) => sum + liability.currentBalance,
     0

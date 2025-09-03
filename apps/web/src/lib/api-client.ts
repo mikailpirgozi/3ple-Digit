@@ -47,9 +47,9 @@ const createApiClient = (): AxiosInstance => {
       }
 
       // Extract API error or create generic error
-      const apiError: ApiError = error.response?.data?.error || {
+      const apiError: ApiError = error.response?.data?.error ?? {
         code: 'NETWORK_ERROR',
-        message: error.message || 'Network error occurred',
+        message: error.message ?? 'Network error occurred',
         details: error.response?.data,
       };
 

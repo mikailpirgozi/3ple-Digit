@@ -59,9 +59,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authApi.setToken(data.accessToken);
       setUser(data.user);
       // Invalidate and refetch user data
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
       // Invalidate all queries to refetch with new auth
-      queryClient.invalidateQueries();
+      void queryClient.invalidateQueries();
     },
   });
 
@@ -72,9 +72,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authApi.setToken(data.accessToken);
       setUser(data.user);
       // Invalidate and refetch user data
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
       // Invalidate all queries to refetch with new auth
-      queryClient.invalidateQueries();
+      void queryClient.invalidateQueries();
     },
   });
 
@@ -99,7 +99,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     isAuthenticated: Boolean(user),
-    isLoading: isLoading || loginMutation.isPending || registerMutation.isPending,
+    isLoading: isLoading ?? loginMutation.isPending ?? registerMutation.isPending,
     login,
     register,
     logout,

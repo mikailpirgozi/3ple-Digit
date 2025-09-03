@@ -47,8 +47,8 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
       ? {
           date: event.date.split('T')[0], // Convert to YYYY-MM-DD format
           kind: event.kind,
-          amount: event.amount || undefined,
-          note: event.note || '',
+          amount: event.amount ?? undefined,
+          note: event.note ?? '',
         }
       : {
           date: new Date().toISOString().split('T')[0],
