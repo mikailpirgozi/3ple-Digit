@@ -32,6 +32,17 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Temporary seed endpoint (remove after seeding)
+app.post('/seed', async (_req, res) => {
+  try {
+    const { execSync } = await import('child_process');
+    execSync('cd apps/api && pnpm db:seed', { stdio: 'inherit' });
+    res.json({ success: true, message: 'Database seeded successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // API routes
 import { authRouter } from '@/modules/auth/index.js';
 import { investorsRouter } from '@/modules/investors/index.js';
