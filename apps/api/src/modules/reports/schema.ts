@@ -35,46 +35,82 @@ export const exportCsvSchema = z.object({
 
 // Response schemas
 export const portfolioReportSchema = z.object({
-  totalValue: z.number(),
+  totalAssetValue: z.number(), // Match integration test expectations
+  totalValue: z.number(), // Keep for backward compatibility
   totalCount: z.number(),
-  byType: z.array(z.object({
-    type: z.string(),
-    count: z.number(),
-    totalValue: z.number(),
-    percentage: z.number(),
-  })),
-  byMonth: z.array(z.object({
-    month: z.string(),
-    totalValue: z.number(),
-    count: z.number(),
-  })).optional(),
-  topAssets: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    type: z.string(),
-    currentValue: z.number(),
-  })),
+  activeAssets: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      type: z.string(),
+      currentValue: z.number(),
+      status: z.string(),
+    })
+  ),
+  soldAssets: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      type: z.string(),
+      currentValue: z.number(),
+      status: z.string(),
+      acquiredPrice: z.number().nullable(),
+      salePrice: z.number().nullable(),
+      saleDate: z.date().nullable(),
+      pnl: z.number(),
+      pnlPercent: z.number(),
+    })
+  ),
+  byType: z.array(
+    z.object({
+      type: z.string(),
+      count: z.number(),
+      totalValue: z.number(),
+      percentage: z.number(),
+    })
+  ),
+  byMonth: z
+    .array(
+      z.object({
+        month: z.string(),
+        totalValue: z.number(),
+        count: z.number(),
+      })
+    )
+    .optional(),
+  topAssets: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      type: z.string(),
+      currentValue: z.number(),
+    })
+  ),
 });
 
 export const investorReportSchema = z.object({
   totalInvestors: z.number(),
   totalCapital: z.number(),
   averageCapital: z.number(),
-  investors: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string(),
-    totalDeposits: z.number(),
-    totalWithdrawals: z.number(),
-    capitalAmount: z.number(),
-    ownershipPercent: z.number(),
-    lastActivity: z.date().nullable(),
-  })),
-  capitalDistribution: z.array(z.object({
-    range: z.string(),
-    count: z.number(),
-    percentage: z.number(),
-  })),
+  investors: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      email: z.string(),
+      totalDeposits: z.number(),
+      totalWithdrawals: z.number(),
+      capitalAmount: z.number(),
+      ownershipPercent: z.number(),
+      lastActivity: z.date().nullable(),
+    })
+  ),
+  capitalDistribution: z.array(
+    z.object({
+      range: z.string(),
+      count: z.number(),
+      percentage: z.number(),
+    })
+  ),
 });
 
 export const performanceReportSchema = z.object({
@@ -85,21 +121,28 @@ export const performanceReportSchema = z.object({
   totalAssets: z.number(),
   totalLiabilities: z.number(),
   totalBankBalance: z.number(),
-  snapshots: z.array(z.object({
-    date: z.date(),
-    nav: z.number(),
-    totalAssetValue: z.number(),
-    totalBankBalance: z.number(),
-    totalLiabilities: z.number(),
-  })),
+  totalUnrealizedPnL: z.number(),
+  totalRealizedPnL: z.number(),
+  soldAssetsCount: z.number(),
+  snapshots: z.array(
+    z.object({
+      date: z.date(),
+      nav: z.number(),
+      totalAssetValue: z.number(),
+      totalBankBalance: z.number(),
+      totalLiabilities: z.number(),
+    })
+  ),
   performanceFees: z.object({
     totalCollected: z.number(),
     averageRate: z.number(),
-    byPeriod: z.array(z.object({
-      period: z.string(),
-      amount: z.number(),
-      rate: z.number(),
-    })),
+    byPeriod: z.array(
+      z.object({
+        period: z.string(),
+        amount: z.number(),
+        rate: z.number(),
+      })
+    ),
   }),
 });
 
@@ -107,28 +150,34 @@ export const cashflowReportSchema = z.object({
   totalInflows: z.number(),
   totalOutflows: z.number(),
   netCashflow: z.number(),
-  byPeriod: z.array(z.object({
-    period: z.string(),
-    inflows: z.number(),
-    outflows: z.number(),
-    netFlow: z.number(),
-  })),
+  byPeriod: z.array(
+    z.object({
+      period: z.string(),
+      inflows: z.number(),
+      outflows: z.number(),
+      netFlow: z.number(),
+    })
+  ),
   byType: z.object({
     deposits: z.number(),
     withdrawals: z.number(),
     assetPayments: z.number(),
     expenses: z.number(),
   }),
-  topInflows: z.array(z.object({
-    source: z.string(),
-    amount: z.number(),
-    date: z.date(),
-  })),
-  topOutflows: z.array(z.object({
-    destination: z.string(),
-    amount: z.number(),
-    date: z.date(),
-  })),
+  topInflows: z.array(
+    z.object({
+      source: z.string(),
+      amount: z.number(),
+      date: z.date(),
+    })
+  ),
+  topOutflows: z.array(
+    z.object({
+      destination: z.string(),
+      amount: z.number(),
+      date: z.date(),
+    })
+  ),
 });
 
 // Types

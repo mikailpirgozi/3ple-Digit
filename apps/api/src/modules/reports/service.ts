@@ -82,24 +82,34 @@ export class ReportsService {
       }));
     }
 
-    // Get sold assets with PnL calculation (commented out - not used)
-    /*
-    const soldAssets = assets.filter(asset => asset.status === 'SOLD').map(asset => {
-      const pnl = asset.salePrice && asset.acquiredPrice ? asset.salePrice - asset.acquiredPrice : 0;
-      const pnlPercent = asset.acquiredPrice && asset.acquiredPrice > 0 ? (pnl / asset.acquiredPrice) * 100 : 0;
-      
-      return {
-        ...asset,
-        pnl,
-        pnlPercent,
-      };
-    });
-    */
+    // Get sold assets with PnL calculation
+    const soldAssets = assets
+      .filter(asset => asset.status === 'SOLD')
+      .map(asset => {
+        const pnl =
+          asset.salePrice && asset.acquiredPrice ? asset.salePrice - asset.acquiredPrice : 0;
+        const pnlPercent =
+          asset.acquiredPrice && asset.acquiredPrice > 0 ? (pnl / asset.acquiredPrice) * 100 : 0;
+
+        return {
+          ...asset,
+          pnl,
+          pnlPercent,
+        };
+      });
 
     return {
-      totalValue,
+      totalAssetValue: totalValue, // Match integration test expectations
+      totalValue, // Keep for backward compatibility
       totalCount,
-      // soldAssets, // Not in return type
+      activeAssets: activeAssets.map(asset => ({
+        id: asset.id,
+        name: asset.name,
+        type: asset.type,
+        currentValue: asset.currentValue,
+        status: asset.status,
+      })),
+      soldAssets,
       byType,
       byMonth,
       topAssets,
@@ -142,17 +152,20 @@ export class ReportsService {
       const totalDeposits = investor.cashflows
         .filter(cf => cf.type === 'DEPOSIT')
         .reduce((sum, cf) => sum + cf.amount, 0);
-      
+
       const totalWithdrawals = investor.cashflows
         .filter(cf => cf.type === 'WITHDRAWAL')
         .reduce((sum, cf) => sum + cf.amount, 0);
-      
+
       const capitalAmount = totalDeposits - totalWithdrawals;
-      
-      const lastActivity = investor.cashflows.length > 0
-        ? investor.cashflows.reduce((latest, cf) => 
-            cf.date > latest ? cf.date : latest, investor.cashflows[0]!.date)
-        : null;
+
+      const lastActivity =
+        investor.cashflows.length > 0
+          ? investor.cashflows.reduce(
+              (latest, cf) => (cf.date > latest ? cf.date : latest),
+              investor.cashflows[0]!.date
+            )
+          : null;
 
       return {
         id: investor.id,
@@ -169,9 +182,8 @@ export class ReportsService {
     // Calculate ownership percentages
     const totalCapital = investorData.reduce((sum, inv) => sum + inv.capitalAmount, 0);
     investorData.forEach(investor => {
-      investor.ownershipPercent = totalCapital > 0 
-        ? (investor.capitalAmount / totalCapital) * 100 
-        : 0;
+      investor.ownershipPercent =
+        totalCapital > 0 ? (investor.capitalAmount / totalCapital) * 100 : 0;
     });
 
     // Create capital distribution
@@ -184,10 +196,10 @@ export class ReportsService {
     ];
 
     const capitalDistribution = capitalRanges.map(range => {
-      const count = investorData.filter(inv => 
-        inv.capitalAmount >= range.min && inv.capitalAmount < range.max
+      const count = investorData.filter(
+        inv => inv.capitalAmount >= range.min && inv.capitalAmount < range.max
       ).length;
-      
+
       return {
         range: range.label,
         count,
@@ -220,9 +232,8 @@ export class ReportsService {
     const currentNav = snapshots.length > 0 ? snapshots[0]!.nav : 0;
     const previousNav = snapshots.length > 1 ? snapshots[1]!.nav : null;
     const navChange = previousNav ? currentNav - previousNav : null;
-    const navChangePercent = previousNav && previousNav !== 0 
-      ? ((currentNav - previousNav) / previousNav) * 100 
-      : null;
+    const navChangePercent =
+      previousNav && previousNav !== 0 ? ((currentNav - previousNav) / previousNav) * 100 : null;
 
     // Get current totals
     const assets = await prisma.asset.findMany({
@@ -247,9 +258,14 @@ export class ReportsService {
     });
 
     const totalAssets = assets.reduce((sum, asset) => sum + asset.currentValue, 0);
-    const totalLiabilities = liabilities.reduce((sum, liability) => sum + liability.currentBalance, 0);
-    const totalBankBalance = Array.from(latestBankBalances.values())
-      .reduce((sum, balance) => sum + balance.amount, 0);
+    const totalLiabilities = liabilities.reduce(
+      (sum, liability) => sum + liability.currentBalance,
+      0
+    );
+    const totalBankBalance = Array.from(latestBankBalances.values()).reduce(
+      (sum, balance) => sum + balance.amount,
+      0
+    );
 
     // Calculate PnL
     let totalUnrealizedPnL = 0;
@@ -267,11 +283,18 @@ export class ReportsService {
     });
 
     // Performance fees analysis
-    const performanceFeeSnapshots = snapshots.filter(s => s.totalPerformanceFee && s.totalPerformanceFee > 0);
-    const totalPerformanceFees = performanceFeeSnapshots.reduce((sum, s) => sum + (s.totalPerformanceFee || 0), 0);
-    const averagePerformanceFeeRate = performanceFeeSnapshots.length > 0
-      ? performanceFeeSnapshots.reduce((sum, s) => sum + (s.performanceFeeRate || 0), 0) / performanceFeeSnapshots.length
-      : 0;
+    const performanceFeeSnapshots = snapshots.filter(
+      s => s.totalPerformanceFee && s.totalPerformanceFee > 0
+    );
+    const totalPerformanceFees = performanceFeeSnapshots.reduce(
+      (sum, s) => sum + (s.totalPerformanceFee || 0),
+      0
+    );
+    const averagePerformanceFeeRate =
+      performanceFeeSnapshots.length > 0
+        ? performanceFeeSnapshots.reduce((sum, s) => sum + (s.performanceFeeRate || 0), 0) /
+          performanceFeeSnapshots.length
+        : 0;
 
     const performanceFeesByPeriod = performanceFeeSnapshots.map(snapshot => ({
       period: snapshot.date.toISOString().substring(0, 7), // YYYY-MM
@@ -280,7 +303,7 @@ export class ReportsService {
     }));
 
     // Count sold assets
-    // const soldAssetsCount = assets.filter(asset => asset.status === 'SOLD').length;
+    const soldAssetsCount = assets.filter(asset => asset.status === 'SOLD').length;
 
     return {
       currentNav,
@@ -290,9 +313,9 @@ export class ReportsService {
       totalAssets,
       totalLiabilities,
       totalBankBalance,
-      // totalUnrealizedPnL, // Removed - not in return type
-      // totalRealizedPnL, // Not in return type
-      // soldAssetsCount, // Not in return type
+      totalUnrealizedPnL,
+      totalRealizedPnL,
+      soldAssetsCount,
       snapshots: snapshots.map(s => ({
         date: s.date,
         nav: s.nav,
@@ -345,10 +368,18 @@ export class ReportsService {
     });
 
     // Calculate totals
-    const deposits = cashflows.filter(cf => cf.type === 'DEPOSIT').reduce((sum, cf) => sum + cf.amount, 0);
-    const withdrawals = cashflows.filter(cf => cf.type === 'WITHDRAWAL').reduce((sum, cf) => sum + cf.amount, 0);
-    const assetPaymentsIn = assetEvents.filter(ae => ae.type === 'PAYMENT_IN').reduce((sum, ae) => sum + ae.amount, 0);
-    const assetPaymentsOut = assetEvents.filter(ae => ae.type === 'PAYMENT_OUT').reduce((sum, ae) => sum + Math.abs(ae.amount), 0);
+    const deposits = cashflows
+      .filter(cf => cf.type === 'DEPOSIT')
+      .reduce((sum, cf) => sum + cf.amount, 0);
+    const withdrawals = cashflows
+      .filter(cf => cf.type === 'WITHDRAWAL')
+      .reduce((sum, cf) => sum + cf.amount, 0);
+    const assetPaymentsIn = assetEvents
+      .filter(ae => ae.type === 'PAYMENT_IN')
+      .reduce((sum, ae) => sum + ae.amount, 0);
+    const assetPaymentsOut = assetEvents
+      .filter(ae => ae.type === 'PAYMENT_OUT')
+      .reduce((sum, ae) => sum + Math.abs(ae.amount), 0);
 
     const totalInflows = deposits + assetPaymentsIn;
     const totalOutflows = withdrawals + assetPaymentsOut;
@@ -356,11 +387,11 @@ export class ReportsService {
 
     // Group by period
     const periodGroups = new Map<string, { inflows: number; outflows: number }>();
-    
+
     [...cashflows, ...assetEvents].forEach(item => {
       let period: string;
       const date = item.date;
-      
+
       switch (groupBy) {
         case 'month':
           period = date.toISOString().substring(0, 7); // YYYY-MM
@@ -379,17 +410,19 @@ export class ReportsService {
       if (!periodGroups.has(period)) {
         periodGroups.set(period, { inflows: 0, outflows: 0 });
       }
-      
+
       const group = periodGroups.get(period)!;
-      
+
       // Type guard to distinguish between cashflows and asset events
-      if ('investorId' in item) { // Cashflow
+      if ('investorId' in item) {
+        // Cashflow
         if (item.type === 'DEPOSIT') {
           group.inflows += item.amount;
         } else {
           group.outflows += item.amount;
         }
-      } else { // Asset event
+      } else {
+        // Asset event
         if (item.type === 'PAYMENT_IN') {
           group.inflows += item.amount;
         } else {
@@ -407,30 +440,42 @@ export class ReportsService {
 
     // Top inflows and outflows
     const topInflows = [
-      ...cashflows.filter(cf => cf.type === 'DEPOSIT').map(cf => ({
-        source: `Deposit from investor`,  // cf.investor.name not available
-        amount: cf.amount,
-        date: cf.date,
-      })),
-      ...assetEvents.filter(ae => ae.type === 'PAYMENT_IN').map(ae => ({
-        source: `Payment from ${ae.asset.name}`,
-        amount: ae.amount,
-        date: ae.date,
-      })),
-    ].sort((a, b) => b.amount - a.amount).slice(0, 10);
+      ...cashflows
+        .filter(cf => cf.type === 'DEPOSIT')
+        .map(cf => ({
+          source: `Deposit from investor`, // cf.investor.name not available
+          amount: cf.amount,
+          date: cf.date,
+        })),
+      ...assetEvents
+        .filter(ae => ae.type === 'PAYMENT_IN')
+        .map(ae => ({
+          source: `Payment from ${ae.asset.name}`,
+          amount: ae.amount,
+          date: ae.date,
+        })),
+    ]
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 10);
 
     const topOutflows = [
-      ...cashflows.filter(cf => cf.type === 'WITHDRAWAL').map(cf => ({
-        destination: `Withdrawal to investor`,  // cf.investor.name not available
-        amount: cf.amount,
-        date: cf.date,
-      })),
-      ...assetEvents.filter(ae => ae.type === 'PAYMENT_OUT').map(ae => ({
-        destination: `Payment for ${ae.asset.name}`,
-        amount: Math.abs(ae.amount),
-        date: ae.date,
-      })),
-    ].sort((a, b) => b.amount - a.amount).slice(0, 10);
+      ...cashflows
+        .filter(cf => cf.type === 'WITHDRAWAL')
+        .map(cf => ({
+          destination: `Withdrawal to investor`, // cf.investor.name not available
+          amount: cf.amount,
+          date: cf.date,
+        })),
+      ...assetEvents
+        .filter(ae => ae.type === 'PAYMENT_OUT')
+        .map(ae => ({
+          destination: `Payment for ${ae.asset.name}`,
+          amount: Math.abs(ae.amount),
+          date: ae.date,
+        })),
+    ]
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 10);
 
     return {
       totalInflows,
@@ -459,25 +504,33 @@ export class ReportsService {
 
     switch (reportType) {
       case 'portfolio':
-        const portfolioReport = await this.getPortfolioReport({ dateFrom, dateTo, groupBy: 'type' });
+        const portfolioReport = await this.getPortfolioReport({
+          dateFrom,
+          dateTo,
+          groupBy: 'type',
+        });
         csvData = this.portfolioToCsv(portfolioReport);
         break;
-      
+
       case 'investors':
         const investorReport = await this.getInvestorReport({ dateFrom, dateTo });
         csvData = this.investorsToCsv(investorReport);
         break;
-      
+
       case 'performance':
-        const performanceReport = await this.getPerformanceReport({ dateFrom, dateTo, includeProjections: false });
+        const performanceReport = await this.getPerformanceReport({
+          dateFrom,
+          dateTo,
+          includeProjections: false,
+        });
         csvData = this.performanceToCsv(performanceReport);
         break;
-      
+
       case 'cashflow':
         const cashflowReport = await this.getCashflowReport({ dateFrom, dateTo, groupBy: 'month' });
         csvData = this.cashflowToCsv(cashflowReport);
         break;
-      
+
       default:
         throw new Error(`Unsupported report type: ${reportType}`);
     }
@@ -492,11 +545,11 @@ export class ReportsService {
    */
   private buildDateFilter(dateFrom?: Date, dateTo?: Date) {
     if (!dateFrom && !dateTo) return undefined;
-    
+
     const filter: any = {};
     if (dateFrom) filter.gte = dateFrom;
     if (dateTo) filter.lte = dateTo;
-    
+
     return filter;
   }
 
@@ -519,7 +572,14 @@ export class ReportsService {
    * Convert investors report to CSV
    */
   private investorsToCsv(report: InvestorReport): string {
-    const headers = ['Name', 'Email', 'Total Deposits', 'Total Withdrawals', 'Capital Amount', 'Ownership %'];
+    const headers = [
+      'Name',
+      'Email',
+      'Total Deposits',
+      'Total Withdrawals',
+      'Capital Amount',
+      'Ownership %',
+    ];
     const rows = report.investors.map(investor => [
       investor.name,
       investor.email,

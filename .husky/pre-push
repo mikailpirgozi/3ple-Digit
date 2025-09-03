@@ -1,6 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# TODO: Re-enable tests when they are fixed
-# npm run test
-echo "⚠️  Tests temporarily disabled in pre-push hook"
+npm run test
