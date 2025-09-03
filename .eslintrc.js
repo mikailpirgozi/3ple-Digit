@@ -19,7 +19,7 @@ module.exports = {
   },
   plugins: ['@typescript-eslint'],
   rules: {
-    // TypeScript strict rules
+    // TypeScript strict rules - ZERO TOLERANCE
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-unused-vars': 'error',
     '@typescript-eslint/prefer-nullish-coalescing': 'error',
@@ -28,12 +28,31 @@ module.exports = {
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/no-misused-promises': 'error',
     
-    // General rules
-    'no-console': 'warn',
+    // Ban dangerous TypeScript suppressions
+    '@typescript-eslint/ban-ts-comment': ['error', { 
+      'ts-ignore': true, 
+      'ts-nocheck': true,
+      'ts-expect-error': 'allow-with-description'
+    }],
+    
+    // Additional safety rules for exactOptionalPropertyTypes
+    '@typescript-eslint/no-non-null-assertion': 'warn', // Allow ! but warn
+    '@typescript-eslint/prefer-as-const': 'error',
+    '@typescript-eslint/no-unsafe-assignment': 'error',
+    '@typescript-eslint/no-unsafe-member-access': 'error',
+    '@typescript-eslint/no-unsafe-call': 'error',
+    '@typescript-eslint/no-unsafe-return': 'error',
+    '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+    
+    // General rules - STRICT
+    'no-console': ['error', { allow: ['info', 'warn', 'error'] }],
     'prefer-const': 'error',
     'no-var': 'error',
     'object-shorthand': 'error',
     'prefer-template': 'error',
+    'no-implicit-coercion': 'error',
+    'no-param-reassign': 'error',
   },
   overrides: [
     {

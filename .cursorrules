@@ -16,6 +16,14 @@
 - Security: Helmet, CORS (whitelist), rate-limit on write endpoints.
 - R2: use presigned uploads; store only `r2_key`, `mime`, `size`, `sha256`.
 
+## TYPESCRIPT SAFETY RULES (MANDATORY)
+- **exactOptionalPropertyTypes: true** - NEVER use `undefined` for Prisma nullable fields, use `null`
+- Router params: ALWAYS use `validateRequiredParam(req.params.id, 'id')` instead of destructuring
+- Unused params: Use `_req`, `_res`, `_next` prefix for unused Express parameters
+- Prisma updates: Use `this.toNullable()` helper for optional fields, `this.filterUpdateData()` for updates
+- Type assertions: Prefer type guards over `as` assertions, use `!` only when 100% sure
+- Array access: Use `array[0]!` or `array.at(0)` with null checks for safe access
+
 ## MODULARIZATION & FILE SIZE
 - Architecture: **by-feature** folders (investors, assets, bank, liabilities, snapshots, documents, reports, auth, core, ui).
 - Each backend module contains: `schema.ts` (Zod), `service.ts`, `router.ts` (or `controller.ts`), `tests/`.
@@ -31,6 +39,36 @@
 - CSV import: robust parser with Zod; report per-line errors.
 - Prisma: all schema changes via migrations; never destructive ops without migration.
 - Tests: Vitest (unit) & supertest (integration). Provide seed data for tests.
+
+### MANDATORY PATTERNS FOR NEW CODE:
+```typescript
+// ✅ Router parameter validation
+const id = validateRequiredParam(req.params.id, 'id');
+
+// ✅ Prisma service helpers
+private toNullable<T>(value: T | undefined): T | null {
+  return value === undefined ? null : value;
+}
+
+private filterUpdateData<T extends Record<string, any>>(data: T): any {
+  const filtered: any = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (value !== undefined) {
+      filtered[key] = value;
+    }
+  }
+  return filtered;
+}
+
+// ✅ Prisma create/update operations
+data: {
+  name: data.name,
+  description: this.toNullable(data.description),
+}
+
+// ✅ Unused parameters
+router.get('/path', asyncHandler(async (_req, res) => {
+```
 
 ## FRONTEND
 - Stack: React + Vite + Tailwind + TanStack Query + RHF (with Zod resolver).

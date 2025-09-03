@@ -11,6 +11,7 @@
     "jsx": "react-jsx",
     
     "strict": true,
+    "useUnknownInCatchVariables": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
@@ -20,6 +21,7 @@
     "noImplicitOverride": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
+    "noPropertyAccessFromIndexSignature": true,
     
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
