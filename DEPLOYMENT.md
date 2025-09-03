@@ -5,7 +5,7 @@ Kompletný návod na nasadenie aplikácie do produkcie.
 ## 📋 Predpoklady
 
 - [Railway](https://railway.app) účet
-- [Vercel](https://vercel.com) účet  
+- [Vercel](https://vercel.com) účet
 - [Cloudflare](https://cloudflare.com) účet s R2 storage
 - [GitHub](https://github.com) repository
 
@@ -51,6 +51,7 @@ railway variables
    - Root Directory: `/`
    - Build Command: `cd apps/api && pnpm install && pnpm build`
    - Start Command: `cd apps/api && pnpm db:deploy && pnpm start`
+   - **NEVER** run `pnpm db:seed` in production - it deletes all data!
 
 ### 2.2 Environment Variables
 
@@ -104,7 +105,7 @@ git push origin main
    - Bucket: `3ple-digit-documents-prod`
 3. **Skopírujte credentials:**
    - Account ID
-   - Access Key ID  
+   - Access Key ID
    - Secret Access Key
 
 ### 3.3 CORS Policy
@@ -114,16 +115,8 @@ Nastavte CORS policy pre bucket:
 ```json
 [
   {
-    "AllowedOrigins": [
-      "https://your-app.vercel.app",
-      "https://3ple-digit.vercel.app"
-    ],
-    "AllowedMethods": [
-      "GET",
-      "PUT", 
-      "POST",
-      "DELETE"
-    ],
+    "AllowedOrigins": ["https://your-app.vercel.app", "https://3ple-digit.vercel.app"],
+    "AllowedMethods": ["GET", "PUT", "POST", "DELETE"],
     "AllowedHeaders": ["*"],
     "ExposeHeaders": ["ETag"],
     "MaxAgeSeconds": 3600
@@ -184,8 +177,11 @@ git push origin main
 # Spustite migrácie (automaticky pri Railway deploy)
 railway run pnpm db:deploy
 
-# Seed production data (voliteľné)
-railway run pnpm db:seed
+# ⚠️ NEVER run seed in production - it deletes all data!
+# railway run pnpm db:seed  # <-- DANGEROUS, DO NOT USE
+
+# Instead, create backup first:
+railway run pnpm db:backup production-backup-$(date +%Y%m%d-%H%M%S).json
 ```
 
 ### 5.2 Health Checks
@@ -210,6 +206,7 @@ railway run pnpm db:seed
 ```
 
 Default admin:
+
 - Email: `admin@3pledigit.com`
 - Password: `password123` (zmeňte!)
 
@@ -274,6 +271,7 @@ railway pg:restore backup.sql
 ### 8.1 Časté problémy
 
 **Backend neštartuje:**
+
 ```bash
 # Skontrolujte logs
 railway logs
@@ -283,6 +281,7 @@ railway variables
 ```
 
 **Database connection error:**
+
 ```bash
 # Overte DATABASE_URL
 railway variables | grep DATABASE_URL
@@ -292,12 +291,14 @@ railway run pnpm db:generate
 ```
 
 **CORS errors:**
+
 ```bash
 # Overte CORS_ORIGINS
 # Musí obsahovať presné Vercel URL
 ```
 
 **R2 upload fails:**
+
 ```bash
 # Overte R2 credentials
 # Skontrolujte CORS policy
@@ -341,6 +342,7 @@ vercel rollback <deployment-url>
 ## ✅ 10. Deployment Checklist
 
 ### Pre-deployment:
+
 - [ ] Všetky testy prechádzajú
 - [ ] Environment variables sú nastavené
 - [ ] Database migrácie sú pripravené
@@ -348,6 +350,7 @@ vercel rollback <deployment-url>
 - [ ] CORS policies sú správne
 
 ### Post-deployment:
+
 - [ ] Health checks prechádzajú
 - [ ] Admin účet funguje
 - [ ] File uploads fungujú

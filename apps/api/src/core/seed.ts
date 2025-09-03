@@ -6,72 +6,91 @@ async function main() {
   log.info('🌱 Starting database seed...');
 
   try {
-      // Check if data already exists
-  const existingUsers = await prisma.user.count();
-  if (existingUsers > 0) {
-    log.info('✅ Database already seeded, skipping seed process');
-    return;
-  }
+    // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isRailwayEnv = process.env.RAILWAY_ENVIRONMENT === 'production';
+    const hasProductionUrl =
+      process.env.DATABASE_URL?.includes('railway.app') ||
+      process.env.DATABASE_URL?.includes('rlwy.net');
 
-  // Clean existing data (in development only)
-  if (process.env.NODE_ENV === 'development') {
-    log.info('🧹 Cleaning existing data...');
-    
-    await prisma.auditLog.deleteMany();
-    await prisma.document.deleteMany();
-    await prisma.investorSnapshot.deleteMany();
-    await prisma.periodSnapshot.deleteMany();
-    await prisma.bankBalance.deleteMany();
-    await prisma.liability.deleteMany();
-    await prisma.assetEvent.deleteMany();
-    await prisma.asset.deleteMany();
-    await prisma.investorCashflow.deleteMany();
-    await prisma.investor.deleteMany();
-    await prisma.user.deleteMany();
-  }
+    if (isProduction || isRailwayEnv || hasProductionUrl) {
+      log.error('🚨 SEED BLOCKED: Cannot seed production database!');
+      log.error('Environment:', {
+        NODE_ENV: process.env.NODE_ENV,
+        RAILWAY_ENV: process.env.RAILWAY_ENVIRONMENT,
+      });
+      throw new Error('PRODUCTION SEED BLOCKED: Use manual data import for production');
+    }
+
+    // Check if data already exists
+    const existingUsers = await prisma.user.count();
+    if (existingUsers > 0) {
+      log.info('✅ Database already seeded, skipping seed process');
+      log.info(`Found ${existingUsers} existing users`);
+      return;
+    }
+
+    // Clean existing data (ONLY in local development)
+    if (process.env.NODE_ENV === 'development' && !hasProductionUrl) {
+      log.info('🧹 Cleaning existing LOCAL development data...');
+
+      await prisma.auditLog.deleteMany();
+      await prisma.document.deleteMany();
+      await prisma.investorSnapshot.deleteMany();
+      await prisma.periodSnapshot.deleteMany();
+      await prisma.bankBalance.deleteMany();
+      await prisma.liability.deleteMany();
+      await prisma.assetEvent.deleteMany();
+      await prisma.asset.deleteMany();
+      await prisma.investorCashflow.deleteMany();
+      await prisma.investor.deleteMany();
+      await prisma.user.deleteMany();
+    } else {
+      log.info('⚠️ Skipping data cleanup - not in local development');
+    }
 
     // Create users
     log.info('👥 Creating users...');
-    
-      const adminUser = await prisma.user.create({
-    data: {
-      email: 'admin@3pledigit.com',
-      name: 'Admin User',
-      role: 'ADMIN',
-      password: await bcrypt.hash('admin123', 10),
-    },
-  });
 
-      const internalUser = await prisma.user.create({
-    data: {
-      email: 'internal@3pledigit.com',
-      name: 'Internal Manager',
-      role: 'INTERNAL',
-      password: await bcrypt.hash('internal123', 10),
-    },
-  });
+    const adminUser = await prisma.user.create({
+      data: {
+        email: 'admin@3pledigit.com',
+        name: 'Admin User',
+        role: 'ADMIN',
+        password: await bcrypt.hash('admin123', 10),
+      },
+    });
 
-      const investorUser1 = await prisma.user.create({
-    data: {
-      email: 'investor1@example.com',
-      name: 'Investor One',
-      role: 'INVESTOR',
-      password: await bcrypt.hash('investor123', 10),
-    },
-  });
+    const internalUser = await prisma.user.create({
+      data: {
+        email: 'internal@3pledigit.com',
+        name: 'Internal Manager',
+        role: 'INTERNAL',
+        password: await bcrypt.hash('internal123', 10),
+      },
+    });
 
-      const investorUser2 = await prisma.user.create({
-    data: {
-      email: 'investor2@example.com',
-      name: 'Investor Two',
-      role: 'INVESTOR',
-      password: await bcrypt.hash('investor123', 10),
-    },
-  });
+    const investorUser1 = await prisma.user.create({
+      data: {
+        email: 'investor1@example.com',
+        name: 'Investor One',
+        role: 'INVESTOR',
+        password: await bcrypt.hash('investor123', 10),
+      },
+    });
+
+    const investorUser2 = await prisma.user.create({
+      data: {
+        email: 'investor2@example.com',
+        name: 'Investor Two',
+        role: 'INVESTOR',
+        password: await bcrypt.hash('investor123', 10),
+      },
+    });
 
     // Create investors
     log.info('💼 Creating investors...');
-    
+
     const investor1 = await prisma.investor.create({
       data: {
         userId: investorUser1.id,
@@ -96,7 +115,7 @@ async function main() {
 
     // Create investor cashflows
     log.info('💰 Creating investor cashflows...');
-    
+
     await prisma.investorCashflow.createMany({
       data: [
         {
@@ -132,7 +151,7 @@ async function main() {
 
     // Create assets
     log.info('🏢 Creating assets...');
-    
+
     const realEstateAsset = await prisma.asset.create({
       data: {
         name: 'Office Building Bratislava',
@@ -162,7 +181,7 @@ async function main() {
 
     // Create asset events
     log.info('📈 Creating asset events...');
-    
+
     await prisma.assetEvent.createMany({
       data: [
         {
@@ -205,7 +224,7 @@ async function main() {
 
     // Create liabilities
     log.info('💳 Creating liabilities...');
-    
+
     await prisma.liability.createMany({
       data: [
         {
@@ -226,7 +245,7 @@ async function main() {
 
     // Create bank balances
     log.info('🏦 Creating bank balances...');
-    
+
     await prisma.bankBalance.createMany({
       data: [
         {
@@ -258,7 +277,7 @@ async function main() {
 
     // Create period snapshot
     log.info('📊 Creating period snapshot...');
-    
+
     const snapshot = await prisma.periodSnapshot.create({
       data: {
         date: new Date('2024-04-30'),
@@ -266,14 +285,14 @@ async function main() {
         totalBankBalance: 225000, // Sum of all bank balances (EUR equivalent)
         totalLiabilities: 250000, // Sum of all liabilities
         nav: 700000, // NAV = assets + bank - liabilities
-        performanceFeeRate: 0.20, // 20% performance fee
+        performanceFeeRate: 0.2, // 20% performance fee
         totalPerformanceFee: 15000,
       },
     });
 
     // Create investor snapshots
     log.info('📈 Creating investor snapshots...');
-    
+
     await prisma.investorSnapshot.createMany({
       data: [
         {
@@ -295,7 +314,7 @@ async function main() {
 
     // Create sample documents
     log.info('📄 Creating sample documents...');
-    
+
     await prisma.document.createMany({
       data: [
         {
@@ -325,7 +344,7 @@ async function main() {
 
     // Create audit logs
     log.info('📝 Creating audit logs...');
-    
+
     await prisma.auditLog.createMany({
       data: [
         {
@@ -350,7 +369,7 @@ async function main() {
     });
 
     log.info('✅ Database seed completed successfully!');
-    
+
     // Log summary
     const counts = {
       users: await prisma.user.count(),
@@ -361,9 +380,8 @@ async function main() {
       snapshots: await prisma.periodSnapshot.count(),
       documents: await prisma.document.count(),
     };
-    
+
     log.info('📊 Seed summary:', counts);
-    
   } catch (error) {
     log.error('❌ Database seed failed:', { error });
     throw error;
@@ -375,7 +393,7 @@ main()
     log.info('✅ Database seed completed successfully!');
     process.exit(0);
   })
-  .catch((e) => {
+  .catch(e => {
     log.error('❌ Database seed failed:', { error: e.message });
     console.error(e);
     process.exit(1);

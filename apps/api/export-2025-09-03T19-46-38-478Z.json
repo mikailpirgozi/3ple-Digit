@@ -1,0 +1,75 @@
+{
+  "timestamp": "2025-09-03T19:46:38.478Z",
+  "summary": {
+    "users": 4,
+    "assets": 3,
+    "investors": 2
+  },
+  "users": [
+    {
+      "id": "cmf4dm1p800008z52egrmcnai",
+      "email": "admin@3pledigit.com",
+      "name": "Admin User",
+      "role": "ADMIN",
+      "createdAt": "2025-09-03T19:34:33.500Z"
+    },
+    {
+      "id": "cmf4dm1ty00018z52l8dvjx7b",
+      "email": "internal@3pledigit.com",
+      "name": "Internal Manager",
+      "role": "INTERNAL",
+      "createdAt": "2025-09-03T19:34:33.670Z"
+    },
+    {
+      "id": "cmf4dm1xd00028z52l3oxjyve",
+      "email": "investor1@example.com",
+      "name": "Investor One",
+      "role": "INVESTOR",
+      "createdAt": "2025-09-03T19:34:33.793Z"
+    },
+    {
+      "id": "cmf4dm20g00038z528342v1pu",
+      "email": "investor2@example.com",
+      "name": "Investor Two",
+      "role": "INVESTOR",
+      "createdAt": "2025-09-03T19:34:33.905Z"
+    }
+  ],
+  "assets": [
+    {
+      "id": "cmf4dm2dc000c8z525m1ycxyw",
+      "name": "Office Building Bratislava",
+      "type": "REAL_ESTATE",
+      "currentValue": 500000,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "cmf4dm2go000d8z52jma1yb5s",
+      "name": "Business Loan - Company ABC",
+      "type": "LOAN",
+      "currentValue": 150000,
+      "status": "ACTIVE"
+    },
+    {
+      "id": "cmf4dm2i9000e8z527t0tlx1l",
+      "name": "Tech Stocks Portfolio",
+      "type": "STOCK",
+      "currentValue": 75000,
+      "status": "ACTIVE"
+    }
+  ],
+  "investors": [
+    {
+      "id": "cmf4dm22a00058z52e9gkxa0s",
+      "name": "Investor One",
+      "email": "investor1@example.com",
+      "phone": "+421 900 123 456"
+    },
+    {
+      "id": "cmf4dm25w00078z52jcc9sws7",
+      "name": "Investor Two",
+      "email": "investor2@example.com",
+      "phone": "+421 900 654 321"
+    }
+  ]
+}
