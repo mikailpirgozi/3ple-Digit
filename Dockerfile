@@ -15,9 +15,10 @@ COPY packages/types/package.json ./packages/types/
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copy source code and config files
 COPY apps/api ./apps/api
 COPY packages/types ./packages/types
+COPY tsconfig.json ./
 
 # Set working directory to API
 WORKDIR /app/apps/api
