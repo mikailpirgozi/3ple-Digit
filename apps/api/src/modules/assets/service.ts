@@ -1,16 +1,16 @@
-import { prisma } from '@/core/prisma.js';
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
+import { prisma } from '@/core/prisma.js';
 import type {
-  CreateAssetRequest,
-  UpdateAssetRequest,
-  CreateAssetEventRequest,
-  UpdateAssetEventRequest,
-  GetAssetsQuery,
-  GetAssetEventsQuery,
-  AssetResponse,
   AssetEventResponse,
   AssetEventTypeEnum,
+  AssetResponse,
+  CreateAssetEventRequest,
+  CreateAssetRequest,
+  GetAssetEventsQuery,
+  GetAssetsQuery,
+  UpdateAssetEventRequest,
+  UpdateAssetRequest,
 } from './schema.js';
 
 export class AssetsService {
@@ -65,20 +65,24 @@ export class AssetsService {
       totalPages: number;
     };
   }> {
-    const { page, limit, search, type, sortBy, sortOrder } = query;
+    const { page, limit, search, q, type, sortBy, sortOrder } = query;
     const skip = (page - 1) * limit;
 
     // Build where clause
     const where: any = {};
-    
-    if (search) {
+
+    // Support both 'search' and 'q' parameters for search
+    const searchTerm = search || q;
+    if (searchTerm) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
+        { name: { contains: searchTerm, mode: 'insensitive' } },
+        { description: { contains: searchTerm, mode: 'insensitive' } },
+        { category: { contains: searchTerm, mode: 'insensitive' } },
       ];
     }
-    
-    if (type) {
+
+    // Only apply type filter if it's not empty
+    if (type && type.trim() !== '') {
       where.type = type;
     }
 
@@ -103,11 +107,11 @@ export class AssetsService {
 
     const assetsWithStats = assets.map(asset => {
       const eventsCount = asset.events.length;
-      
+
       const totalInflows = asset.events
         .filter(event => ['PAYMENT_IN', 'VALUATION'].includes(event.type) && event.amount > 0)
         .reduce((sum, event) => sum + event.amount, 0);
-      
+
       const totalOutflows = asset.events
         .filter(event => ['PAYMENT_OUT', 'CAPEX'].includes(event.type) || event.amount < 0)
         .reduce((sum, event) => sum + Math.abs(event.amount), 0);
@@ -152,11 +156,11 @@ export class AssetsService {
     }
 
     const eventsCount = asset.events.length;
-    
+
     const totalInflows = asset.events
       .filter(event => ['PAYMENT_IN', 'VALUATION'].includes(event.type) && event.amount > 0)
       .reduce((sum, event) => sum + event.amount, 0);
-    
+
     const totalOutflows = asset.events
       .filter(event => ['PAYMENT_OUT', 'CAPEX'].includes(event.type) || event.amount < 0)
       .reduce((sum, event) => sum + Math.abs(event.amount), 0);
@@ -183,8 +187,10 @@ export class AssetsService {
 
     const updateData = this.filterUpdateData({
       ...data,
+      category: data.category !== undefined ? this.toNullable(data.category) : undefined,
       description: data.description !== undefined ? this.toNullable(data.description) : undefined,
-      acquiredPrice: data.acquiredPrice !== undefined ? this.toNullable(data.acquiredPrice) : undefined,
+      acquiredPrice:
+        data.acquiredPrice !== undefined ? this.toNullable(data.acquiredPrice) : undefined,
       salePrice: data.salePrice !== undefined ? this.toNullable(data.salePrice) : undefined,
       saleDate: data.saleDate !== undefined ? this.toNullable(data.saleDate) : undefined,
     });
@@ -221,7 +227,10 @@ export class AssetsService {
   /**
    * Create asset event and update current value
    */
-  async createAssetEvent(data: CreateAssetEventRequest, userId?: string): Promise<AssetEventResponse> {
+  async createAssetEvent(
+    data: CreateAssetEventRequest,
+    userId?: string
+  ): Promise<AssetEventResponse> {
     // Verify asset exists
     const asset = await prisma.asset.findUnique({
       where: { id: data.assetId },
@@ -232,7 +241,7 @@ export class AssetsService {
     }
 
     // Create event and update asset value in transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async tx => {
       // Create the event
       const event = await tx.assetEvent.create({
         data: {
@@ -255,7 +264,7 @@ export class AssetsService {
 
       // Update asset current value based on event type
       const newValue = this.calculateNewAssetValue(asset.currentValue, data.type, data.amount);
-      
+
       await tx.asset.update({
         where: { id: data.assetId },
         data: { currentValue: newValue },
@@ -264,12 +273,12 @@ export class AssetsService {
       return event;
     });
 
-    log.info('Asset event created', { 
-      eventId: result.id, 
+    log.info('Asset event created', {
+      eventId: result.id,
       assetId: data.assetId,
       type: data.type,
       amount: data.amount,
-      createdBy: userId 
+      createdBy: userId,
     });
 
     return this.formatAssetEventResponse(result);
@@ -292,15 +301,15 @@ export class AssetsService {
 
     // Build where clause
     const where: any = {};
-    
+
     if (assetId) {
       where.assetId = assetId;
     }
-    
+
     if (type) {
       where.type = type;
     }
-    
+
     if (dateFrom || dateTo) {
       where.date = {};
       if (dateFrom) where.date.gte = dateFrom;
@@ -341,7 +350,11 @@ export class AssetsService {
   /**
    * Update asset event
    */
-  async updateAssetEvent(id: string, data: UpdateAssetEventRequest, userId?: string): Promise<AssetEventResponse> {
+  async updateAssetEvent(
+    id: string,
+    data: UpdateAssetEventRequest,
+    userId?: string
+  ): Promise<AssetEventResponse> {
     const existingEvent = await prisma.assetEvent.findUnique({
       where: { id },
       include: { asset: true },
@@ -352,7 +365,7 @@ export class AssetsService {
     }
 
     // Update event and recalculate asset value in transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async tx => {
       // Revert old event impact
       const revertedValue = this.revertAssetValue(
         existingEvent.asset.currentValue,
@@ -414,7 +427,7 @@ export class AssetsService {
     }
 
     // Delete event and revert asset value in transaction
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async tx => {
       // Delete the event
       await tx.assetEvent.delete({
         where: { id },
@@ -439,7 +452,11 @@ export class AssetsService {
   /**
    * Calculate new asset value based on event type
    */
-  private calculateNewAssetValue(currentValue: number, eventType: AssetEventTypeEnum, amount: number): number {
+  private calculateNewAssetValue(
+    currentValue: number,
+    eventType: AssetEventTypeEnum,
+    amount: number
+  ): number {
     switch (eventType) {
       case 'VALUATION':
         return amount; // Set to new valuation
@@ -459,7 +476,11 @@ export class AssetsService {
   /**
    * Revert asset value change from an event
    */
-  private revertAssetValue(currentValue: number, eventType: AssetEventTypeEnum, amount: number): number {
+  private revertAssetValue(
+    currentValue: number,
+    eventType: AssetEventTypeEnum,
+    amount: number
+  ): number {
     switch (eventType) {
       case 'VALUATION':
         // For valuation, we can't easily revert, so keep current value

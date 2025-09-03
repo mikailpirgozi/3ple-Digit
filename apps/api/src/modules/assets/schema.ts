@@ -10,7 +10,7 @@ export const AssetType = {
   SHARE_IN_COMPANY: 'share_in_company',
 } as const;
 
-export type AssetTypeEnum = typeof AssetType[keyof typeof AssetType];
+export type AssetTypeEnum = (typeof AssetType)[keyof typeof AssetType];
 
 // Asset event type enum
 export const AssetEventType = {
@@ -22,7 +22,7 @@ export const AssetEventType = {
   SALE: 'SALE',
 } as const;
 
-export type AssetEventTypeEnum = typeof AssetEventType[keyof typeof AssetEventType];
+export type AssetEventTypeEnum = (typeof AssetEventType)[keyof typeof AssetEventType];
 
 // Asset schemas
 export const createAssetSchema = z.object({
@@ -35,6 +35,7 @@ export const createAssetSchema = z.object({
     AssetType.INVENTORY,
     AssetType.SHARE_IN_COMPANY,
   ]),
+  category: z.string().optional(),
   description: z.string().optional(),
   currentValue: z.number().min(0, 'Current value must be non-negative'),
   acquiredPrice: z.number().min(0, 'Acquired price must be non-negative').optional(),
@@ -42,14 +43,17 @@ export const createAssetSchema = z.object({
 
 export const updateAssetSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').optional(),
-  type: z.enum([
-    AssetType.LOAN,
-    AssetType.REAL_ESTATE,
-    AssetType.VEHICLE,
-    AssetType.STOCK,
-    AssetType.INVENTORY,
-    AssetType.SHARE_IN_COMPANY,
-  ]).optional(),
+  type: z
+    .enum([
+      AssetType.LOAN,
+      AssetType.REAL_ESTATE,
+      AssetType.VEHICLE,
+      AssetType.STOCK,
+      AssetType.INVENTORY,
+      AssetType.SHARE_IN_COMPANY,
+    ])
+    .optional(),
+  category: z.string().optional(),
   description: z.string().optional(),
   currentValue: z.number().min(0, 'Current value must be non-negative').optional(),
   acquiredPrice: z.number().min(0, 'Acquired price must be non-negative').optional(),
@@ -75,14 +79,16 @@ export const createAssetEventSchema = z.object({
 });
 
 export const updateAssetEventSchema = z.object({
-  type: z.enum([
-    AssetEventType.VALUATION,
-    AssetEventType.PAYMENT_IN,
-    AssetEventType.PAYMENT_OUT,
-    AssetEventType.CAPEX,
-    AssetEventType.NOTE,
-    AssetEventType.SALE,
-  ]).optional(),
+  type: z
+    .enum([
+      AssetEventType.VALUATION,
+      AssetEventType.PAYMENT_IN,
+      AssetEventType.PAYMENT_OUT,
+      AssetEventType.CAPEX,
+      AssetEventType.NOTE,
+      AssetEventType.SALE,
+    ])
+    .optional(),
   amount: z.number().optional(),
   date: z.coerce.date().optional(),
   note: z.string().optional(),
@@ -91,30 +97,35 @@ export const updateAssetEventSchema = z.object({
 // Query schemas
 export const getAssetsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(500).default(100), // Increased default and max limit
   search: z.string().optional(),
-  type: z.enum([
-    AssetType.LOAN,
-    AssetType.REAL_ESTATE,
-    AssetType.VEHICLE,
-    AssetType.STOCK,
-    AssetType.INVENTORY,
-    AssetType.SHARE_IN_COMPANY,
-  ]).optional(),
+  q: z.string().optional(), // Alternative search parameter
+  type: z
+    .enum([
+      AssetType.LOAN,
+      AssetType.REAL_ESTATE,
+      AssetType.VEHICLE,
+      AssetType.STOCK,
+      AssetType.INVENTORY,
+      AssetType.SHARE_IN_COMPANY,
+    ])
+    .optional(),
   sortBy: z.enum(['name', 'type', 'currentValue', 'createdAt']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
 export const getAssetEventsQuerySchema = z.object({
   assetId: z.string().cuid().optional(),
-  type: z.enum([
-    AssetEventType.VALUATION,
-    AssetEventType.PAYMENT_IN,
-    AssetEventType.PAYMENT_OUT,
-    AssetEventType.CAPEX,
-    AssetEventType.NOTE,
-    AssetEventType.SALE,
-  ]).optional(),
+  type: z
+    .enum([
+      AssetEventType.VALUATION,
+      AssetEventType.PAYMENT_IN,
+      AssetEventType.PAYMENT_OUT,
+      AssetEventType.CAPEX,
+      AssetEventType.NOTE,
+      AssetEventType.SALE,
+    ])
+    .optional(),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
   page: z.coerce.number().int().min(1).default(1),
@@ -150,11 +161,13 @@ export const assetEventResponseSchema = z.object({
   note: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
-  asset: z.object({
-    id: z.string(),
-    name: z.string(),
-    type: z.string(),
-  }).optional(),
+  asset: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      type: z.string(),
+    })
+    .optional(),
 });
 
 // Types

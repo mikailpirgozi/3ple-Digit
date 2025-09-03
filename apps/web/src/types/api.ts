@@ -95,6 +95,7 @@ export interface Asset {
   id: string;
   type: AssetType;
   name: string;
+  category?: string;
   acquiredPrice?: number;
   currentValue: number;
   expectedSalePrice?: number;
@@ -119,6 +120,7 @@ export interface AssetEvent {
 export interface CreateAssetRequest {
   type: AssetType;
   name: string;
+  category?: string;
   acquiredPrice?: number;
   currentValue: number;
   expectedSalePrice?: number;

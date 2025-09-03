@@ -1,11 +1,12 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Asset, AssetType, CreateAssetRequest } from '@/types/api';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const assetFormSchema = z.object({
   type: z.enum(['loan', 'real_estate', 'vehicle', 'stock', 'inventory', 'share_in_company']),
   name: z.string().min(1, 'Názov je povinný'),
+  category: z.string().optional(),
   acquiredPrice: z.number().min(0).optional(),
   currentValue: z.number().min(0, 'Aktuálna hodnota musí byť kladná'),
   expectedSalePrice: z.number().min(0).optional(),
@@ -42,6 +43,7 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
       ? {
           type: asset.type,
           name: asset.name,
+          category: asset.category || '',
           acquiredPrice: asset.acquiredPrice || undefined,
           currentValue: asset.currentValue,
           expectedSalePrice: asset.expectedSalePrice || undefined,
@@ -50,6 +52,7 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
       : {
           type: 'real_estate',
           currentValue: 0,
+          category: '',
         },
   });
 
@@ -90,9 +93,7 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
               </option>
             ))}
           </select>
-          {errors.type && (
-            <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
-          )}
+          {errors.type && <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>}
         </div>
 
         {/* Asset Name */}
@@ -107,15 +108,33 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
             placeholder="Napríklad: Office Building Bratislava"
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
-          {errors.name && (
-            <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+          {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+        </div>
+
+        {/* Asset Category */}
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-foreground mb-2">
+            Kategória
+          </label>
+          <input
+            id="category"
+            type="text"
+            {...register('category')}
+            placeholder="Napríklad: Apartmány, Kancelárie, Pozemky..."
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+          {errors.category && (
+            <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
           )}
         </div>
 
         {/* Financial Fields */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label htmlFor="acquiredPrice" className="block text-sm font-medium text-foreground mb-2">
+            <label
+              htmlFor="acquiredPrice"
+              className="block text-sm font-medium text-foreground mb-2"
+            >
               Nákupná cena (€)
             </label>
             <input
@@ -132,7 +151,10 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
           </div>
 
           <div>
-            <label htmlFor="currentValue" className="block text-sm font-medium text-foreground mb-2">
+            <label
+              htmlFor="currentValue"
+              className="block text-sm font-medium text-foreground mb-2"
+            >
               Aktuálna hodnota (€) *
             </label>
             <input
@@ -149,7 +171,10 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
           </div>
 
           <div>
-            <label htmlFor="expectedSalePrice" className="block text-sm font-medium text-foreground mb-2">
+            <label
+              htmlFor="expectedSalePrice"
+              className="block text-sm font-medium text-foreground mb-2"
+            >
               Očakávaná predajná cena (€)
             </label>
             <input
