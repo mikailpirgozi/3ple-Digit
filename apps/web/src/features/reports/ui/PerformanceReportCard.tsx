@@ -1,4 +1,4 @@
-import { usePerformanceReport, useExportPerformance } from '../hooks';
+import { useExportPerformance, usePerformanceReport } from '../hooks';
 
 interface PerformanceReportCardProps {
   filters?: Record<string, unknown>;
@@ -61,9 +61,7 @@ export function PerformanceReportCard({ filters }: PerformanceReportCardProps) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Performance Report</h2>
-          <p className="text-sm text-muted-foreground">
-            Analýza výkonnosti za {formatPeriod(report.period)}
-          </p>
+          <p className="text-sm text-muted-foreground">Analýza výkonnosti portfólia</p>
         </div>
         <button
           onClick={handleExport}
@@ -78,48 +76,55 @@ export function PerformanceReportCard({ filters }: PerformanceReportCardProps) {
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
         <div className="text-center">
           <p className="text-sm text-muted-foreground mb-1">Aktuálny NAV</p>
-          <p className="text-3xl font-bold text-primary">{formatCurrency(report.nav)}</p>
+          <p className="text-3xl font-bold text-primary">{formatCurrency(report.currentNav)}</p>
         </div>
       </div>
 
       {/* Performance Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className={`rounded-lg p-4 border ${
-          report.navChange >= 0 
-            ? 'bg-green-50 border-green-200' 
-            : 'bg-red-50 border-red-200'
-        }`}>
+        <div
+          className={`rounded-lg p-4 border ${
+            (report.navChange || 0) >= 0
+              ? 'bg-green-50 border-green-200'
+              : 'bg-red-50 border-red-200'
+          }`}
+        >
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-1">Zmena NAV</p>
-            <p className={`text-xl font-bold ${
-              report.navChange >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {report.navChange >= 0 ? '+' : ''}{formatCurrency(report.navChange)}
+            <p
+              className={`text-xl font-bold ${
+                (report.navChange || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
+              {(report.navChange || 0) >= 0 ? '+' : ''}
+              {formatCurrency(report.navChange || 0)}
             </p>
-            <p className={`text-sm ${
-              report.navChangePercent >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {formatPercentage(report.navChangePercent)}
+            <p
+              className={`text-sm ${
+                (report.navChangePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
+              {formatPercentage(report.navChangePercent || 0)}
             </p>
           </div>
         </div>
 
-        <div className={`rounded-lg p-4 border ${
-          report.totalReturn >= 0 
-            ? 'bg-green-50 border-green-200' 
-            : 'bg-red-50 border-red-200'
-        }`}>
+        <div
+          className={`rounded-lg p-4 border ${
+            report.totalUnrealizedPnL >= 0
+              ? 'bg-green-50 border-green-200'
+              : 'bg-red-50 border-red-200'
+          }`}
+        >
           <div className="text-center">
-            <p className="text-sm text-muted-foreground mb-1">Celkový výnos</p>
-            <p className={`text-xl font-bold ${
-              report.totalReturn >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {report.totalReturn >= 0 ? '+' : ''}{formatCurrency(report.totalReturn)}
-            </p>
-            <p className={`text-sm ${
-              report.totalReturnPercent >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {formatPercentage(report.totalReturnPercent)}
+            <p className="text-sm text-muted-foreground mb-1">Nerealizovaný P&L</p>
+            <p
+              className={`text-xl font-bold ${
+                report.totalUnrealizedPnL >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
+              {report.totalUnrealizedPnL >= 0 ? '+' : ''}
+              {formatCurrency(report.totalUnrealizedPnL)}
             </p>
           </div>
         </div>
@@ -128,19 +133,19 @@ export function PerformanceReportCard({ filters }: PerformanceReportCardProps) {
       {/* Performance Analysis */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-foreground">Analýza výkonnosti</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-              <span className="text-sm text-muted-foreground">NAV na začiatku obdobia</span>
+              <span className="text-sm text-muted-foreground">Predchádzajúci NAV</span>
               <span className="font-medium text-foreground">
-                {formatCurrency(report.nav - report.navChange)}
+                {formatCurrency(report.previousNav || 0)}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-              <span className="text-sm text-muted-foreground">NAV na konci obdobia</span>
+              <span className="text-sm text-muted-foreground">Aktuálny NAV</span>
               <span className="font-medium text-foreground">
-                {formatCurrency(report.nav)}
+                {formatCurrency(report.currentNav)}
               </span>
             </div>
           </div>
@@ -148,18 +153,23 @@ export function PerformanceReportCard({ filters }: PerformanceReportCardProps) {
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
               <span className="text-sm text-muted-foreground">Absolútna zmena</span>
-              <span className={`font-medium ${
-                report.navChange >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {report.navChange >= 0 ? '+' : ''}{formatCurrency(report.navChange)}
+              <span
+                className={`font-medium ${
+                  (report.navChange || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
+                {(report.navChange || 0) >= 0 ? '+' : ''}
+                {formatCurrency(report.navChange || 0)}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
               <span className="text-sm text-muted-foreground">Percentuálna zmena</span>
-              <span className={`font-medium ${
-                report.navChangePercent >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {formatPercentage(report.navChangePercent)}
+              <span
+                className={`font-medium ${
+                  (report.navChangePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
+                {formatPercentage(report.navChangePercent || 0)}
               </span>
             </div>
           </div>
@@ -170,11 +180,16 @@ export function PerformanceReportCard({ filters }: PerformanceReportCardProps) {
       <div className="mt-6 bg-muted/50 border border-border rounded-lg p-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           <span>
-            Výkonnosť je meraná na základe zmeny NAV medzi začiatkom a koncom obdobia.
-            Celkový výnos zahŕňa všetky príjmy, výdavky a zmeny hodnôt aktív.
+            Výkonnosť je meraná na základe zmeny NAV medzi začiatkom a koncom obdobia. Celkový výnos
+            zahŕňa všetky príjmy, výdavky a zmeny hodnôt aktív.
           </span>
         </div>
       </div>

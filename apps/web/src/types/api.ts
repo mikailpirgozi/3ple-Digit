@@ -72,7 +72,13 @@ export interface CreateCashflowRequest {
 }
 
 // Asset types
-export type AssetType = 'loan' | 'real_estate' | 'vehicle' | 'stock' | 'inventory' | 'share_in_company';
+export type AssetType =
+  | 'loan'
+  | 'real_estate'
+  | 'vehicle'
+  | 'stock'
+  | 'inventory'
+  | 'share_in_company';
 export type AssetStatus = 'ACTIVE' | 'SOLD';
 
 export interface Asset {
@@ -192,13 +198,23 @@ export interface CreateSnapshotRequest {
 }
 
 export interface CurrentNavResponse {
+  totalAssetValue: number;
+  totalBankBalance: number;
+  totalLiabilities: number;
   nav: number;
-  totals: {
-    assets: number;
-    cash: number;
-    liabilities: number;
-  };
-  asOfDate: string;
+  assetBreakdown: Array<{
+    type: string;
+    count: number;
+    totalValue: number;
+  }>;
+  bankBreakdown: Array<{
+    currency: string;
+    totalAmount: number;
+  }>;
+  liabilityBreakdown: Array<{
+    name: string;
+    currentBalance: number;
+  }>;
 }
 
 // Document types
@@ -252,36 +268,81 @@ export interface PortfolioReport {
 }
 
 export interface InvestorReport {
+  totalInvestors: number;
   totalCapital: number;
-  investorCount: number;
+  averageCapital: number;
   investors: Array<{
     id: string;
-    displayName: string;
-    capital: number;
+    name: string;
+    email: string;
+    totalDeposits: number;
+    totalWithdrawals: number;
+    capitalAmount: number;
+    ownershipPercent: number;
+    lastActivity: string | null;
+  }>;
+  capitalDistribution: Array<{
+    range: string;
+    count: number;
     percentage: number;
-    lastActivity: string;
   }>;
 }
 
 export interface PerformanceReport {
-  period: string;
-  nav: number;
-  navChange: number;
-  navChangePercent: number;
-  totalReturn: number;
-  totalReturnPercent: number;
+  currentNav: number;
+  previousNav: number | null;
+  navChange: number | null;
+  navChangePercent: number | null;
+  totalAssets: number;
+  totalLiabilities: number;
+  totalBankBalance: number;
+  totalUnrealizedPnL: number;
+  totalRealizedPnL: number;
+  soldAssetsCount: number;
+  snapshots: Array<{
+    date: string;
+    nav: number;
+    totalAssetValue: number;
+    totalBankBalance: number;
+    totalLiabilities: number;
+  }>;
+  performanceFees: {
+    totalCollected: number;
+    averageRate: number;
+    byPeriod: Array<{
+      period: string;
+      amount: number;
+      rate: number;
+    }>;
+  };
 }
 
 export interface CashflowReport {
-  period: string;
-  deposits: number;
-  withdrawals: number;
+  totalInflows: number;
+  totalOutflows: number;
   netCashflow: number;
-  assetCashflows: {
-    paymentsIn: number;
-    paymentsOut: number;
-    capex: number;
+  byPeriod: Array<{
+    period: string;
+    inflows: number;
+    outflows: number;
+    netFlow: number;
+  }>;
+  byType: {
+    deposits: number;
+    withdrawals: number;
+    assetPayments: number;
+    expenses: number;
   };
+  topInflows: Array<{
+    source: string;
+    amount: number;
+    date: string;
+  }>;
+  topOutflows: Array<{
+    destination: string;
+    amount: number;
+    date: string;
+  }>;
 }
 
 // Pagination and filtering

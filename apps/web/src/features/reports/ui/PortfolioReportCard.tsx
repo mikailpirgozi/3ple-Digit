@@ -1,5 +1,5 @@
 import { AssetType } from '@/types/api';
-import { usePortfolioReport, useExportPortfolio } from '../hooks';
+import { useExportPortfolio, usePortfolioReport } from '../hooks';
 
 interface PortfolioReportCardProps {
   filters?: Record<string, unknown>;
@@ -60,9 +60,7 @@ export function PortfolioReportCard({ filters }: PortfolioReportCardProps) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Portfolio Report</h2>
-          <p className="text-sm text-muted-foreground">
-            Kompletný prehľad portfólia aktív
-          </p>
+          <p className="text-sm text-muted-foreground">Kompletný prehľad portfólia aktív</p>
         </div>
         <button
           onClick={handleExport}
@@ -82,37 +80,39 @@ export function PortfolioReportCard({ filters }: PortfolioReportCardProps) {
       </div>
 
       {/* Assets by Type */}
-      <div className="space-y-4 mb-6">
-        <h3 className="text-lg font-medium text-foreground">Rozdelenie podľa typu</h3>
-        <div className="space-y-3">
-          {report.assetsByType.map((assetType) => (
-            <div
-              key={assetType.type}
-              className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-foreground">
-                  {assetTypeLabels[assetType.type]}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  ({assetType.count} {assetType.count === 1 ? 'aktívum' : 'aktív'})
-                </span>
+      {report.assetsByType && report.assetsByType.length > 0 && (
+        <div className="space-y-4 mb-6">
+          <h3 className="text-lg font-medium text-foreground">Rozdelenie podľa typu</h3>
+          <div className="space-y-3">
+            {report.assetsByType.map(assetType => (
+              <div
+                key={assetType.type}
+                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-foreground">
+                    {assetTypeLabels[assetType.type]}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ({assetType.count} {assetType.count === 1 ? 'aktívum' : 'aktív'})
+                  </span>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-foreground">
+                    {formatCurrency(assetType.value)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {assetType.percentage.toFixed(1)}%
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-medium text-foreground">
-                  {formatCurrency(assetType.value)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {assetType.percentage.toFixed(1)}%
-                </p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Top Assets */}
-      {report.topAssets.length > 0 && (
+      {report.topAssets && report.topAssets.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-foreground">Top aktíva</h3>
           <div className="space-y-2">
@@ -122,14 +122,10 @@ export function PortfolioReportCard({ filters }: PortfolioReportCardProps) {
                 className="flex items-center justify-between p-3 border border-border rounded-lg"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-muted-foreground w-6">
-                    #{index + 1}
-                  </span>
+                  <span className="text-sm font-bold text-muted-foreground w-6">#{index + 1}</span>
                   <div>
                     <p className="text-sm font-medium text-foreground">{asset.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {assetTypeLabels[asset.type]}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{assetTypeLabels[asset.type]}</p>
                   </div>
                 </div>
                 <div className="text-right">

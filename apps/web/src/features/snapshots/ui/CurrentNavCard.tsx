@@ -55,7 +55,7 @@ export function CurrentNavCard({ onCreateSnapshot }: CurrentNavCardProps) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Aktuálny NAV</h2>
-          <p className="text-sm text-muted-foreground">Stav k {formatDate(currentNav.asOfDate)}</p>
+          <p className="text-sm text-muted-foreground">Aktuálny stav portfólia</p>
         </div>
         {onCreateSnapshot && (
           <button
@@ -78,19 +78,19 @@ export function CurrentNavCard({ onCreateSnapshot }: CurrentNavCardProps) {
         <div className="text-center p-3 sm:p-4 border border-border rounded-lg">
           <p className="text-xs sm:text-sm text-muted-foreground mb-1">Aktíva</p>
           <p className="text-lg sm:text-xl font-semibold text-green-600">
-            {formatCurrency(currentNav.totals.assets)}
+            {formatCurrency(currentNav.totalAssetValue)}
           </p>
         </div>
         <div className="text-center p-3 sm:p-4 border border-border rounded-lg">
           <p className="text-xs sm:text-sm text-muted-foreground mb-1">Hotovosť</p>
           <p className="text-lg sm:text-xl font-semibold text-blue-600">
-            {formatCurrency(currentNav.totals.cash)}
+            {formatCurrency(currentNav.totalBankBalance)}
           </p>
         </div>
         <div className="text-center p-3 sm:p-4 border border-border rounded-lg">
           <p className="text-xs sm:text-sm text-muted-foreground mb-1">Záväzky</p>
           <p className="text-lg sm:text-xl font-semibold text-red-600">
-            -{formatCurrency(currentNav.totals.liabilities)}
+            -{formatCurrency(currentNav.totalLiabilities)}
           </p>
         </div>
       </div>
@@ -101,15 +101,15 @@ export function CurrentNavCard({ onCreateSnapshot }: CurrentNavCardProps) {
         <div className="text-sm text-muted-foreground space-y-1">
           <div className="flex justify-between">
             <span>Aktíva:</span>
-            <span className="text-green-600">+{formatCurrency(currentNav.totals.assets)}</span>
+            <span className="text-green-600">+{formatCurrency(currentNav.totalAssetValue)}</span>
           </div>
           <div className="flex justify-between">
             <span>Hotovosť:</span>
-            <span className="text-blue-600">+{formatCurrency(currentNav.totals.cash)}</span>
+            <span className="text-blue-600">+{formatCurrency(currentNav.totalBankBalance)}</span>
           </div>
           <div className="flex justify-between">
             <span>Záväzky:</span>
-            <span className="text-red-600">-{formatCurrency(currentNav.totals.liabilities)}</span>
+            <span className="text-red-600">-{formatCurrency(currentNav.totalLiabilities)}</span>
           </div>
           <hr className="border-border" />
           <div className="flex justify-between font-semibold text-foreground">

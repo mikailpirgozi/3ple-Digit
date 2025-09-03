@@ -1,4 +1,4 @@
-import { useInvestorReport, useExportInvestors } from '../hooks';
+import { useExportInvestors, useInvestorReport } from '../hooks';
 
 interface InvestorReportCardProps {
   filters?: Record<string, unknown>;
@@ -54,9 +54,7 @@ export function InvestorReportCard({ filters }: InvestorReportCardProps) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Investor Report</h2>
-          <p className="text-sm text-muted-foreground">
-            Prehľad investorov a ich podielov
-          </p>
+          <p className="text-sm text-muted-foreground">Prehľad investorov a ich podielov</p>
         </div>
         <button
           onClick={handleExport}
@@ -71,61 +69,69 @@ export function InvestorReportCard({ filters }: InvestorReportCardProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
           <p className="text-sm text-muted-foreground mb-1">Celkový kapitál</p>
-          <p className="text-2xl font-bold text-green-600">
-            {formatCurrency(report.totalCapital)}
-          </p>
+          <p className="text-2xl font-bold text-green-600">{formatCurrency(report.totalCapital)}</p>
         </div>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
           <p className="text-sm text-muted-foreground mb-1">Počet investorov</p>
-          <p className="text-2xl font-bold text-blue-600">{report.investorCount}</p>
+          <p className="text-2xl font-bold text-blue-600">{report.totalInvestors}</p>
         </div>
       </div>
 
       {/* Investors List */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-foreground">Investori</h3>
-        <div className="space-y-3">
-          {report.investors.map((investor) => (
-            <div
-              key={investor.id}
-              className="flex items-center justify-between p-4 border border-border rounded-lg bg-background"
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <h4 className="font-medium text-foreground">{investor.displayName}</h4>
-                  <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded">
-                    {investor.percentage.toFixed(2)}%
-                  </span>
+      {report.investors && report.investors.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-foreground">Investori</h3>
+          <div className="space-y-3">
+            {report.investors.map(investor => (
+              <div
+                key={investor.id}
+                className="flex items-center justify-between p-4 border border-border rounded-lg bg-background"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4 className="font-medium text-foreground">{investor.name}</h4>
+                    <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded">
+                      {investor.ownershipPercent?.toFixed(2) || '0.00'}%
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span>Kapitál: {formatCurrency(investor.capitalAmount)}</span>
+                    <span>
+                      Posledná aktivita:{' '}
+                      {investor.lastActivity ? formatDate(investor.lastActivity) : 'N/A'}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>Kapitál: {formatCurrency(investor.capital)}</span>
-                  <span>Posledná aktivita: {formatDate(investor.lastActivity)}</span>
-                </div>
-              </div>
 
-              {/* Progress Bar */}
-              <div className="w-24 ml-4">
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${Math.min(investor.percentage, 100)}%` }}
-                  />
+                {/* Progress Bar */}
+                <div className="w-24 ml-4">
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min(investor.ownershipPercent || 0, 100)}%` }}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Additional Info */}
       <div className="mt-6 bg-muted/50 border border-border rounded-lg p-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           <span>
-            Percentá sú vypočítané na základe kapitálu investorov voči celkovému NAV.
-            Posledná aktivita zahŕňa vklady, výbery a ostatné transakcie.
+            Percentá sú vypočítané na základe kapitálu investorov voči celkovému NAV. Posledná
+            aktivita zahŕňa vklady, výbery a ostatné transakcie.
           </span>
         </div>
       </div>
