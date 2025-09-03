@@ -45,6 +45,7 @@ CREATE TABLE "assets" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "type" TEXT NOT NULL,
+    "category" TEXT,
     "description" TEXT,
     "currentValue" DOUBLE PRECISION NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'ACTIVE',
@@ -186,10 +187,10 @@ ALTER TABLE "investor_cashflows" ADD CONSTRAINT "investor_cashflows_investorId_f
 ALTER TABLE "asset_events" ADD CONSTRAINT "asset_events_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "assets"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "investor_snapshots" ADD CONSTRAINT "investor_snapshots_snapshotId_fkey" FOREIGN KEY ("snapshotId") REFERENCES "period_snapshots"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "investor_snapshots" ADD CONSTRAINT "investor_snapshots_investorId_fkey" FOREIGN KEY ("investorId") REFERENCES "investors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "investor_snapshots" ADD CONSTRAINT "investor_snapshots_investorId_fkey" FOREIGN KEY ("investorId") REFERENCES "investors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "investor_snapshots" ADD CONSTRAINT "investor_snapshots_snapshotId_fkey" FOREIGN KEY ("snapshotId") REFERENCES "period_snapshots"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

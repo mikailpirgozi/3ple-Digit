@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { BankBalance, BankFilters } from '@/types/api';
-import { useBankBalances, useDeleteBankBalance, useAccountNames } from '../hooks';
+import { useState } from 'react';
+import { useAccountNames, useBankBalances, useDeleteBankBalance } from '../hooks';
 
 interface BankBalancesListProps {
   onCreateBalance?: () => void;
@@ -8,12 +8,16 @@ interface BankBalancesListProps {
   onImportCsv?: () => void;
 }
 
+type SortOption = 'amount' | 'date' | 'accountName';
+
 export function BankBalancesList({
   onCreateBalance,
   onEditBalance,
   onImportCsv,
 }: BankBalancesListProps) {
   const [filters, setFilters] = useState<BankFilters>({});
+  const [sortBy, setSortBy] = useState<SortOption>('amount');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const { data: balancesData, isLoading, error } = useBankBalances(filters);
   const { data: accountNames } = useAccountNames();
@@ -95,6 +99,34 @@ export function BankBalancesList({
     0
   );
 
+  // Sort balances based on selected criteria
+  const sortedBalances = [...balances].sort((a, b) => {
+    let aValue: any, bValue: any;
+
+    switch (sortBy) {
+      case 'amount':
+        aValue = a.amount || 0;
+        bValue = b.amount || 0;
+        break;
+      case 'date':
+        aValue = new Date(a.date).getTime();
+        bValue = new Date(b.date).getTime();
+        break;
+      case 'accountName':
+        aValue = a.accountName.toLowerCase();
+        bValue = b.accountName.toLowerCase();
+        break;
+      default:
+        return 0;
+    }
+
+    if (sortBy === 'accountName') {
+      return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    } else {
+      return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+    }
+  });
+
   return (
     <div className="space-y-6">
       {/* Summary Card */}
@@ -142,6 +174,24 @@ export function BankBalancesList({
             onChange={e => setFilters({ ...filters, dateTo: e.target.value || undefined })}
             className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
+
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as SortOption)}
+            className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          >
+            <option value="amount">Zoradiť podľa sumy</option>
+            <option value="date">Zoradiť podľa dátumu</option>
+            <option value="accountName">Zoradiť podľa účtu</option>
+          </select>
+
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="px-3 py-2 border border-border rounded-md bg-background text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            title={sortOrder === 'asc' ? 'Zostupne' : 'Vzostupne'}
+          >
+            {sortOrder === 'asc' ? '↑' : '↓'}
+          </button>
         </div>
 
         <div className="flex gap-2">
@@ -216,7 +266,7 @@ export function BankBalancesList({
           )}
         </div>
 
-        {balances.length === 0 ? (
+        {sortedBalances.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">Žiadne zostatky nenájdené</p>
             {onCreateBalance && (
@@ -230,44 +280,42 @@ export function BankBalancesList({
           </div>
         ) : (
           <div className="space-y-2">
-            {balances
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              .map(balance => (
-                <div
-                  key={balance.id}
-                  className="flex items-center justify-between p-4 border border-border rounded-lg bg-card"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <h4 className="font-medium text-foreground">{balance.accountName}</h4>
-                      <span className="text-sm text-muted-foreground">
-                        {formatDate(balance.date)}
-                      </span>
-                    </div>
-                    <p className="text-lg font-semibold text-foreground mt-1">
-                      {formatCurrency(balance.amount)}
-                    </p>
+            {sortedBalances.map(balance => (
+              <div
+                key={balance.id}
+                className="flex items-center justify-between p-4 border border-border rounded-lg bg-card"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <h4 className="font-medium text-foreground">{balance.accountName}</h4>
+                    <span className="text-sm text-muted-foreground">
+                      {formatDate(balance.date)}
+                    </span>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    {onEditBalance && (
-                      <button
-                        onClick={() => onEditBalance(balance)}
-                        className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                      >
-                        Upraviť
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleDeleteBalance(balance.id)}
-                      disabled={deleteBalanceMutation.isPending}
-                      className="px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-200 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
-                    >
-                      Odstrániť
-                    </button>
-                  </div>
+                  <p className="text-lg font-semibold text-foreground mt-1">
+                    {formatCurrency(balance.amount)}
+                  </p>
                 </div>
-              ))}
+
+                <div className="flex items-center gap-2">
+                  {onEditBalance && (
+                    <button
+                      onClick={() => onEditBalance(balance)}
+                      className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                      Upraviť
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDeleteBalance(balance.id)}
+                    disabled={deleteBalanceMutation.isPending}
+                    className="px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-200 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+                  >
+                    Odstrániť
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

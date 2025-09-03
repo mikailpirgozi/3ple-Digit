@@ -1,9 +1,6 @@
+import { CreateLiabilityRequest } from '@/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { liabilitiesApi } from './api';
-import {
-  Liability,
-  CreateLiabilityRequest,
-} from '@/types/api';
 
 // Query keys factory
 export const liabilitiesKeys = {
@@ -12,6 +9,7 @@ export const liabilitiesKeys = {
   list: () => [...liabilitiesKeys.lists()] as const,
   details: () => [...liabilitiesKeys.all, 'detail'] as const,
   detail: (id: string) => [...liabilitiesKeys.details(), id] as const,
+  summary: () => [...liabilitiesKeys.all, 'summary'] as const,
 };
 
 // Liabilities queries
@@ -30,6 +28,14 @@ export function useLiability(id: string) {
   });
 }
 
+export function useLiabilitiesSummary() {
+  return useQuery({
+    queryKey: liabilitiesKeys.summary(),
+    queryFn: () => liabilitiesApi.getLiabilitiesSummary(),
+    refetchInterval: 60000, // Refresh every minute
+  });
+}
+
 // Liabilities mutations
 export function useCreateLiability() {
   const queryClient = useQueryClient();
@@ -38,6 +44,7 @@ export function useCreateLiability() {
     mutationFn: (data: CreateLiabilityRequest) => liabilitiesApi.createLiability(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: liabilitiesKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: liabilitiesKeys.summary() });
     },
   });
 }
@@ -51,6 +58,7 @@ export function useUpdateLiability() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: liabilitiesKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: liabilitiesKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: liabilitiesKeys.summary() });
     },
   });
 }
@@ -62,6 +70,7 @@ export function useDeleteLiability() {
     mutationFn: (id: string) => liabilitiesApi.deleteLiability(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: liabilitiesKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: liabilitiesKeys.summary() });
     },
   });
 }

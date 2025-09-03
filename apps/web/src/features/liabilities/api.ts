@@ -1,5 +1,10 @@
 import { api } from '@/lib/api-client';
-import { Liability, CreateLiabilityRequest, LiabilitiesResponse } from '@/types/api';
+import {
+  CreateLiabilityRequest,
+  LiabilitiesResponse,
+  LiabilitiesSummary,
+  Liability,
+} from '@/types/api';
 
 export const liabilitiesApi = {
   // Get all liabilities
@@ -18,4 +23,7 @@ export const liabilitiesApi = {
 
   // Delete liability
   deleteLiability: (id: string): Promise<void> => api.delete(`/liabilities/${id}`),
+
+  // Get liabilities summary
+  getLiabilitiesSummary: (): Promise<LiabilitiesSummary> => api.get('/liabilities/summary'),
 };

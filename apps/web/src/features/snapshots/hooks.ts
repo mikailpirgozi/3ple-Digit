@@ -1,10 +1,6 @@
+import { CreateSnapshotRequest, SnapshotFilters } from '@/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { snapshotsApi } from './api';
-import {
-  PeriodSnapshot,
-  CreateSnapshotRequest,
-  SnapshotFilters,
-} from '@/types/api';
 
 // Query keys factory
 export const snapshotsKeys = {
@@ -37,6 +33,14 @@ export function useCurrentNav() {
     queryKey: snapshotsKeys.currentNav(),
     queryFn: () => snapshotsApi.getCurrentNav(),
     refetchInterval: 30000, // Refresh every 30 seconds
+  });
+}
+
+export function useLatestSnapshots(limit: number = 2) {
+  return useQuery({
+    queryKey: [...snapshotsKeys.all, 'latest', limit],
+    queryFn: () => snapshotsApi.getSnapshots({ limit, page: 1 }),
+    refetchInterval: 60000, // Refresh every minute
   });
 }
 

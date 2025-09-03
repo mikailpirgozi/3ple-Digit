@@ -1,5 +1,5 @@
 import { Document, DocumentLinkedType } from '@/types/api';
-import { useDocuments, useDeleteDocument, useDownloadDocument } from '../hooks';
+import { useDeleteDocument, useDocuments, useDownloadDocument } from '../hooks';
 
 interface DocumentsListProps {
   onUploadDocument?: () => void;
@@ -58,7 +58,8 @@ export function DocumentsList({ onUploadDocument }: DocumentsListProps) {
     });
   };
 
-  const getFileIcon = (mime: string) => {
+  const getFileIcon = (mime: string | null | undefined) => {
+    if (!mime) return '📎';
     const type = mime.toLowerCase();
     if (type.includes('pdf')) return '📄';
     if (type.includes('image')) return '🖼️';
@@ -177,7 +178,7 @@ export function DocumentsList({ onUploadDocument }: DocumentsListProps) {
 
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>{formatFileSize(document.size)}</span>
-                        <span>{document.mime}</span>
+                        <span>{document.mime || 'Neznámy typ'}</span>
                         <span>{formatDate(document.createdAt)}</span>
                       </div>
 

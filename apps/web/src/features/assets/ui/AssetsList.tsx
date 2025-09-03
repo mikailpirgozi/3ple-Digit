@@ -1,8 +1,6 @@
+import { Asset, AssetFilters, AssetType } from '@/types/api';
 import { useState } from 'react';
-import { Asset, AssetType, AssetFilters } from '@/types/api';
 import { useAssets, useDeleteAsset, useMarkAssetSold } from '../hooks';
-import { AssetForm } from './AssetForm';
-import { AssetEventForm } from './AssetEventForm';
 import { AssetEventsModal } from './AssetEventsModal';
 
 interface AssetsListProps {
@@ -19,10 +17,14 @@ const assetTypeLabels: Record<AssetType, string> = {
   share_in_company: '🏭 Podiel v spoločnosti',
 };
 
+type SortOption = 'name' | 'currentValue' | 'createdAt' | 'type';
+
 export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
   const [filters, setFilters] = useState<AssetFilters>({});
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [showEventsModal, setShowEventsModal] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('currentValue');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const { data: assetsData, isLoading, error } = useAssets(filters);
   const deleteAssetMutation = useDeleteAsset();
@@ -91,6 +93,38 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
 
   const assets = assetsData?.assets || [];
 
+  // Sort assets based on selected criteria
+  const sortedAssets = [...assets].sort((a, b) => {
+    let aValue: any, bValue: any;
+
+    switch (sortBy) {
+      case 'currentValue':
+        aValue = a.currentValue || 0;
+        bValue = b.currentValue || 0;
+        break;
+      case 'name':
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case 'createdAt':
+        aValue = new Date(a.createdAt).getTime();
+        bValue = new Date(b.createdAt).getTime();
+        break;
+      case 'type':
+        aValue = a.type;
+        bValue = b.type;
+        break;
+      default:
+        return 0;
+    }
+
+    if (sortBy === 'name' || sortBy === 'type') {
+      return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    } else {
+      return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+    }
+  });
+
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -129,11 +163,30 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
           onChange={e => setFilters({ ...filters, q: e.target.value || undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
+
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as SortOption)}
+          className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        >
+          <option value="currentValue">Zoradiť podľa hodnoty</option>
+          <option value="name">Zoradiť podľa názvu</option>
+          <option value="type">Zoradiť podľa typu</option>
+          <option value="createdAt">Zoradiť podľa dátumu</option>
+        </select>
+
+        <button
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+          className="px-3 py-2 border border-border rounded-md bg-background text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          title={sortOrder === 'asc' ? 'Zostupne' : 'Vzostupne'}
+        >
+          {sortOrder === 'asc' ? '↑' : '↓'}
+        </button>
       </div>
 
       {/* Assets List */}
       <div className="space-y-4">
-        {assets.length === 0 ? (
+        {sortedAssets.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">Žiadne aktíva nenájdené</p>
             {onCreateAsset && (
@@ -146,7 +199,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
             )}
           </div>
         ) : (
-          assets.map(asset => {
+          sortedAssets.map(asset => {
             const pnlData = calculatePnL(asset);
             return (
               <div

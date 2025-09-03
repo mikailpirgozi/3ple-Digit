@@ -3,9 +3,13 @@ import { useState } from 'react';
 import { useCreateInvestor, useDeleteInvestor, useInvestors } from './hooks';
 import { InvestorForm } from './ui/InvestorForm';
 
+type SortOption = 'name' | 'totalCapital' | 'createdAt';
+
 export function InvestorsPage() {
   const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('totalCapital');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // API hooks
   const {
@@ -76,6 +80,34 @@ export function InvestorsPage() {
 
   const investors = investorsData?.investors || [];
 
+  // Sort investors based on selected criteria
+  const sortedInvestors = [...investors].sort((a, b) => {
+    let aValue: any, bValue: any;
+
+    switch (sortBy) {
+      case 'totalCapital':
+        aValue = a.totalCapital || 0;
+        bValue = b.totalCapital || 0;
+        break;
+      case 'name':
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case 'createdAt':
+        aValue = new Date(a.createdAt).getTime();
+        bValue = new Date(b.createdAt).getTime();
+        break;
+      default:
+        return 0;
+    }
+
+    if (sortBy === 'name') {
+      return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    } else {
+      return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+    }
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -87,7 +119,7 @@ export function InvestorsPage() {
 
       {/* Actions bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="flex items-center">
+        <div className="flex flex-wrap gap-4 items-center">
           <input
             type="text"
             placeholder="Hľadať investorov..."
@@ -95,6 +127,24 @@ export function InvestorsPage() {
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           />
+
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as SortOption)}
+            className="px-3 py-2 border border-gray-300 rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          >
+            <option value="totalCapital">Zoradiť podľa kapitálu</option>
+            <option value="name">Zoradiť podľa mena</option>
+            <option value="createdAt">Zoradiť podľa dátumu</option>
+          </select>
+
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="px-3 py-2 border border-gray-300 rounded-md bg-background text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            title={sortOrder === 'asc' ? 'Zostupne' : 'Vzostupne'}
+          >
+            {sortOrder === 'asc' ? '↑' : '↓'}
+          </button>
         </div>
         <button
           onClick={() => setShowForm(true)}
@@ -122,7 +172,7 @@ export function InvestorsPage() {
           Zoznam investorov ({investors.length})
         </h2>
 
-        {investors.length === 0 ? (
+        {sortedInvestors.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-sm sm:text-base text-muted-foreground">
               {searchQuery ? 'Žiadni investori nenájdení.' : 'Zatiaľ nemáte žiadnych investorov.'}
@@ -130,7 +180,7 @@ export function InvestorsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {investors.map(investor => (
+            {sortedInvestors.map(investor => (
               <div
                 key={investor.id}
                 className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors gap-3 sm:gap-0"

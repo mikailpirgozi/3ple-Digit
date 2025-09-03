@@ -1,15 +1,15 @@
-import { prisma } from '@/core/prisma.js';
 import { log } from '@/core/logger.js';
+import { prisma } from '@/core/prisma.js';
 import type {
-  GetPortfolioReportQuery,
+  CashflowReport,
+  ExportCsvRequest,
+  GetCashflowReportQuery,
   GetInvestorReportQuery,
   GetPerformanceReportQuery,
-  GetCashflowReportQuery,
-  ExportCsvRequest,
-  PortfolioReport,
+  GetPortfolioReportQuery,
   InvestorReport,
   PerformanceReport,
-  CashflowReport,
+  PortfolioReport,
 } from './schema.js';
 
 export class ReportsService {
@@ -29,7 +29,10 @@ export class ReportsService {
 
     // Calculate total value for active assets only
     const activeAssets = assets.filter(asset => asset.status !== 'SOLD');
-    const totalValue = activeAssets.reduce((sum, asset) => sum + asset.currentValue, 0);
+    const totalValue = activeAssets.reduce((sum, asset) => {
+      const value = asset.currentValue || 0;
+      return sum + (isNaN(value) ? 0 : value);
+    }, 0);
     const totalCount = assets.length;
 
     // Group by type (active assets only)
@@ -40,25 +43,33 @@ export class ReportsService {
       }
       const group = typeGroups.get(asset.type)!;
       group.count++;
-      group.totalValue += asset.currentValue;
+      const value = asset.currentValue || 0;
+      group.totalValue += isNaN(value) ? 0 : value;
     });
 
     const byType = Array.from(typeGroups.entries()).map(([type, data]) => ({
       type,
       count: data.count,
       totalValue: data.totalValue,
-      percentage: totalValue > 0 ? (data.totalValue / totalValue) * 100 : 0,
+      percentage:
+        totalValue > 0 && !isNaN(totalValue) && !isNaN(data.totalValue)
+          ? (data.totalValue / totalValue) * 100
+          : 0,
     }));
 
     // Get top assets (active only)
     const topAssets = activeAssets
-      .sort((a, b) => b.currentValue - a.currentValue)
+      .sort((a, b) => {
+        const aValue = a.currentValue || 0;
+        const bValue = b.currentValue || 0;
+        return (isNaN(bValue) ? 0 : bValue) - (isNaN(aValue) ? 0 : aValue);
+      })
       .slice(0, 10)
       .map(asset => ({
         id: asset.id,
         name: asset.name,
         type: asset.type,
-        currentValue: asset.currentValue,
+        currentValue: isNaN(asset.currentValue) ? 0 : asset.currentValue,
       }));
 
     // Group by month if requested
@@ -110,9 +121,22 @@ export class ReportsService {
         status: asset.status,
       })),
       soldAssets,
-      byType,
+      // Frontend expects assetsByType with value field
+      assetsByType: byType.map(item => ({
+        type: item.type,
+        count: item.count,
+        value: item.totalValue,
+        percentage: item.percentage,
+      })),
+      byType, // Keep for backward compatibility
       byMonth,
-      topAssets,
+      // Frontend expects topAssets with value field
+      topAssets: topAssets.map(asset => ({
+        id: asset.id,
+        name: asset.name,
+        type: asset.type,
+        value: isNaN(asset.currentValue) ? 0 : asset.currentValue,
+      })),
     };
   }
 

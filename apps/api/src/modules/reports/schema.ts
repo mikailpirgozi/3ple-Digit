@@ -61,6 +61,15 @@ export const portfolioReportSchema = z.object({
       pnlPercent: z.number(),
     })
   ),
+  // Frontend expects assetsByType with value field
+  assetsByType: z.array(
+    z.object({
+      type: z.string(),
+      count: z.number(),
+      value: z.number(),
+      percentage: z.number(),
+    })
+  ),
   byType: z.array(
     z.object({
       type: z.string(),
@@ -68,7 +77,7 @@ export const portfolioReportSchema = z.object({
       totalValue: z.number(),
       percentage: z.number(),
     })
-  ),
+  ), // Keep for backward compatibility
   byMonth: z
     .array(
       z.object({
@@ -83,7 +92,7 @@ export const portfolioReportSchema = z.object({
       id: z.string(),
       name: z.string(),
       type: z.string(),
-      currentValue: z.number(),
+      value: z.number(),
     })
   ),
 });

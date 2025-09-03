@@ -481,3 +481,29 @@ export interface SnapshotFilters extends PaginationParams {
   dateFrom?: string;
   dateTo?: string;
 }
+
+// Summary types
+export interface BankSummary {
+  totalBalance: number;
+  byCurrency: Record<string, { amount: number; count: number }>;
+  byAccount: Array<{
+    accountName: string;
+    bankName: string | null;
+    amount: number;
+    currency: string;
+  }>;
+}
+
+export interface LiabilitiesSummary {
+  totalBalance: number;
+  averageInterestRate: number;
+  count: number;
+  upcomingMaturity: Liability[];
+}
+
+export interface AssetsSummary {
+  totalValue: number;
+  count: number;
+  byType: Record<AssetType, { count: number; value: number }>;
+  byStatus: Record<AssetStatus, { count: number; value: number }>;
+}

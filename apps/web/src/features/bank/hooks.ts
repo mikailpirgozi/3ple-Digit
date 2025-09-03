@@ -1,10 +1,6 @@
+import { BankFilters, CreateBankBalanceRequest } from '@/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { bankApi } from './api';
-import {
-  BankBalance,
-  CreateBankBalanceRequest,
-  BankFilters,
-} from '@/types/api';
 
 // Query keys factory
 export const bankKeys = {
@@ -13,6 +9,7 @@ export const bankKeys = {
   balancesList: (filters?: BankFilters) => [...bankKeys.balances(), 'list', filters] as const,
   balance: (id: string) => [...bankKeys.balances(), id] as const,
   accountNames: () => [...bankKeys.all, 'account-names'] as const,
+  summary: () => [...bankKeys.all, 'summary'] as const,
 };
 
 // Bank queries
@@ -38,6 +35,14 @@ export function useAccountNames() {
   });
 }
 
+export function useBankSummary() {
+  return useQuery({
+    queryKey: bankKeys.summary(),
+    queryFn: () => bankApi.getBankSummary(),
+    refetchInterval: 60000, // Refresh every minute
+  });
+}
+
 // Bank mutations
 export function useCreateBankBalance() {
   const queryClient = useQueryClient();
@@ -47,6 +52,7 @@ export function useCreateBankBalance() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
       queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
+      queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
     },
   });
 }
@@ -61,6 +67,7 @@ export function useUpdateBankBalance() {
       queryClient.invalidateQueries({ queryKey: bankKeys.balance(id) });
       queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
       queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
+      queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
     },
   });
 }
@@ -73,6 +80,7 @@ export function useDeleteBankBalance() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
       queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
+      queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
     },
   });
 }
@@ -85,6 +93,7 @@ export function useImportCsv() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bankKeys.balances() });
       queryClient.invalidateQueries({ queryKey: bankKeys.accountNames() });
+      queryClient.invalidateQueries({ queryKey: bankKeys.summary() });
     },
   });
 }

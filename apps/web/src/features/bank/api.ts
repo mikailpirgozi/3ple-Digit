@@ -1,10 +1,11 @@
 import { api } from '@/lib/api-client';
 import {
   BankBalance,
+  BankBalancesResponse,
+  BankFilters,
+  BankSummary,
   CreateBankBalanceRequest,
   CsvImportResponse,
-  BankFilters,
-  BankBalancesResponse,
 } from '@/types/api';
 
 export const bankApi = {
@@ -36,4 +37,7 @@ export const bankApi = {
 
   // Get unique account names for filtering
   getAccountNames: (): Promise<string[]> => api.get('/bank/account-names'),
+
+  // Get bank balance summary
+  getBankSummary: (): Promise<BankSummary> => api.get('/bank/summary'),
 };
