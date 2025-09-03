@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { AssetEvent, AssetEventKind, CreateAssetEventRequest } from '@/types/api';
+import type { AssetEvent, AssetEventKind, CreateAssetEventRequest } from '@/types/api';
 
 const assetEventFormSchema = z.object({
   date: z.string().min(1, 'Dátum je povinný'),
@@ -89,9 +89,7 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
             {...register('date')}
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
-          {errors.date && (
-            <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>
-          )}
+          {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>}
         </div>
 
         {/* Event Kind */}
@@ -115,9 +113,7 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
               {eventKindDescriptions[selectedKind]}
             </p>
           )}
-          {errors.kind && (
-            <p className="mt-1 text-sm text-red-600">{errors.kind.message}</p>
-          )}
+          {errors.kind && <p className="mt-1 text-sm text-red-600">{errors.kind.message}</p>}
         </div>
 
         {/* Amount */}
@@ -134,9 +130,7 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
               placeholder="0.00"
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
-            {errors.amount && (
-              <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>
-            )}
+            {errors.amount && <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>}
           </div>
         )}
 
@@ -152,9 +146,7 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
             placeholder="Voliteľná poznámka k udalosti..."
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
           />
-          {errors.note && (
-            <p className="mt-1 text-sm text-red-600">{errors.note.message}</p>
-          )}
+          {errors.note && <p className="mt-1 text-sm text-red-600">{errors.note.message}</p>}
         </div>
 
         {/* Action Buttons */}

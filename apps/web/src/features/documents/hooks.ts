@@ -1,9 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { documentsApi } from './api';
-import {
-  Document,
-  PresignUploadRequest,
-} from '@/types/api';
+import type { PresignUploadRequest } from '@/types/api';
+import { Document } from '@/types/api';
 
 // Query keys factory
 export const documentsKeys = {
@@ -26,7 +24,7 @@ export function useDocument(id: string) {
   return useQuery({
     queryKey: documentsKeys.detail(id),
     queryFn: () => documentsApi.getDocument(id),
-    enabled: !!id,
+    enabled: Boolean(id),
   });
 }
 
@@ -46,12 +44,12 @@ export function useUploadDocument() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      file, 
-      title, 
-      linkedType, 
-      linkedId, 
-      note 
+    mutationFn: async ({
+      file,
+      title,
+      linkedType,
+      linkedId,
+      note,
     }: {
       file: File;
       title: string;
@@ -72,11 +70,7 @@ export function useUploadDocument() {
       const presignResponse = await documentsApi.getPresignedUpload(presignData);
 
       // Upload file to R2
-      await documentsApi.uploadFile(
-        presignResponse.uploadUrl,
-        file,
-        presignResponse.fields
-      );
+      await documentsApi.uploadFile(presignResponse.uploadUrl, file, presignResponse.fields);
 
       return presignResponse.document;
     },
@@ -90,10 +84,10 @@ export function useDownloadDocument() {
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await documentsApi.getPresignedDownload(id);
-      
+
       // Open download URL in new tab
       window.open(response.downloadUrl, '_blank');
-      
+
       return response;
     },
   });

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Liability, CreateLiabilityRequest } from '@/types/api';
+import type { Liability, CreateLiabilityRequest } from '@/types/api';
 
 const liabilityFormSchema = z.object({
   name: z.string().min(1, 'Názov je povinný'),
@@ -68,14 +68,15 @@ export function LiabilityForm({ liability, onSubmit, onCancel, isLoading }: Liab
             placeholder="Napríklad: Bank Loan - Property"
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
-          {errors.name && (
-            <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-          )}
+          {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
         </div>
 
         {/* Current Balance */}
         <div>
-          <label htmlFor="currentBalance" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="currentBalance"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Aktuálny zostatok (€)
           </label>
           <input
@@ -103,9 +104,7 @@ export function LiabilityForm({ liability, onSubmit, onCancel, isLoading }: Liab
             placeholder="Napríklad: Hypotéka na kancelársku budovu • 3.5% p.a. • Splatnosť: 01/2029"
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
           />
-          {errors.note && (
-            <p className="mt-1 text-sm text-red-600">{errors.note.message}</p>
-          )}
+          {errors.note && <p className="mt-1 text-sm text-red-600">{errors.note.message}</p>}
         </div>
 
         {/* Action Buttons */}

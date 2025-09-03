@@ -1,5 +1,5 @@
 import { api } from '@/lib/api-client';
-import {
+import type {
   CreateLiabilityRequest,
   LiabilitiesResponse,
   LiabilitiesSummary,

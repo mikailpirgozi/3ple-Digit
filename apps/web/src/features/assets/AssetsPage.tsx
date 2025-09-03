@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Asset } from '@/types/api';
+import type { Asset } from '@/types/api';
 import { useCreateAsset, useUpdateAsset } from './hooks';
 import { AssetsList } from './ui/AssetsList';
 import { AssetForm } from './ui/AssetForm';
@@ -47,9 +47,7 @@ export function AssetsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Aktíva</h1>
-          <p className="text-muted-foreground">
-            Správa investičných aktív a ich ocenenia
-          </p>
+          <p className="text-muted-foreground">Správa investičných aktív a ich ocenenia</p>
         </div>
         {!showForm && (
           <button
@@ -72,13 +70,8 @@ export function AssetsPage() {
         </div>
       ) : (
         <div className="rounded-lg border border-border bg-card p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-4">
-            Portfolio aktív
-          </h2>
-          <AssetsList
-            onCreateAsset={() => setShowForm(true)}
-            onEditAsset={handleEditAsset}
-          />
+          <h2 className="text-xl font-semibold text-foreground mb-4">Portfolio aktív</h2>
+          <AssetsList onCreateAsset={() => setShowForm(true)} onEditAsset={handleEditAsset} />
         </div>
       )}
     </div>

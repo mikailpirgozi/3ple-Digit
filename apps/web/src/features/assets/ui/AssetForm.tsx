@@ -1,4 +1,4 @@
-import { Asset, AssetType, CreateAssetRequest } from '@/types/api';
+import type { Asset, AssetType, CreateAssetRequest } from '@/types/api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

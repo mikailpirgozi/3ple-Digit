@@ -1,9 +1,9 @@
 import { api } from '@/lib/api-client';
-import { 
+import type {
   PortfolioReport,
   InvestorReport,
   PerformanceReport,
-  CashflowReport
+  CashflowReport,
 } from '@/types/api';
 
 export const reportsApi = {

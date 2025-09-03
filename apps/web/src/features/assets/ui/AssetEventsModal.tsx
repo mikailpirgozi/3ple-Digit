@@ -1,6 +1,11 @@
 import { useState } from 'react';
-import { Asset, AssetEvent, AssetEventKind } from '@/types/api';
-import { useAssetEvents, useCreateAssetEvent, useUpdateAssetEvent, useDeleteAssetEvent } from '../hooks';
+import type { Asset, AssetEvent, AssetEventKind } from '@/types/api';
+import {
+  useAssetEvents,
+  useCreateAssetEvent,
+  useUpdateAssetEvent,
+  useDeleteAssetEvent,
+} from '../hooks';
 import { AssetEventForm } from './AssetEventForm';
 
 interface AssetEventsModalProps {
@@ -77,9 +82,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">
-              Udalosti aktíva: {asset.name}
-            </h2>
+            <h2 className="text-xl font-semibold text-foreground">Udalosti aktíva: {asset.name}</h2>
             <p className="text-sm text-muted-foreground">
               Aktuálna hodnota: {formatCurrency(asset.currentValue)}
             </p>
@@ -89,7 +92,12 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
             className="text-muted-foreground hover:text-foreground focus:outline-none"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -128,7 +136,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
                 <div className="space-y-3">
                   {events
                     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                    .map((event) => (
+                    .map(event => (
                       <div
                         key={event.id}
                         className="flex items-center justify-between p-4 border border-border rounded-lg bg-card"

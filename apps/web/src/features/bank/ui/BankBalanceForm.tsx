@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { BankBalance, CreateBankBalanceRequest } from '@/types/api';
+import type { BankBalance, CreateBankBalanceRequest } from '@/types/api';
 import { useAccountNames } from '../hooks';
 
 const bankBalanceFormSchema = z.object({
@@ -77,13 +77,13 @@ export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: Bank
               placeholder="Napríklad: Main Business Account"
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
-            
+
             {/* Existing account names suggestions */}
             {accountNames && accountNames.length > 0 && (
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Existujúce účty:</p>
                 <div className="flex flex-wrap gap-2">
-                  {accountNames.map((name) => (
+                  {accountNames.map(name => (
                     <button
                       key={name}
                       type="button"
@@ -117,9 +117,7 @@ export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: Bank
             {...register('date')}
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
-          {errors.date && (
-            <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>
-          )}
+          {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>}
         </div>
 
         {/* Amount */}
@@ -135,9 +133,7 @@ export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: Bank
             placeholder="0.00"
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
-          {errors.amount && (
-            <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>
-          )}
+          {errors.amount && <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>}
         </div>
 
         {/* Action Buttons */}

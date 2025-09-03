@@ -1,4 +1,4 @@
-import { AssetType } from '@/types/api';
+import type { AssetType } from '@/types/api';
 import { useExportPortfolio, usePortfolioReport } from '../hooks';
 
 interface PortfolioReportCardProps {

@@ -1,10 +1,13 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CreateSnapshotRequest } from '@/types/api';
+import type { CreateSnapshotRequest } from '@/types/api';
 
 const snapshotFormSchema = z.object({
-  period: z.string().min(1, 'Obdobie je povinné').regex(/^\d{4}-\d{2}$/, 'Formát musí byť YYYY-MM'),
+  period: z
+    .string()
+    .min(1, 'Obdobie je povinné')
+    .regex(/^\d{4}-\d{2}$/, 'Formát musí byť YYYY-MM'),
   performanceFeeRate: z.number().min(0).max(100).optional(),
 });
 
@@ -60,14 +63,15 @@ export function SnapshotForm({ onSubmit, onCancel, isLoading }: SnapshotFormProp
             {...register('period')}
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
-          {errors.period && (
-            <p className="mt-1 text-sm text-red-600">{errors.period.message}</p>
-          )}
+          {errors.period && <p className="mt-1 text-sm text-red-600">{errors.period.message}</p>}
         </div>
 
         {/* Performance Fee Rate */}
         <div>
-          <label htmlFor="performanceFeeRate" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="performanceFeeRate"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Performance Fee (%)
           </label>
           <input
@@ -93,8 +97,18 @@ export function SnapshotForm({ onSubmit, onCancel, isLoading }: SnapshotFormProp
         {/* Info Box */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <div className="text-sm text-blue-800">
               <p className="font-medium mb-1">Čo sa stane pri vytvorení snapshot:</p>

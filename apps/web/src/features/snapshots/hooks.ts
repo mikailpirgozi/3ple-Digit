@@ -1,4 +1,4 @@
-import { CreateSnapshotRequest, SnapshotFilters } from '@/types/api';
+import type { CreateSnapshotRequest, SnapshotFilters } from '@/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { snapshotsApi } from './api';
 
@@ -24,7 +24,7 @@ export function useSnapshot(id: string) {
   return useQuery({
     queryKey: snapshotsKeys.detail(id),
     queryFn: () => snapshotsApi.getSnapshot(id),
-    enabled: !!id,
+    enabled: Boolean(id),
   });
 }
 

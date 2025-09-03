@@ -1,23 +1,15 @@
 import { api } from '@/lib/api-client';
-import { 
-  LoginRequest, 
-  RegisterRequest, 
-  AuthResponse, 
-  User 
-} from '@/types/api';
+import type { LoginRequest, RegisterRequest, AuthResponse, User } from '@/types/api';
 
 export const authApi = {
   // Login user
-  login: (data: LoginRequest): Promise<AuthResponse> =>
-    api.post('/auth/login', data),
+  login: (data: LoginRequest): Promise<AuthResponse> => api.post('/auth/login', data),
 
   // Register user
-  register: (data: RegisterRequest): Promise<AuthResponse> =>
-    api.post('/auth/register', data),
+  register: (data: RegisterRequest): Promise<AuthResponse> => api.post('/auth/register', data),
 
   // Get current user
-  me: (): Promise<User> =>
-    api.get('/auth/me'),
+  me: (): Promise<User> => api.get('/auth/me'),
 
   // Logout (client-side only - remove token)
   logout: (): void => {
@@ -37,6 +29,6 @@ export const authApi = {
 
   // Check if user is authenticated
   isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('auth_token');
+    return Boolean(localStorage.getItem('auth_token'));
   },
 };

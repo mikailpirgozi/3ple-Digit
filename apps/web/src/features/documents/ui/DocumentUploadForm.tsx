@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { DocumentLinkedType } from '@/types/api';
+import type { DocumentLinkedType } from '@/types/api';
 
 const documentUploadFormSchema = z.object({
   title: z.string().min(1, 'Názov je povinný'),
@@ -99,7 +99,7 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
   const getFileIcon = (file: File) => {
@@ -116,24 +116,20 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-foreground">Nahrať dokument</h2>
-        <p className="text-sm text-muted-foreground">
-          Nahrajte dokument do Cloudflare R2 storage
-        </p>
+        <p className="text-sm text-muted-foreground">Nahrajte dokument do Cloudflare R2 storage</p>
       </div>
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         {/* File Upload Area */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Súbor
-          </label>
+          <label className="block text-sm font-medium text-foreground mb-2">Súbor</label>
           <div
             className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
               dragActive
                 ? 'border-primary bg-primary/5'
                 : selectedFile
-                ? 'border-green-300 bg-green-50'
-                : 'border-border hover:border-primary/50'
+                  ? 'border-green-300 bg-green-50'
+                  : 'border-border hover:border-primary/50'
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -172,8 +168,18 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
               </div>
             ) : (
               <div className="space-y-2">
-                <svg className="w-12 h-12 text-muted-foreground mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                <svg
+                  className="w-12 h-12 text-muted-foreground mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
                 </svg>
                 <div>
                   <button
@@ -183,9 +189,7 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
                   >
                     Kliknite pre výber súboru
                   </button>
-                  <p className="text-sm text-muted-foreground">
-                    alebo pretiahnite súbor sem
-                  </p>
+                  <p className="text-sm text-muted-foreground">alebo pretiahnite súbor sem</p>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Podporované formáty: PDF, DOC, XLS, obrázky, ZIP
@@ -207,9 +211,7 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
             placeholder="Napríklad: Property Deed"
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
-          {errors.title && (
-            <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-          )}
+          {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
         </div>
 
         {/* Linked Type */}
@@ -265,9 +267,7 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
             placeholder="Voliteľná poznámka k dokumentu..."
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
           />
-          {errors.note && (
-            <p className="mt-1 text-sm text-red-600">{errors.note.message}</p>
-          )}
+          {errors.note && <p className="mt-1 text-sm text-red-600">{errors.note.message}</p>}
         </div>
 
         {/* Action Buttons */}

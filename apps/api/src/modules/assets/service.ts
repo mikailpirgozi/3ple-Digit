@@ -1,7 +1,7 @@
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
 import { prisma } from '@/core/prisma.js';
-import type { Asset, AssetEvent } from '@prisma/client';
+import type { Asset, AssetEvent, Prisma } from '@prisma/client';
 import type {
   AssetEventResponse,
   AssetEventTypeEnum,
@@ -111,11 +111,11 @@ export class AssetsService {
 
       const totalInflows = asset.events
         .filter(event => ['PAYMENT_IN', 'VALUATION'].includes(event.type) && event.amount > 0)
-        .reduce((sum, event) => sum + event.amount, 0);
+        .reduce((sum: number, event: any) => sum + event.amount, 0);
 
       const totalOutflows = asset.events
         .filter(event => ['PAYMENT_OUT', 'CAPEX'].includes(event.type) || event.amount < 0)
-        .reduce((sum, event) => sum + Math.abs(event.amount), 0);
+        .reduce((sum: number, event: any) => sum + Math.abs(event.amount), 0);
 
       return this.formatAssetResponse({
         ...asset,
@@ -160,11 +160,11 @@ export class AssetsService {
 
     const totalInflows = asset.events
       .filter(event => ['PAYMENT_IN', 'VALUATION'].includes(event.type) && event.amount > 0)
-      .reduce((sum, event) => sum + event.amount, 0);
+      .reduce((sum: number, event: any) => sum + event.amount, 0);
 
     const totalOutflows = asset.events
       .filter(event => ['PAYMENT_OUT', 'CAPEX'].includes(event.type) || event.amount < 0)
-      .reduce((sum, event) => sum + Math.abs(event.amount), 0);
+      .reduce((sum: number, event: any) => sum + Math.abs(event.amount), 0);
 
     return this.formatAssetResponse({
       ...asset,
@@ -242,7 +242,7 @@ export class AssetsService {
     }
 
     // Create event and update asset value in transaction
-    const result = await prisma.$transaction(async tx => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Create the event
       const event = await tx.assetEvent.create({
         data: {
@@ -366,7 +366,7 @@ export class AssetsService {
     }
 
     // Update event and recalculate asset value in transaction
-    const result = await prisma.$transaction(async tx => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Revert old event impact
       const revertedValue = this.revertAssetValue(
         existingEvent.asset.currentValue,

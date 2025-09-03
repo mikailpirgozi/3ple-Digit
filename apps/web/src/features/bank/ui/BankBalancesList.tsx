@@ -1,4 +1,4 @@
-import { BankBalance, BankFilters } from '@/types/api';
+import type { BankBalance, BankFilters } from '@/types/api';
 import { useState } from 'react';
 import { useAccountNames, useBankBalances, useDeleteBankBalance } from '../hooks';
 

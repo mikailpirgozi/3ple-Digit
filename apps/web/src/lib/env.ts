@@ -10,17 +10,17 @@ type Env = z.infer<typeof envSchema>;
 
 function validateEnv(): Env {
   try {
-    return envSchema.parse((import.meta as any).env);
+    return envSchema.parse(import.meta.env as Record<string, unknown>);
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.errors
         .map(err => `${err.path.join('.')}: ${err.message}`)
         .join('\n');
-      
+
       console.error('❌ Invalid environment variables:');
       console.error(missingVars);
       console.error('\n💡 Please check your .env file and ensure all required variables are set.');
-      
+
       throw new Error('Environment validation failed');
     }
     throw error;

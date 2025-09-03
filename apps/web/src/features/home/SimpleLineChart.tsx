@@ -51,8 +51,7 @@ export function SimpleLineChart({
 
   // Create area path (for gradient fill)
   const areaPath =
-    pathData +
-    ` L ${points[points.length - 1].x} ${padding + chartHeight}` +
+    `${pathData} L ${points[points.length - 1].x} ${padding + chartHeight}` +
     ` L ${points[0].x} ${padding + chartHeight} Z`;
 
   return (

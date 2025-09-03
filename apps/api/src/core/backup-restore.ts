@@ -2,33 +2,21 @@ import fs from 'fs/promises';
 import path from 'path';
 import { log } from './logger.js';
 import { prisma } from './prisma.js';
-import type {
-  User,
-  Investor,
-  InvestorCashflow,
-  Asset,
-  AssetEvent,
-  Liability,
-  BankBalance,
-  PeriodSnapshot,
-  InvestorSnapshot,
-  Document,
-  AuditLog,
-} from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
 interface BackupData {
   timestamp: string;
-  users: User[];
-  investors: Investor[];
-  investorCashflows: InvestorCashflow[];
-  assets: Asset[];
-  assetEvents: AssetEvent[];
-  liabilities: Liability[];
-  bankBalances: BankBalance[];
-  periodSnapshots: PeriodSnapshot[];
-  investorSnapshots: InvestorSnapshot[];
-  documents: Document[];
-  auditLogs: AuditLog[];
+  users: any[];
+  investors: any[];
+  investorCashflows: any[];
+  assets: any[];
+  assetEvents: any[];
+  liabilities: any[];
+  bankBalances: any[];
+  periodSnapshots: any[];
+  investorSnapshots: any[];
+  documents: any[];
+  auditLogs: any[];
 }
 
 /**
@@ -163,7 +151,7 @@ export async function restoreBackup(backupPath: string): Promise<void> {
     }
 
     // Clear existing data (in transaction)
-    await prisma.$transaction(async tx => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       log.info('🧹 Clearing existing data...');
       await tx.auditLog.deleteMany();
       await tx.document.deleteMany();

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Liability } from '@/types/api';
+import type { Liability } from '@/types/api';
 import { useCreateLiability, useUpdateLiability } from './hooks';
 import { LiabilitiesList } from './ui/LiabilitiesList';
 import { LiabilityForm } from './ui/LiabilityForm';
@@ -47,9 +47,7 @@ export function LiabilitiesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Záväzky</h1>
-          <p className="text-muted-foreground">
-            Prehľad úverov a ostatných záväzkov
-          </p>
+          <p className="text-muted-foreground">Prehľad úverov a ostatných záväzkov</p>
         </div>
         {!showForm && (
           <button
@@ -72,9 +70,7 @@ export function LiabilitiesPage() {
         </div>
       ) : (
         <div className="rounded-lg border border-border bg-card p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-4">
-            Aktívne záväzky
-          </h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Aktívne záväzky</h2>
           <LiabilitiesList
             onCreateLiability={() => setShowForm(true)}
             onEditLiability={handleEditLiability}

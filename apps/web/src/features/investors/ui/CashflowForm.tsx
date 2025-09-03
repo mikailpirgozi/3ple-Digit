@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CreateCashflowRequest } from '@/types/api';
+import type { CreateCashflowRequest } from '@/types/api';
 
 const cashflowSchema = z.object({
   date: z.string().min(1, 'Dátum je povinný'),
@@ -59,9 +59,7 @@ export const CashflowForm: React.FC<CashflowFormProps> = ({
             type="date"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
-          {errors.date && (
-            <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>
-          )}
+          {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>}
         </div>
 
         <div>
@@ -76,9 +74,7 @@ export const CashflowForm: React.FC<CashflowFormProps> = ({
             <option value="DEPOSIT">Vklad</option>
             <option value="WITHDRAWAL">Výber</option>
           </select>
-          {errors.type && (
-            <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
-          )}
+          {errors.type && <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>}
         </div>
       </div>
 
@@ -94,9 +90,7 @@ export const CashflowForm: React.FC<CashflowFormProps> = ({
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           placeholder="0.00"
         />
-        {errors.amount && (
-          <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>
-        )}
+        {errors.amount && <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>}
       </div>
 
       <div>
@@ -109,9 +103,7 @@ export const CashflowForm: React.FC<CashflowFormProps> = ({
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           placeholder="Zadajte poznámku..."
         />
-        {errors.note && (
-          <p className="mt-1 text-sm text-red-600">{errors.note.message}</p>
-        )}
+        {errors.note && <p className="mt-1 text-sm text-red-600">{errors.note.message}</p>}
       </div>
 
       <div className="flex justify-end space-x-3">

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from './api';
 import { queryKeys } from '@/lib/query-client';
-import { User, LoginRequest, RegisterRequest } from '@/types/api';
+import type { User, LoginRequest, RegisterRequest } from '@/types/api';
 
 interface AuthContextType {
   user: User | null;
@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: authApi.login,
-    onSuccess: (data) => {
+    onSuccess: data => {
       authApi.setToken(data.accessToken);
       setUser(data.user);
       // Invalidate and refetch user data
@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: authApi.register,
-    onSuccess: (data) => {
+    onSuccess: data => {
       authApi.setToken(data.accessToken);
       setUser(data.user);
       // Invalidate and refetch user data
@@ -98,16 +98,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated: Boolean(user),
     isLoading: isLoading || loginMutation.isPending || registerMutation.isPending,
     login,
     register,
     logout,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

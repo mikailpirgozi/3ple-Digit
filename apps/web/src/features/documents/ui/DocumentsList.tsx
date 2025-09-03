@@ -1,4 +1,4 @@
-import { Document, DocumentLinkedType } from '@/types/api';
+import type { Document, DocumentLinkedType } from '@/types/api';
 import { useDeleteDocument, useDocuments, useDownloadDocument } from '../hooks';
 
 interface DocumentsListProps {
@@ -45,7 +45,7 @@ export function DocumentsList({ onUploadDocument }: DocumentsListProps) {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
   const formatDate = (dateString: string) => {

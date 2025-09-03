@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BankBalance } from '@/types/api';
+import type { BankBalance } from '@/types/api';
 import { useCreateBankBalance, useUpdateBankBalance } from './hooks';
 import { BankBalancesList } from './ui/BankBalancesList';
 import { BankBalanceForm } from './ui/BankBalanceForm';
@@ -49,9 +49,7 @@ export function BankPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Bankové účty</h1>
-          <p className="text-muted-foreground">
-            Prehľad bankových účtov a hotovostných pozícií
-          </p>
+          <p className="text-muted-foreground">Prehľad bankových účtov a hotovostných pozícií</p>
         </div>
         {!showForm && (
           <div className="flex gap-2">
@@ -91,9 +89,7 @@ export function BankPage() {
       )}
 
       {/* CSV Import Modal */}
-      {showImportModal && (
-        <CsvImportModal onClose={() => setShowImportModal(false)} />
-      )}
+      {showImportModal && <CsvImportModal onClose={() => setShowImportModal(false)} />}
     </div>
   );
 }

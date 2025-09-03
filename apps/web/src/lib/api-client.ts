@@ -1,4 +1,5 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import type { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import axios from 'axios';
 import { env } from './env';
 
 // API Error types
@@ -24,14 +25,14 @@ const createApiClient = (): AxiosInstance => {
 
   // Request interceptor - add auth token
   client.interceptors.request.use(
-    (config) => {
+    config => {
       const token = localStorage.getItem('auth_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
     },
-    (error) => Promise.reject(error)
+    error => Promise.reject(error)
   );
 
   // Response interceptor - handle errors
@@ -78,16 +79,12 @@ export interface ApiResponse<T> {
 export const api = {
   get: <T>(url: string, params?: Record<string, unknown>) =>
     apiClient.get<T>(url, { params }).then(res => res.data),
-  
-  post: <T>(url: string, data?: unknown) =>
-    apiClient.post<T>(url, data).then(res => res.data),
-  
-  put: <T>(url: string, data?: unknown) =>
-    apiClient.put<T>(url, data).then(res => res.data),
-  
-  patch: <T>(url: string, data?: unknown) =>
-    apiClient.patch<T>(url, data).then(res => res.data),
-  
-  delete: <T>(url: string) =>
-    apiClient.delete<T>(url).then(res => res.data),
+
+  post: <T>(url: string, data?: unknown) => apiClient.post<T>(url, data).then(res => res.data),
+
+  put: <T>(url: string, data?: unknown) => apiClient.put<T>(url, data).then(res => res.data),
+
+  patch: <T>(url: string, data?: unknown) => apiClient.patch<T>(url, data).then(res => res.data),
+
+  delete: <T>(url: string) => apiClient.delete<T>(url).then(res => res.data),
 };

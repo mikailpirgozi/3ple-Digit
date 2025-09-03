@@ -1,4 +1,4 @@
-import { Liability } from '@/types/api';
+import type { Liability } from '@/types/api';
 import { useLiabilities, useDeleteLiability } from '../hooks';
 
 interface LiabilitiesListProps {

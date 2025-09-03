@@ -1,4 +1,4 @@
-import { CreateLiabilityRequest } from '@/types/api';
+import type { CreateLiabilityRequest } from '@/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { liabilitiesApi } from './api';
 
@@ -24,7 +24,7 @@ export function useLiability(id: string) {
   return useQuery({
     queryKey: liabilitiesKeys.detail(id),
     queryFn: () => liabilitiesApi.getLiability(id),
-    enabled: !!id,
+    enabled: Boolean(id),
   });
 }
 

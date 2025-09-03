@@ -1,4 +1,4 @@
-import { Asset, AssetFilters, AssetType } from '@/types/api';
+import type { Asset, AssetFilters, AssetType } from '@/types/api';
 import { useState } from 'react';
 import { useAssets, useDeleteAsset, useMarkAssetSold } from '../hooks';
 import { AssetEventsModal } from './AssetEventsModal';

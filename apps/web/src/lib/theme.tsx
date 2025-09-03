@@ -1,4 +1,5 @@
-import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -23,7 +24,7 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+      return (localStorage.getItem(storageKey) as Theme) ?? defaultTheme;
     }
     return defaultTheme;
   });
@@ -32,10 +33,10 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement;
-    
+
     const updateTheme = () => {
       let resolvedTheme: 'light' | 'dark';
-      
+
       if (theme === 'system') {
         resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
           ? 'dark'
@@ -43,9 +44,9 @@ export function ThemeProvider({
       } else {
         resolvedTheme = theme;
       }
-      
+
       setActualTheme(resolvedTheme);
-      
+
       root.classList.remove('light', 'dark');
       root.classList.add(resolvedTheme);
     };
@@ -58,7 +59,7 @@ export function ThemeProvider({
       mediaQuery.addEventListener('change', updateTheme);
       return () => mediaQuery.removeEventListener('change', updateTheme);
     }
-    
+
     return undefined;
   }, [theme]);
 
@@ -71,11 +72,7 @@ export function ThemeProvider({
     actualTheme,
   };
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export const useTheme = () => {

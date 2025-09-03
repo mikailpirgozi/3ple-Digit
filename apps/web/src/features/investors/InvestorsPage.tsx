@@ -1,4 +1,4 @@
-import { CreateInvestorRequest } from '@/types/api';
+import type { CreateInvestorRequest } from '@/types/api';
 import { useState } from 'react';
 import { useCreateInvestor, useDeleteInvestor, useInvestors } from './hooks';
 import { InvestorForm } from './ui/InvestorForm';

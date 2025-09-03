@@ -1,4 +1,4 @@
-import { SnapshotFilters } from '@/types/api';
+import type { SnapshotFilters } from '@/types/api';
 import { useState } from 'react';
 import { useDeleteSnapshot, useSnapshots } from '../hooks';
 

@@ -1,4 +1,4 @@
-import { BankFilters, CreateBankBalanceRequest } from '@/types/api';
+import type { BankFilters, CreateBankBalanceRequest } from '@/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { bankApi } from './api';
 
@@ -24,7 +24,7 @@ export function useBankBalance(id: string) {
   return useQuery({
     queryKey: bankKeys.balance(id),
     queryFn: () => bankApi.getBankBalance(id),
-    enabled: !!id,
+    enabled: Boolean(id),
   });
 }
 

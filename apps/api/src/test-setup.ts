@@ -1,4 +1,10 @@
 import { beforeAll, afterAll } from 'vitest';
+
+// Set test environment variables before importing prisma
+process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
+process.env.DATABASE_URL = process.env.DATABASE_URL || 'file:./test.db';
+
 import { prisma } from './core/prisma.js';
 
 beforeAll(async () => {

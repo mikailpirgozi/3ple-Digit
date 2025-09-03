@@ -1,6 +1,7 @@
 import { useAuth } from '@/features/auth/context';
 import { clsx } from 'clsx';
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -128,7 +129,18 @@ export function Layout({ children }: LayoutProps) {
         {isMobileMenuOpen && (
           <div className="lg:hidden fixed inset-0 z-50 flex">
             {/* Backdrop */}
-            <div className="fixed inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)} />
+            <div
+              className="fixed inset-0 bg-black/50"
+              onClick={() => setIsMobileMenuOpen(false)}
+              onKeyDown={e => {
+                if (e.key === 'Escape') {
+                  setIsMobileMenuOpen(false);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Close mobile menu"
+            />
 
             {/* Sidebar */}
             <aside className="relative w-64 bg-card border-r border-border">

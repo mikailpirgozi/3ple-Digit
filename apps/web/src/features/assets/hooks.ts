@@ -1,13 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { assetsApi } from './api';
-import {
-  Asset,
-  AssetEvent,
+import type {
   CreateAssetRequest,
   CreateAssetEventRequest,
   MarkAssetSoldRequest,
   AssetFilters,
 } from '@/types/api';
+import { Asset, AssetEvent } from '@/types/api';
 
 // Query keys factory
 export const assetsKeys = {
@@ -31,7 +30,7 @@ export function useAsset(id: string) {
   return useQuery({
     queryKey: assetsKeys.detail(id),
     queryFn: () => assetsApi.getAsset(id),
-    enabled: !!id,
+    enabled: Boolean(id),
   });
 }
 
@@ -39,7 +38,7 @@ export function useAssetEvents(id: string) {
   return useQuery({
     queryKey: assetsKeys.events(id),
     queryFn: () => assetsApi.getAssetEvents(id),
-    enabled: !!id,
+    enabled: Boolean(id),
   });
 }
 
