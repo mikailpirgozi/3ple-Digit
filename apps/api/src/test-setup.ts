@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, beforeEach } from 'vitest';
+import { beforeAll, afterAll } from 'vitest';
 import { prisma } from './core/prisma.js';
 
 beforeAll(async () => {

@@ -10,10 +10,12 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: env.CORS_ORIGINS,
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: env.CORS_ORIGINS,
+    credentials: true,
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -39,7 +41,8 @@ app.post('/seed', async (_req, res) => {
     execSync('cd apps/api && pnpm db:seed', { stdio: 'inherit' });
     res.json({ success: true, message: 'Database seeded successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ success: false, error: errorMessage });
   }
 });
 

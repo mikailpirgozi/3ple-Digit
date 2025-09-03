@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import { Prisma } from '@prisma/client';
 import { log } from './logger.js';
 
 export interface ApiError extends Error {
@@ -27,26 +26,21 @@ export class AppError extends Error implements ApiError {
 
 // Predefined error types
 export const errors = {
-  badRequest: (message: string, details?: unknown) => 
+  badRequest: (message: string, details?: unknown) =>
     new AppError(message, 400, 'BAD_REQUEST', details),
-  
-  unauthorized: (message = 'Unauthorized') => 
-    new AppError(message, 401, 'UNAUTHORIZED'),
-  
-  forbidden: (message = 'Forbidden') => 
-    new AppError(message, 403, 'FORBIDDEN'),
-  
-  notFound: (message = 'Resource not found') => 
-    new AppError(message, 404, 'NOT_FOUND'),
-  
-  conflict: (message: string, details?: unknown) => 
-    new AppError(message, 409, 'CONFLICT', details),
-  
-  validation: (message: string, details?: unknown) => 
+
+  unauthorized: (message = 'Unauthorized') => new AppError(message, 401, 'UNAUTHORIZED'),
+
+  forbidden: (message = 'Forbidden') => new AppError(message, 403, 'FORBIDDEN'),
+
+  notFound: (message = 'Resource not found') => new AppError(message, 404, 'NOT_FOUND'),
+
+  conflict: (message: string, details?: unknown) => new AppError(message, 409, 'CONFLICT', details),
+
+  validation: (message: string, details?: unknown) =>
     new AppError(message, 422, 'VALIDATION_ERROR', details),
-  
-  internal: (message = 'Internal server error') => 
-    new AppError(message, 500, 'INTERNAL_ERROR'),
+
+  internal: (message = 'Internal server error') => new AppError(message, 500, 'INTERNAL_ERROR'),
 };
 
 // Error handler middleware
@@ -76,13 +70,15 @@ export const errorHandler = (
       message: err.message,
       code: err.code,
     }));
-  } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    switch (error.code) {
+  } else if ('code' in error && 'meta' in error) {
+    // Handle Prisma known request errors
+    const prismaError = error as { code: string; meta?: any };
+    switch (prismaError.code) {
       case 'P2002':
         statusCode = 409;
         code = 'UNIQUE_CONSTRAINT_VIOLATION';
         message = 'Resource already exists';
-        details = { field: error.meta?.target };
+        details = { field: prismaError.meta?.target };
         break;
       case 'P2025':
         statusCode = 404;
@@ -93,9 +89,10 @@ export const errorHandler = (
         statusCode = 400;
         code = 'DATABASE_ERROR';
         message = 'Database operation failed';
-        details = { code: error.code };
+        details = { code: prismaError.code };
     }
-  } else if (error instanceof Prisma.PrismaClientValidationError) {
+  } else if (error instanceof Error && error.message.includes('Invalid `prisma.')) {
+    // Handle Prisma validation errors
     statusCode = 400;
     code = 'VALIDATION_ERROR';
     message = 'Invalid data provided';
