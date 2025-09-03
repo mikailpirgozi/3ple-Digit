@@ -9,7 +9,7 @@ export function SnapshotsPage() {
 
   const createSnapshotMutation = useCreateSnapshot();
 
-  const handleCreateSnapshot = async (data: any) => {
+  const handleCreateSnapshot = async (data: { performanceFeeRate?: number }) => {
     try {
       await createSnapshotMutation.mutateAsync(data);
       setShowForm(false);
@@ -47,9 +47,7 @@ export function SnapshotsPage() {
 
       {/* Historical Snapshots */}
       <div className="rounded-lg border border-border bg-card p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-4">
-          História snapshots
-        </h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">História snapshots</h2>
         <SnapshotsList onCreateSnapshot={() => setShowForm(true)} />
       </div>
     </div>

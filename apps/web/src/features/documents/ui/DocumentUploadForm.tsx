@@ -122,7 +122,12 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         {/* File Upload Area */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Súbor</label>
+          <label
+            htmlFor="document-upload"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
+            Súbor
+          </label>
           <div
             className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
               dragActive
@@ -139,6 +144,7 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
             <input
               ref={fileInputRef}
               type="file"
+              id="document-upload"
               onChange={handleFileInputChange}
               className="hidden"
               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.zip,.rar"

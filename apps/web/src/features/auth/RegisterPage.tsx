@@ -42,7 +42,8 @@ export const RegisterPage: React.FC = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const { confirmPassword: _, ...registerData } = data;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+      const { confirmPassword, ...registerData } = data;
       await registerUser(registerData);
     } catch (error: unknown) {
       setError('root', {

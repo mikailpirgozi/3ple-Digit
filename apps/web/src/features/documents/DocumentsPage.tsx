@@ -8,7 +8,13 @@ export function DocumentsPage() {
 
   const uploadDocumentMutation = useUploadDocument();
 
-  const handleUploadDocument = async (data: any) => {
+  const handleUploadDocument = async (data: {
+    file: File;
+    title: string;
+    linkedType: 'asset' | 'investor' | 'liability';
+    linkedId: string;
+    note?: string;
+  }) => {
     try {
       await uploadDocumentMutation.mutateAsync(data);
       setShowUploadForm(false);
@@ -53,9 +59,7 @@ export function DocumentsPage() {
 
       {/* Documents List */}
       <div className="rounded-lg border border-border bg-card p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-4">
-          Nahraté dokumenty
-        </h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">Nahraté dokumenty</h2>
         <DocumentsList onUploadDocument={() => setShowUploadForm(true)} />
       </div>
     </div>

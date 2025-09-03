@@ -50,8 +50,11 @@ function CreateSnapshotModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     <QuickActionModal isOpen={isOpen} onClose={onClose} title="Vytvoriť snapshot">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Dátum</label>
+          <label htmlFor="snapshot-date" className="block text-sm font-medium mb-2">
+            Dátum
+          </label>
           <input
+            id="snapshot-date"
             type="text"
             value={new Date().toLocaleDateString('sk-SK')}
             disabled
@@ -60,8 +63,11 @@ function CreateSnapshotModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Performance fee sadzba (%)</label>
+          <label htmlFor="performance-fee" className="block text-sm font-medium mb-2">
+            Performance fee sadzba (%)
+          </label>
           <input
+            id="performance-fee"
             type="number"
             value={performanceFeeRate}
             onChange={e => setPerformanceFeeRate(e.target.value)}
@@ -140,8 +146,11 @@ function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     <QuickActionModal isOpen={isOpen} onClose={onClose} title="Pridať aktívum">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Názov *</label>
+          <label htmlFor="asset-name" className="block text-sm font-medium mb-2">
+            Názov *
+          </label>
           <input
+            id="asset-name"
             type="text"
             value={formData.name}
             onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -152,10 +161,24 @@ function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Typ *</label>
+          <label htmlFor="asset-type" className="block text-sm font-medium mb-2">
+            Typ *
+          </label>
           <select
+            id="asset-type"
             value={formData.type}
-            onChange={e => setFormData({ ...formData, type: e.target.value as any })}
+            onChange={e =>
+              setFormData({
+                ...formData,
+                type: e.target.value as
+                  | 'REAL_ESTATE'
+                  | 'STOCK'
+                  | 'BOND'
+                  | 'COMMODITY'
+                  | 'CASH'
+                  | 'OTHER',
+              })
+            }
             className="w-full px-3 py-2 border border-border rounded-md"
           >
             {assetTypes.map(type => (
@@ -167,8 +190,11 @@ function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Aktuálna hodnota (€) *</label>
+          <label htmlFor="asset-current-value" className="block text-sm font-medium mb-2">
+            Aktuálna hodnota (€) *
+          </label>
           <input
+            id="asset-current-value"
             type="number"
             value={formData.currentValue}
             onChange={e => setFormData({ ...formData, currentValue: e.target.value })}
@@ -181,8 +207,11 @@ function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Obstarávacia cena (€)</label>
+          <label htmlFor="asset-acquired-price" className="block text-sm font-medium mb-2">
+            Obstarávacia cena (€)
+          </label>
           <input
+            id="asset-acquired-price"
             type="number"
             value={formData.acquiredPrice}
             onChange={e => setFormData({ ...formData, acquiredPrice: e.target.value })}
@@ -194,8 +223,11 @@ function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Popis</label>
+          <label htmlFor="asset-description" className="block text-sm font-medium mb-2">
+            Popis
+          </label>
           <textarea
+            id="asset-description"
             value={formData.description}
             onChange={e => setFormData({ ...formData, description: e.target.value })}
             rows={3}

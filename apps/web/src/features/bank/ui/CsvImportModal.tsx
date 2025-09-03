@@ -7,7 +7,10 @@ interface CsvImportModalProps {
 
 export function CsvImportModal({ onClose }: CsvImportModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [importResult, setImportResult] = useState<any>(null);
+  const [importResult, setImportResult] = useState<{
+    imported: number;
+    errors: Array<{ row: number; message: string }>;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const importCsvMutation = useImportCsv();
@@ -114,7 +117,11 @@ USD Account,2025-01-31,25000.00`;
                     className="hidden"
                     id="csv-file-input"
                   />
-                  <label htmlFor="csv-file-input" className="cursor-pointer block">
+                  <label
+                    htmlFor="csv-file-input"
+                    className="cursor-pointer block"
+                    aria-label="Vybrať CSV súbor"
+                  >
                     <div className="space-y-2">
                       <svg
                         className="w-12 h-12 text-muted-foreground mx-auto"
@@ -224,7 +231,7 @@ USD Account,2025-01-31,25000.00`;
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <h4 className="text-red-800 font-medium mb-2">Chyby pri importe:</h4>
                   <div className="space-y-1">
-                    {importResult.errors.map((error: any, index: number) => (
+                    {importResult.errors.map((error, index: number) => (
                       <p key={index} className="text-sm text-red-700">
                         Riadok {error.row}: {error.message}
                       </p>

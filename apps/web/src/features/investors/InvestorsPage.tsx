@@ -71,7 +71,7 @@ export function InvestorsPage() {
         </div>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-sm sm:text-base text-red-800">
-            Chyba pri načítavaní investorov: {(error as any)?.message ?? 'Neznáma chyba'}
+            Chyba pri načítavaní investorov: {(error as Error)?.message ?? 'Neznáma chyba'}
           </p>
         </div>
       </div>
@@ -82,7 +82,7 @@ export function InvestorsPage() {
 
   // Sort investors based on selected criteria
   const sortedInvestors = [...investors].sort((a, b) => {
-    let aValue: any, bValue: any;
+    let aValue: string | number, bValue: string | number;
 
     switch (sortBy) {
       case 'totalCapital':

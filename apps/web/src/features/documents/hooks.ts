@@ -46,10 +46,6 @@ export function useUploadDocument() {
   return useMutation({
     mutationFn: async ({
       file,
-      title: _title,
-      linkedType: _linkedType,
-      linkedId: _linkedId,
-      note: _note,
     }: {
       file: File;
       title: string;
@@ -58,7 +54,7 @@ export function useUploadDocument() {
       note?: string;
     }) => {
       // Calculate SHA256 hash
-      const _sha256 = await documentsApi.calculateSHA256(file);
+      await documentsApi.calculateSHA256(file);
 
       // Get presigned upload URL
       const presignData: PresignUploadRequest = {

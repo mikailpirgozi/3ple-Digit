@@ -36,7 +36,6 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
     register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<AssetFormData>({
     resolver: zodResolver(assetFormSchema),
     defaultValues: asset
