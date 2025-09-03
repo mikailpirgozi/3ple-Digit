@@ -167,7 +167,7 @@ export class SnapshotsService {
     const investorOwnerships = await this.calculateInvestorOwnership();
 
     // Calculate performance fees if rate is provided
-    let totalPerformanceFee = null;
+    let totalPerformanceFee: number | null = null;
     if (data.performanceFeeRate && data.performanceFeeRate > 0) {
       // Simple performance fee calculation (can be enhanced later)
       totalPerformanceFee = navCalculation.nav * (data.performanceFeeRate / 100);
@@ -189,9 +189,9 @@ export class SnapshotsService {
       });
 
       // Create investor snapshots
-      const investorSnapshots = [];
+      const investorSnapshots: any[] = [];
       for (const ownership of investorOwnerships) {
-        let performanceFee = null;
+        let performanceFee: number | null = null;
         if (totalPerformanceFee && data.performanceFeeRate) {
           // Allocate performance fee based on ownership percentage
           performanceFee = totalPerformanceFee * (ownership.ownershipPercent / 100);

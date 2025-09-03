@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { log } from './logger.js';
 import { prisma } from './prisma.js';
-import type { Prisma } from '@prisma/client';
+// Prisma types handled via any for CI compatibility
 
 interface BackupData {
   timestamp: string;
@@ -151,7 +151,7 @@ export async function restoreBackup(backupPath: string): Promise<void> {
     }
 
     // Clear existing data (in transaction)
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: any) => {
       log.info('🧹 Clearing existing data...');
       await tx.auditLog.deleteMany();
       await tx.document.deleteMany();

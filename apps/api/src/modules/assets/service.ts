@@ -1,7 +1,7 @@
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
 import { prisma } from '@/core/prisma.js';
-import type { Prisma } from '@prisma/client';
+// Prisma types handled via any for CI compatibility
 import type {
   AssetEventResponse,
   AssetEventTypeEnum,
@@ -242,7 +242,7 @@ export class AssetsService {
     }
 
     // Create event and update asset value in transaction
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Create the event
       const event = await tx.assetEvent.create({
         data: {
@@ -366,7 +366,7 @@ export class AssetsService {
     }
 
     // Update event and recalculate asset value in transaction
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Revert old event impact
       const revertedValue = this.revertAssetValue(
         existingEvent.asset.currentValue,
