@@ -1,5 +1,6 @@
 // Test-specific Prisma schema for SQLite
 // This ensures CI tests run safely with SQLite instead of PostgreSQL
+// Auto-generated from production schema - DO NOT EDIT MANUALLY
 
 generator client {
   provider = "prisma-client-js"
@@ -56,35 +57,55 @@ model InvestorCashflow {
 }
 
 model Asset {
-  id           String       @id @default(cuid())
-  name         String
-  type         String
-  description  String?
-  currentValue Float        @default(0)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  events       AssetEvent[]
+  id            String       @id @default(cuid())
+  name          String
+  type          String
+  category      String?
+  description   String?
+  currentValue  Float
+  status        String       @default("ACTIVE")
+  acquiredPrice Float?
+  salePrice     Float?
+  saleDate      DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  events        AssetEvent[]
 
   @@map("assets")
 }
 
 model AssetEvent {
-  id          String   @id @default(cuid())
-  assetId     String
-  type        String
-  amount      Float
-  date        DateTime @default(now())
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  assetId   String
+  type      String
+  amount    Float
+  date      DateTime
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
   @@map("asset_events")
+}
+
+model Liability {
+  id             String    @id @default(cuid())
+  name           String
+  description    String?
+  currentBalance Float
+  interestRate   Float?
+  maturityDate   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("liabilities")
 }
 
 model BankBalance {
   id          String   @id @default(cuid())
   accountName String
+  bankName    String?
+  accountType String?
   amount      Float
   currency    String   @default("EUR")
   date        DateTime
@@ -94,59 +115,51 @@ model BankBalance {
   @@map("bank_balances")
 }
 
-model Liability {
-  id             String   @id @default(cuid())
-  name           String
-  currentBalance Float
-  description    String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@map("liabilities")
-}
-
 model PeriodSnapshot {
-  id                   String             @id @default(cuid())
-  date                 DateTime
-  totalAssetValue      Float
-  totalBankBalance     Float
-  totalLiabilities     Float
-  nav                  Float
-  performanceFeeRate   Float?
-  totalPerformanceFee  Float?
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-  investorSnapshots    InvestorSnapshot[]
+  id                  String             @id @default(cuid())
+  date                DateTime
+  totalAssetValue     Float
+  totalBankBalance    Float
+  totalLiabilities    Float
+  nav                 Float
+  performanceFeeRate  Float?
+  totalPerformanceFee Float?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  investorSnapshots   InvestorSnapshot[]
 
   @@map("period_snapshots")
 }
 
 model InvestorSnapshot {
-  id               String          @id @default(cuid())
+  id               String         @id @default(cuid())
   snapshotId       String
   investorId       String
   capitalAmount    Float
   ownershipPercent Float
   performanceFee   Float?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  snapshot         PeriodSnapshot  @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
-  investor         Investor        @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  investor         Investor       @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  snapshot         PeriodSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
 
+  @@unique([snapshotId, investorId])
   @@map("investor_snapshots")
 }
 
 model Document {
-  id          String   @id @default(cuid())
-  name        String
-  type        String
-  size        Int
-  mimeType    String
-  r2Key       String
-  sha256      String
-  uploadedAt  DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  originalName String
+  r2Key        String   @unique
+  mimeType     String
+  size         Int
+  sha256       String?
+  category     String?
+  description  String?
+  uploadedBy   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("documents")
 }
@@ -155,12 +168,14 @@ model AuditLog {
   id        String   @id @default(cuid())
   userId    String?
   action    String
-  resource  String
-  details   String?
+  entity    String
+  entityId  String
+  oldData   String?
+  newData   String?
   ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@map("audit_logs")
 }

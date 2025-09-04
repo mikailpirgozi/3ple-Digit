@@ -31,15 +31,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # ✅ 1. GENERATE PRISMA CLIENT (required for build)
-      - name: Generate Prisma Client
-        run: pnpm db:generate
+      # ✅ 1. SETUP SQLITE FOR ALL STEPS (build + tests)
+      - name: Setup SQLite Schema
+        run: |
+          cd apps/api
+          # Use SQLite schema for all CI operations
+          cp prisma/schema.test.prisma prisma/schema.prisma
+          # Generate Prisma client for SQLite
+          npx prisma generate
+        env:
+          DATABASE_URL: "file:./test.db"
 
       # ✅ 2. BUILD CHECK (most critical - catches real TypeScript errors)
       - name: Build Check
         run: pnpm build
+        env:
+          DATABASE_URL: "file:./test.db"
 
-      # ✅ 3. CORE TESTS ONLY (business logic) - FORCE SQLite for safety
+      # ✅ 3. CORE TESTS ONLY (business logic) - SQLite ready
       - name: Core Tests (SQLite)
         run: |
           cd apps/api
@@ -47,10 +56,6 @@ jobs:
           export DATABASE_URL="file:./test.db"
           export NODE_ENV="test"
           export JWT_SECRET="test-jwt-secret-key-for-ci-testing-only"
-          # Use test schema for SQLite
-          cp prisma/schema.test.prisma prisma/schema.prisma
-          # Generate client for SQLite
-          npx prisma generate
           # Create SQLite database
           npx prisma db push --force-reset
           # Run tests with SQLite
