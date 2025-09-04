@@ -14,11 +14,17 @@ if (originalDatabaseUrl?.includes('railway.app') || originalDatabaseUrl?.include
 }
 process.env.DATABASE_URL = 'file:./test.db'; // FORCE test database
 
-import { prisma } from './core/prisma.js';
+import { prisma, reinitializePrismaClient } from './core/prisma.js';
 
 beforeAll(async () => {
-  // Test setup - SQLite database should be created by setup-test-db.js
+  // Test setup - reinitialize Prisma client with SQLite URL
   console.log('🧪 Test environment initialized with SQLite');
+  console.log('🔄 Reinitializing Prisma client for SQLite...');
+
+  // Reinitialize Prisma client to use the new DATABASE_URL
+  reinitializePrismaClient();
+
+  console.log('✅ Prisma client reinitialized for SQLite');
 });
 
 // Note: Individual test files should handle their own cleanup

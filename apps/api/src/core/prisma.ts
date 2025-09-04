@@ -2,67 +2,94 @@ import { PrismaClient } from '@prisma/client';
 import { env } from './env.js';
 import { log } from './logger.js';
 
-// Extend Prisma Client with logging and connection pooling
-const prisma = new PrismaClient({
-  log: [
-    {
-      emit: 'event',
-      level: 'query',
+// Create Prisma Client factory function for dynamic URL support
+function createPrismaClient() {
+  return new PrismaClient({
+    log: [
+      {
+        emit: 'event',
+        level: 'query',
+      },
+      {
+        emit: 'event',
+        level: 'error',
+      },
+      {
+        emit: 'event',
+        level: 'info',
+      },
+      {
+        emit: 'event',
+        level: 'warn',
+      },
+    ],
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL || env.DATABASE_URL,
+      },
     },
-    {
-      emit: 'event',
-      level: 'error',
-    },
-    {
-      emit: 'event',
-      level: 'info',
-    },
-    {
-      emit: 'event',
-      level: 'warn',
-    },
-  ],
-  datasources: {
-    db: {
-      url: env.DATABASE_URL,
-    },
-  },
-});
+  });
+}
 
-// Log database queries in development
-if (env.NODE_ENV === 'development') {
-  prisma.$on('query', (e: any) => {
-    log.debug('Database query', {
-      query: e.query,
-      params: e.params,
-      duration: `${e.duration}ms`,
+// Create initial Prisma Client instance
+let prisma = createPrismaClient();
+
+// Function to reinitialize Prisma client (useful for tests)
+export function reinitializePrismaClient() {
+  // Disconnect existing client
+  prisma.$disconnect().catch(() => {
+    // Ignore disconnect errors
+  });
+
+  // Create new client with current environment
+  prisma = createPrismaClient();
+
+  // Re-setup event listeners
+  setupPrismaEventListeners();
+
+  return prisma;
+}
+
+// Setup event listeners function
+function setupPrismaEventListeners() {
+  // Log database queries in development
+  if (process.env.NODE_ENV === 'development') {
+    prisma.$on('query', (e: any) => {
+      log.debug('Database query', {
+        query: e.query,
+        params: e.params,
+        duration: `${e.duration}ms`,
+      });
+    });
+  }
+
+  // Log database errors
+  prisma.$on('error', (e: any) => {
+    log.error('Database error', {
+      message: e.message,
+      target: e.target,
+    });
+  });
+
+  // Log database info
+  prisma.$on('info', (e: any) => {
+    log.info('Database info', {
+      message: e.message,
+      target: e.target,
+    });
+  });
+
+  // Log database warnings
+  prisma.$on('warn', (e: any) => {
+    log.warn('Database warning', {
+      message: e.message,
+      target: e.target,
     });
   });
 }
 
-// Log database errors
-prisma.$on('error', (e: any) => {
-  log.error('Database error', {
-    message: e.message,
-    target: e.target,
-  });
-});
-
-// Log database info
-prisma.$on('info', (e: any) => {
-  log.info('Database info', {
-    message: e.message,
-    target: e.target,
-  });
-});
-
-// Log database warnings
-prisma.$on('warn', (e: any) => {
-  log.warn('Database warning', {
-    message: e.message,
-    target: e.target,
-  });
-});
+// Setup initial event listeners
+setupPrismaEventListeners();
 
 // Connection health check and auto-reconnect
 let isConnected = false;
