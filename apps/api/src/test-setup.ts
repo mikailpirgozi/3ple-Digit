@@ -17,7 +17,8 @@ process.env.DATABASE_URL = 'file:./test.db'; // FORCE test database
 import { prisma } from './core/prisma.js';
 
 beforeAll(async () => {
-  // Test setup - silent in production
+  // Test setup - SQLite database should be created by setup-test-db.js
+  console.log('🧪 Test environment initialized with SQLite');
 });
 
 // Note: Individual test files should handle their own cleanup

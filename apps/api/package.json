@@ -10,7 +10,7 @@
     "lint": "eslint . --ext ts --report-unused-disable-directives",
     "lint:fix": "eslint . --ext ts --fix",
     "type-check": "tsc --noEmit",
-    "test": "vitest --run",
+    "test": "node setup-test-db.js && vitest --run",
     "test:core": "vitest --run --testNamePattern='(NAV|calculation|auth|critical)'",
     "test:watch": "vitest",
     "test:coverage": "vitest --coverage",
