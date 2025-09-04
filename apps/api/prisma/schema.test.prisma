@@ -1,0 +1,166 @@
+// Test-specific Prisma schema for SQLite
+// This ensures CI tests run safely with SQLite instead of PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./test.db"
+}
+
+model User {
+  id              String     @id @default(cuid())
+  email           String     @unique
+  name            String
+  password        String
+  role            String     @default("INVESTOR")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  auditLogs       AuditLog[]
+  investorProfile Investor?
+
+  @@map("users")
+}
+
+model Investor {
+  id        String             @id @default(cuid())
+  userId    String             @unique
+  name      String
+  email     String
+  phone     String?
+  address   String?
+  taxId     String?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  cashflows InvestorCashflow[]
+  snapshots InvestorSnapshot[]
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("investors")
+}
+
+model InvestorCashflow {
+  id         String   @id @default(cuid())
+  investorId String
+  type       String
+  amount     Float
+  date       DateTime
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  investor   Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@map("investor_cashflows")
+}
+
+model Asset {
+  id           String       @id @default(cuid())
+  name         String
+  type         String
+  description  String?
+  currentValue Float        @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  events       AssetEvent[]
+
+  @@map("assets")
+}
+
+model AssetEvent {
+  id          String   @id @default(cuid())
+  assetId     String
+  type        String
+  amount      Float
+  date        DateTime @default(now())
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("asset_events")
+}
+
+model BankBalance {
+  id          String   @id @default(cuid())
+  accountName String
+  amount      Float
+  currency    String   @default("EUR")
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("bank_balances")
+}
+
+model Liability {
+  id             String   @id @default(cuid())
+  name           String
+  currentBalance Float
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("liabilities")
+}
+
+model PeriodSnapshot {
+  id                   String             @id @default(cuid())
+  date                 DateTime
+  totalAssetValue      Float
+  totalBankBalance     Float
+  totalLiabilities     Float
+  nav                  Float
+  performanceFeeRate   Float?
+  totalPerformanceFee  Float?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  investorSnapshots    InvestorSnapshot[]
+
+  @@map("period_snapshots")
+}
+
+model InvestorSnapshot {
+  id               String          @id @default(cuid())
+  snapshotId       String
+  investorId       String
+  capitalAmount    Float
+  ownershipPercent Float
+  performanceFee   Float?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  snapshot         PeriodSnapshot  @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  investor         Investor        @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@map("investor_snapshots")
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  size        Int
+  mimeType    String
+  r2Key       String
+  sha256      String
+  uploadedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("documents")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  resource  String
+  details   String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}

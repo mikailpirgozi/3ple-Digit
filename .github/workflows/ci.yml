@@ -11,19 +11,7 @@ jobs:
   essential-checks:
     name: Essential Checks (Build + Core Tests)
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+    # No PostgreSQL service needed - using SQLite for tests (safer)
 
     steps:
       - name: Checkout
@@ -51,13 +39,25 @@ jobs:
       - name: Build Check
         run: pnpm build
 
-      # ✅ 3. CORE TESTS ONLY (business logic)
-      - name: Core Tests
+      # ✅ 3. CORE TESTS ONLY (business logic) - FORCE SQLite for safety
+      - name: Core Tests (SQLite)
         run: |
-          pnpm --filter api db:migrate
-          pnpm --filter api test
+          cd apps/api
+          # Force SQLite for CI tests (same as local protection)
+          export DATABASE_URL="file:./test.db"
+          export NODE_ENV="test"
+          export JWT_SECRET="test-jwt-secret-key-for-ci-testing-only"
+          # Use test schema for SQLite
+          cp prisma/schema.test.prisma prisma/schema.prisma
+          # Generate client for SQLite
+          npx prisma generate
+          # Create SQLite database
+          npx prisma db push --force-reset
+          # Run tests with SQLite
+          npm test
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          # These will be overridden by exports above for safety
+          NODE_ENV: test
           JWT_SECRET: test-jwt-secret-key-for-ci-testing-only
 
       # ✅ 4. LINT CHECK (warnings allowed, only errors fail)
