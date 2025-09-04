@@ -1,11 +1,11 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import type { AssetEvent, AssetEventKind, CreateAssetEventRequest } from '@/types/api';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const assetEventFormSchema = z.object({
   date: z.string().min(1, 'Dátum je povinný'),
-  kind: z.enum(['VALUATION', 'PAYMENT_IN', 'PAYMENT_OUT', 'CAPEX', 'NOTE']),
+  type: z.enum(['VALUATION', 'PAYMENT_IN', 'PAYMENT_OUT', 'CAPEX', 'NOTE']),
   amount: z.number().min(0).optional(),
   note: z.string().optional(),
 });
@@ -46,23 +46,24 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
     defaultValues: event
       ? {
           date: event.date.split('T')[0], // Convert to YYYY-MM-DD format
-          kind: event.kind,
+          type: event.kind,
           amount: event.amount ?? undefined,
           note: event.note ?? '',
         }
       : {
           date: new Date().toISOString().split('T')[0],
-          kind: 'VALUATION',
+          type: 'VALUATION',
         },
   });
 
-  const selectedKind = watch('kind');
-  const requiresAmount = ['VALUATION', 'PAYMENT_IN', 'PAYMENT_OUT', 'CAPEX'].includes(selectedKind);
+  const selectedType = watch('type');
+  const requiresAmount = ['VALUATION', 'PAYMENT_IN', 'PAYMENT_OUT', 'CAPEX'].includes(selectedType);
 
   const handleFormSubmit = (data: AssetEventFormData) => {
     onSubmit({
       ...data,
-      amount: requiresAmount ? data.amount : undefined,
+      // Backend requires amount to be a number, use 0 for NOTE type
+      amount: requiresAmount ? (data.amount ?? 0) : 0,
     });
   };
 
@@ -92,14 +93,14 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
           {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>}
         </div>
 
-        {/* Event Kind */}
+        {/* Event Type */}
         <div>
-          <label htmlFor="kind" className="block text-sm font-medium text-foreground mb-2">
+          <label htmlFor="type" className="block text-sm font-medium text-foreground mb-2">
             Typ udalosti
           </label>
           <select
-            id="kind"
-            {...register('kind')}
+            id="type"
+            {...register('type')}
             className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             {Object.entries(eventKindLabels).map(([value, label]) => (
@@ -108,12 +109,12 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
               </option>
             ))}
           </select>
-          {selectedKind && (
+          {selectedType && (
             <p className="mt-1 text-sm text-muted-foreground">
-              {eventKindDescriptions[selectedKind]}
+              {eventKindDescriptions[selectedType]}
             </p>
           )}
-          {errors.kind && <p className="mt-1 text-sm text-red-600">{errors.kind.message}</p>}
+          {errors.type && <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>}
         </div>
 
         {/* Amount */}

@@ -1,14 +1,23 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import app from '../../index.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { prisma } from '../../core/prisma.js';
+import app from '../../index.js';
 
 describe('Snapshots API', () => {
   let authToken: string;
   // let _testUserId: string;
 
   beforeAll(async () => {
-    // Clean up test data
+    // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA
+    const hasProductionUrl =
+      process.env.DATABASE_URL?.includes('railway.app') ||
+      process.env.DATABASE_URL?.includes('rlwy.net');
+
+    if (hasProductionUrl) {
+      throw new Error('🚨 SNAPSHOTS TEST BLOCKED: Cannot run on production database!');
+    }
+
+    // Clean up test data (ONLY on test database)
     await prisma.investorSnapshot.deleteMany();
     await prisma.periodSnapshot.deleteMany();
     await prisma.asset.deleteMany();
@@ -31,7 +40,18 @@ describe('Snapshots API', () => {
   });
 
   afterAll(async () => {
-    // Clean up test data
+    // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA
+    const hasProductionUrl =
+      process.env.DATABASE_URL?.includes('railway.app') ||
+      process.env.DATABASE_URL?.includes('rlwy.net');
+
+    if (hasProductionUrl) {
+      console.error('🚨 SNAPSHOTS CLEANUP BLOCKED: Cannot clean production database!');
+      await prisma.$disconnect();
+      return;
+    }
+
+    // Clean up test data (ONLY on test database)
     await prisma.investorSnapshot.deleteMany();
     await prisma.periodSnapshot.deleteMany();
     await prisma.asset.deleteMany();

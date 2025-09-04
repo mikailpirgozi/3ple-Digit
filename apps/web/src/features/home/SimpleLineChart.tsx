@@ -38,7 +38,11 @@ export function SimpleLineChart({
 
   // Create points for the line
   const points = data.map((point, index) => {
-    const x = padding + (index / (data.length - 1)) * chartWidth;
+    // Handle single data point case to avoid NaN
+    const x =
+      data.length === 1
+        ? padding + chartWidth / 2
+        : padding + (index / (data.length - 1)) * chartWidth;
     const y = padding + chartHeight - ((point.value - minValue) / valueRange) * chartHeight;
     return { x, y, ...point };
   });

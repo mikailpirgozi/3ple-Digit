@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
+    "start": "pnpm --filter api start",
     "dev": "pnpm --parallel -r dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",

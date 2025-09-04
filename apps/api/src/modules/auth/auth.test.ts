@@ -1,20 +1,40 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import app from '../../index.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { prisma } from '../../core/prisma.js';
+import app from '../../index.js';
 
 describe('Auth API', () => {
   beforeAll(async () => {
-    // Clean up test data
+    // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA
+    const hasProductionUrl =
+      process.env.DATABASE_URL?.includes('railway.app') ||
+      process.env.DATABASE_URL?.includes('rlwy.net');
+
+    if (hasProductionUrl) {
+      throw new Error('🚨 AUTH TEST BLOCKED: Cannot run on production database!');
+    }
+
+    // Clean up test data (ONLY on test database)
     await prisma.user.deleteMany({
-      where: { email: { contains: 'test' } }
+      where: { email: { contains: 'test' } },
     });
   });
 
   afterAll(async () => {
-    // Clean up test data
+    // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA
+    const hasProductionUrl =
+      process.env.DATABASE_URL?.includes('railway.app') ||
+      process.env.DATABASE_URL?.includes('rlwy.net');
+
+    if (hasProductionUrl) {
+      console.error('🚨 AUTH CLEANUP BLOCKED: Cannot clean production database!');
+      await prisma.$disconnect();
+      return;
+    }
+
+    // Clean up test data (ONLY on test database)
     await prisma.user.deleteMany({
-      where: { email: { contains: 'test' } }
+      where: { email: { contains: 'test' } },
     });
     await prisma.$disconnect();
   });
@@ -25,13 +45,10 @@ describe('Auth API', () => {
         email: 'test-register@example.com',
         password: 'testpass123',
         name: 'Test User',
-        role: 'ADMIN'
+        role: 'ADMIN',
       };
 
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send(userData)
-        .expect(201);
+      const response = await request(app).post('/api/auth/register').send(userData).expect(201);
 
       expect(response.body).toHaveProperty('user');
       expect(response.body).toHaveProperty('accessToken');
@@ -47,20 +64,14 @@ describe('Auth API', () => {
         email: 'test-duplicate@example.com',
         password: 'testpass123',
         name: 'Test User',
-        role: 'ADMIN'
+        role: 'ADMIN',
       };
 
       // First registration
-      await request(app)
-        .post('/api/auth/register')
-        .send(userData)
-        .expect(201);
+      await request(app).post('/api/auth/register').send(userData).expect(201);
 
       // Second registration with same email
-      const response = await request(app)
-        .post('/api/auth/register')
-        .send(userData)
-        .expect(409);
+      const response = await request(app).post('/api/auth/register').send(userData).expect(409);
 
       expect(response.body.error.code).toBe('CONFLICT');
     });
@@ -81,14 +92,12 @@ describe('Auth API', () => {
   describe('POST /api/auth/login', () => {
     beforeAll(async () => {
       // Create test user
-      await request(app)
-        .post('/api/auth/register')
-        .send({
-          email: 'test-login@example.com',
-          password: 'testpass123',
-          name: 'Login Test User',
-          role: 'ADMIN'
-        });
+      await request(app).post('/api/auth/register').send({
+        email: 'test-login@example.com',
+        password: 'testpass123',
+        name: 'Login Test User',
+        role: 'ADMIN',
+      });
     });
 
     it('should login with correct credentials', async () => {
@@ -96,7 +105,7 @@ describe('Auth API', () => {
         .post('/api/auth/login')
         .send({
           email: 'test-login@example.com',
-          password: 'testpass123'
+          password: 'testpass123',
         })
         .expect(200);
 
@@ -111,7 +120,7 @@ describe('Auth API', () => {
         .post('/api/auth/login')
         .send({
           email: 'test-login@example.com',
-          password: 'wrongpassword'
+          password: 'wrongpassword',
         })
         .expect(401);
 
@@ -123,7 +132,7 @@ describe('Auth API', () => {
         .post('/api/auth/login')
         .send({
           email: 'nonexistent@example.com',
-          password: 'testpass123'
+          password: 'testpass123',
         })
         .expect(401);
 
@@ -136,15 +145,13 @@ describe('Auth API', () => {
 
     beforeAll(async () => {
       // Register and login to get token
-      const registerResponse = await request(app)
-        .post('/api/auth/register')
-        .send({
-          email: 'test-me@example.com',
-          password: 'testpass123',
-          name: 'Me Test User',
-          role: 'ADMIN'
-        });
-      
+      const registerResponse = await request(app).post('/api/auth/register').send({
+        email: 'test-me@example.com',
+        password: 'testpass123',
+        name: 'Me Test User',
+        role: 'ADMIN',
+      });
+
       authToken = registerResponse.body.accessToken;
     });
 
@@ -161,9 +168,7 @@ describe('Auth API', () => {
     });
 
     it('should reject request without token', async () => {
-      const response = await request(app)
-        .get('/api/auth/me')
-        .expect(401);
+      const response = await request(app).get('/api/auth/me').expect(401);
 
       expect(response.body.error.code).toBe('UNAUTHORIZED');
     });

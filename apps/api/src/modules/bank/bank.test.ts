@@ -1,21 +1,41 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { BankService } from './service.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { prisma } from '../../core/prisma.js';
+import { BankService } from './service.js';
 
 describe('Bank Service Unit Tests', () => {
   const bankService = new BankService();
 
   beforeAll(async () => {
-    // Clean up test data
+    // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA
+    const hasProductionUrl =
+      process.env.DATABASE_URL?.includes('railway.app') ||
+      process.env.DATABASE_URL?.includes('rlwy.net');
+
+    if (hasProductionUrl) {
+      throw new Error('🚨 BANK TEST BLOCKED: Cannot run on production database!');
+    }
+
+    // Clean up test data (ONLY on test database)
     await prisma.bankBalance.deleteMany({
-      where: { accountName: { contains: 'test-' } }
+      where: { accountName: { contains: 'test-' } },
     });
   });
 
   afterAll(async () => {
-    // Clean up test data
+    // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA
+    const hasProductionUrl =
+      process.env.DATABASE_URL?.includes('railway.app') ||
+      process.env.DATABASE_URL?.includes('rlwy.net');
+
+    if (hasProductionUrl) {
+      console.error('🚨 BANK CLEANUP BLOCKED: Cannot clean production database!');
+      await prisma.$disconnect();
+      return;
+    }
+
+    // Clean up test data (ONLY on test database)
     await prisma.bankBalance.deleteMany({
-      where: { accountName: { contains: 'test-' } }
+      where: { accountName: { contains: 'test-' } },
     });
     await prisma.$disconnect();
   });
@@ -49,7 +69,8 @@ describe('Bank Service Unit Tests', () => {
     });
 
     it('should handle CSV with quoted fields', async () => {
-      const csvContent = '"Business Account",2025-01-15,"1,234.56"\n"Personal Account",2025-01-15,"2,345.67"';
+      const csvContent =
+        '"Business Account",2025-01-15,"1,234.56"\n"Personal Account",2025-01-15,"2,345.67"';
       const base64Content = Buffer.from(csvContent).toString('base64');
 
       const importRequest = {
@@ -71,7 +92,8 @@ describe('Bank Service Unit Tests', () => {
     });
 
     it('should skip header row when specified', async () => {
-      const csvContent = 'Account,Date,Amount\nTatraBusiness,2025-01-15,185432.77\nSafeCash,2025-01-15,1200.00';
+      const csvContent =
+        'Account,Date,Amount\nTatraBusiness,2025-01-15,185432.77\nSafeCash,2025-01-15,1200.00';
       const base64Content = Buffer.from(csvContent).toString('base64');
 
       const importRequest = {
@@ -92,7 +114,8 @@ describe('Bank Service Unit Tests', () => {
     });
 
     it('should handle invalid rows and report errors', async () => {
-      const csvContent = 'ValidAccount,2025-01-15,1000.00\nInvalidAccount,invalid-date,not-a-number\nAnotherValid,2025-01-16,2000.00';
+      const csvContent =
+        'ValidAccount,2025-01-15,1000.00\nInvalidAccount,invalid-date,not-a-number\nAnotherValid,2025-01-16,2000.00';
       const base64Content = Buffer.from(csvContent).toString('base64');
 
       const importRequest = {
@@ -213,7 +236,7 @@ describe('Bank Service Unit Tests', () => {
 
     it('should calculate correct summary by currency', async () => {
       const summary = await bankService.getBankBalanceSummary();
-      
+
       expect(summary.totalBalance).toBe(30000);
       expect(summary.byCurrency.EUR.amount).toBe(25000);
       expect(summary.byCurrency.EUR.count).toBe(2);
@@ -235,7 +258,7 @@ describe('Bank Service Unit Tests', () => {
       };
 
       const result = await bankService.createBankBalance(balanceData, 'test-user');
-      
+
       expect(result.accountName).toBe(balanceData.accountName);
       expect(result.bankName).toBe(balanceData.bankName);
       expect(result.accountType).toBe(balanceData.accountType);
@@ -253,14 +276,16 @@ describe('Bank Service Unit Tests', () => {
 
       const created = await bankService.createBankBalance(balanceData);
       const retrieved = await bankService.getBankBalanceById(created.id);
-      
+
       expect(retrieved.id).toBe(created.id);
       expect(retrieved.accountName).toBe(balanceData.accountName);
       expect(retrieved.amount).toBe(balanceData.amount);
     });
 
     it('should throw error for non-existent bank balance', async () => {
-      await expect(bankService.getBankBalanceById('non-existent-id')).rejects.toThrow('Bank balance not found');
+      await expect(bankService.getBankBalanceById('non-existent-id')).rejects.toThrow(
+        'Bank balance not found'
+      );
     });
 
     it('should update bank balance', async () => {
@@ -276,7 +301,7 @@ describe('Bank Service Unit Tests', () => {
         amount: 35000,
         bankName: 'Updated Bank',
       });
-      
+
       expect(updated.amount).toBe(35000);
       expect(updated.bankName).toBe('Updated Bank');
       expect(updated.accountName).toBe(balanceData.accountName); // Should remain unchanged
@@ -292,8 +317,10 @@ describe('Bank Service Unit Tests', () => {
 
       const created = await bankService.createBankBalance(balanceData);
       await bankService.deleteBankBalance(created.id);
-      
-      await expect(bankService.getBankBalanceById(created.id)).rejects.toThrow('Bank balance not found');
+
+      await expect(bankService.getBankBalanceById(created.id)).rejects.toThrow(
+        'Bank balance not found'
+      );
     });
   });
 
@@ -338,7 +365,7 @@ describe('Bank Service Unit Tests', () => {
         sortBy: 'date',
         sortOrder: 'asc',
       });
-      
+
       const eurBalances = result.balances.filter(b => b.currency === 'EUR');
       expect(eurBalances.length).toBeGreaterThanOrEqual(2);
       expect(result.summary.byCurrency.EUR).toBeGreaterThan(0);
@@ -353,11 +380,13 @@ describe('Bank Service Unit Tests', () => {
         sortBy: 'date',
         sortOrder: 'asc',
       });
-      
-      expect(result.balances.every(b => 
-        new Date(b.date) >= new Date('2025-01-10') && 
-        new Date(b.date) <= new Date('2025-01-20')
-      )).toBe(true);
+
+      expect(
+        result.balances.every(
+          b =>
+            new Date(b.date) >= new Date('2025-01-10') && new Date(b.date) <= new Date('2025-01-20')
+        )
+      ).toBe(true);
     });
 
     it('should search by account name', async () => {
@@ -368,12 +397,15 @@ describe('Bank Service Unit Tests', () => {
         sortBy: 'date',
         sortOrder: 'asc',
       });
-      
-      expect(result.balances.some(b => 
-        b.accountName.toLowerCase().includes('business') ||
-        b.bankName?.toLowerCase().includes('business') ||
-        b.accountType?.toLowerCase().includes('business')
-      )).toBe(true);
+
+      expect(
+        result.balances.some(
+          b =>
+            b.accountName.toLowerCase().includes('business') ||
+            b.bankName?.toLowerCase().includes('business') ||
+            b.accountType?.toLowerCase().includes('business')
+        )
+      ).toBe(true);
     });
 
     it('should paginate results correctly', async () => {
@@ -383,19 +415,19 @@ describe('Bank Service Unit Tests', () => {
         sortBy: 'date',
         sortOrder: 'asc',
       });
-      
+
       const page2 = await bankService.getBankBalances({
         page: 2,
         limit: 2,
         sortBy: 'date',
         sortOrder: 'asc',
       });
-      
+
       expect(page1.balances).toHaveLength(2);
       expect(page1.pagination.page).toBe(1);
       expect(page1.pagination.limit).toBe(2);
       expect(page1.pagination.totalPages).toBeGreaterThanOrEqual(1);
-      
+
       // Ensure different results on different pages (if there are enough records)
       if (page2.balances.length > 0) {
         expect(page1.balances[0].id).not.toBe(page2.balances[0].id);

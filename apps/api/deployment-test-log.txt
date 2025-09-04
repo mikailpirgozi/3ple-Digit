@@ -1,0 +1,10 @@
+=== PRE-TEST BACKUP Thu Sep  4 00:26:50 CEST 2025 ===
+     status     | count 
+----------------+-------
+ PRED TESTOM:   |    14
+ Investors:     |    13
+ Assets:        |    34
+ Bank accounts: |     5
+ Liabilities:   |     9
+(5 rows)
+

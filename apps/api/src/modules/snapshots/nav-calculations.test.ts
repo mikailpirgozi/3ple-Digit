@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { SnapshotsService } from './service.js';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '../../core/prisma.js';
+import { SnapshotsService } from './service.js';
 
 describe('NAV Calculations Unit Tests', () => {
   const snapshotsService = new SnapshotsService();
@@ -36,7 +36,16 @@ describe('NAV Calculations Unit Tests', () => {
 
   describe('NAV Calculation Formula: NAV = Σ assets + Σ bank - Σ liabilities', () => {
     beforeEach(async () => {
-      // Clean up before each test to ensure isolation
+      // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA
+      const hasProductionUrl =
+        process.env.DATABASE_URL?.includes('railway.app') ||
+        process.env.DATABASE_URL?.includes('rlwy.net');
+
+      if (hasProductionUrl) {
+        throw new Error('🚨 TEST BLOCKED: Cannot run tests on production database!');
+      }
+
+      // Clean up before each test to ensure isolation (ONLY on test database)
       await prisma.assetEvent.deleteMany();
       await prisma.asset.deleteMany();
       await prisma.bankBalance.deleteMany();

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type {
   Asset,
   AssetEvent,
@@ -6,11 +5,12 @@ import type {
   CreateAssetEventRequest,
   UpdateAssetEventRequest,
 } from '@/types/api';
+import { useState } from 'react';
 import {
   useAssetEvents,
   useCreateAssetEvent,
-  useUpdateAssetEvent,
   useDeleteAssetEvent,
+  useUpdateAssetEvent,
 } from '../hooks';
 import { AssetEventForm } from './AssetEventForm';
 
@@ -150,7 +150,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
                             <span className="text-sm font-medium text-foreground">
-                              {eventKindLabels[event.kind]}
+                              {eventKindLabels[event.kind as AssetEventKind]}
                             </span>
                             <span className="text-sm text-muted-foreground">
                               {formatDate(event.date)}

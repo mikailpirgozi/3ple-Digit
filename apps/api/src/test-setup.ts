@@ -1,9 +1,18 @@
-import { beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll } from 'vitest';
 
-// Set test environment variables before importing prisma
+// CRITICAL SAFETY: FORCE test environment and database
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
-process.env.DATABASE_URL = process.env.DATABASE_URL || 'file:./test.db';
+
+// 🚨 ULTIMATE PROTECTION: NEVER use production database in tests
+// FORCE override any existing DATABASE_URL to use test database
+const originalDatabaseUrl = process.env.DATABASE_URL;
+if (originalDatabaseUrl?.includes('railway.app') || originalDatabaseUrl?.includes('rlwy.net')) {
+  console.error('🚨 CRITICAL: Production DATABASE_URL detected in tests!');
+  console.error('Original URL:', originalDatabaseUrl);
+  console.error('FORCING test database to prevent data loss...');
+}
+process.env.DATABASE_URL = 'file:./test.db'; // FORCE test database
 
 import { prisma } from './core/prisma.js';
 
@@ -22,7 +31,19 @@ afterAll(async () => {
 });
 
 async function cleanDatabase() {
-  // Delete in correct order to avoid foreign key constraints
+  // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isRailwayEnv = process.env.RAILWAY_ENVIRONMENT === 'production';
+  const hasProductionUrl =
+    process.env.DATABASE_URL?.includes('railway.app') ||
+    process.env.DATABASE_URL?.includes('rlwy.net');
+
+  if (isProduction || isRailwayEnv || hasProductionUrl) {
+    console.error('🚨 TEST CLEANUP BLOCKED: Cannot clean production database!');
+    throw new Error('PRODUCTION TEST CLEANUP BLOCKED');
+  }
+
+  // Delete in correct order to avoid foreign key constraints (ONLY on test database)
   await prisma.auditLog.deleteMany();
   await prisma.document.deleteMany();
   await prisma.investorSnapshot.deleteMany();
