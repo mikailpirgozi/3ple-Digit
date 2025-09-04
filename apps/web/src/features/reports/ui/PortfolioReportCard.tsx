@@ -6,12 +6,12 @@ interface PortfolioReportCardProps {
 }
 
 const assetTypeLabels: Record<AssetType, string> = {
-  loan: '💰 Pôžičky',
-  real_estate: '🏢 Nehnuteľnosti',
-  vehicle: '🚗 Vozidlá',
-  stock: '📈 Akcie',
-  inventory: '📦 Inventár',
-  share_in_company: '🏭 Podiely v spoločnostiach',
+  PÔŽIČKY: '💰 Pôžičky',
+  NEHNUTEĽNOSTI: '🏠 Nehnuteľnosti',
+  AUTÁ: '🚗 Autá',
+  AKCIE: '📈 Akcie',
+  MATERIÁL: '🔧 Materiál',
+  'PODIEL VO FIRME': '🏢 Podiel vo firme',
 };
 
 export function PortfolioReportCard({ filters }: PortfolioReportCardProps) {

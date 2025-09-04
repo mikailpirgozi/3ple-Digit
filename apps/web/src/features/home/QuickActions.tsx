@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useCreateSnapshot } from '@/features/snapshots/hooks';
 import { useCreateAsset } from '@/features/assets/hooks';
+import { useCreateSnapshot } from '@/features/snapshots/hooks';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface QuickActionModalProps {
@@ -103,7 +103,7 @@ function CreateSnapshotModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
 function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'real_estate' as const,
+    type: 'NEHNUTEĽNOSTI' as const,
     acquiredPrice: '',
     currentValue: '',
     description: '',
@@ -123,7 +123,7 @@ function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       onClose();
       setFormData({
         name: '',
-        type: 'real_estate',
+        type: 'NEHNUTEĽNOSTI',
         acquiredPrice: '',
         currentValue: '',
         description: '',
@@ -134,12 +134,12 @@ function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   };
 
   const assetTypes = [
-    { value: 'real_estate', label: 'Nehnuteľnosť' },
-    { value: 'loan', label: 'Pôžička' },
-    { value: 'vehicle', label: 'Vozidlo' },
-    { value: 'stock', label: 'Akcie' },
-    { value: 'inventory', label: 'Zásoby' },
-    { value: 'share_in_company', label: 'Podiel v spoločnosti' },
+    { value: 'NEHNUTEĽNOSTI', label: 'Nehnuteľnosti' },
+    { value: 'PÔŽIČKY', label: 'Pôžičky' },
+    { value: 'AUTÁ', label: 'Autá' },
+    { value: 'AKCIE', label: 'Akcie' },
+    { value: 'MATERIÁL', label: 'Materiál' },
+    { value: 'PODIEL VO FIRME', label: 'Podiel vo firme' },
   ];
 
   return (
@@ -171,12 +171,12 @@ function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               setFormData({
                 ...formData,
                 type: e.target.value as
-                  | 'REAL_ESTATE'
-                  | 'STOCK'
-                  | 'BOND'
-                  | 'COMMODITY'
-                  | 'CASH'
-                  | 'OTHER',
+                  | 'PÔŽIČKY'
+                  | 'NEHNUTEĽNOSTI'
+                  | 'AUTÁ'
+                  | 'AKCIE'
+                  | 'MATERIÁL'
+                  | 'PODIEL VO FIRME',
               })
             }
             className="w-full px-3 py-2 border border-border rounded-md"

@@ -1,11 +1,11 @@
 import { useBankSummary } from '@/features/bank/hooks';
 import { useLiabilitiesSummary } from '@/features/liabilities/hooks';
 import { useCurrentNav, useLatestSnapshots } from '@/features/snapshots/hooks';
+import { QuickActions } from './QuickActions';
 import { RecentActivity } from './RecentActivity';
 import { SimpleLineChart } from './SimpleLineChart';
 import { SimplePieChart } from './SimplePieChart';
 import { TrendIndicator } from './TrendIndicator';
-import { QuickActions } from './QuickActions';
 
 // Helper function to format currency
 const formatCurrency = (amount: number) => {
@@ -20,12 +20,12 @@ const formatCurrency = (amount: number) => {
 // Helper function to translate asset types
 const translateAssetType = (type: string) => {
   const translations: Record<string, string> = {
-    loan: 'Pôžička',
-    real_estate: 'Nehnuteľnosť',
-    vehicle: 'Vozidlo',
-    stock: 'Akcie',
-    inventory: 'Zásoby',
-    share_in_company: 'Podiel v spoločnosti',
+    PÔŽIČKY: 'Pôžičky',
+    NEHNUTEĽNOSTI: 'Nehnuteľnosti',
+    AUTÁ: 'Autá',
+    AKCIE: 'Akcie',
+    MATERIÁL: 'Materiál',
+    'PODIEL VO FIRME': 'Podiel vo firme',
   };
   return translations[type] ?? type;
 };

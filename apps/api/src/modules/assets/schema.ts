@@ -2,12 +2,12 @@ import { z } from 'zod';
 
 // Asset type enum
 export const AssetType = {
-  LOAN: 'loan',
-  REAL_ESTATE: 'real_estate',
-  VEHICLE: 'vehicle',
-  STOCK: 'stock',
-  INVENTORY: 'inventory',
-  SHARE_IN_COMPANY: 'share_in_company',
+  POZICKY: 'PÔŽIČKY',
+  NEHNUTELNOSTI: 'NEHNUTEĽNOSTI',
+  AUTA: 'AUTÁ',
+  AKCIE: 'AKCIE',
+  MATERIAL: 'MATERIÁL',
+  PODIEL_VO_FIRME: 'PODIEL VO FIRME',
 } as const;
 
 export type AssetTypeEnum = (typeof AssetType)[keyof typeof AssetType];
@@ -28,12 +28,12 @@ export type AssetEventTypeEnum = (typeof AssetEventType)[keyof typeof AssetEvent
 export const createAssetSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   type: z.enum([
-    AssetType.LOAN,
-    AssetType.REAL_ESTATE,
-    AssetType.VEHICLE,
-    AssetType.STOCK,
-    AssetType.INVENTORY,
-    AssetType.SHARE_IN_COMPANY,
+    AssetType.POZICKY,
+    AssetType.NEHNUTELNOSTI,
+    AssetType.AUTA,
+    AssetType.AKCIE,
+    AssetType.MATERIAL,
+    AssetType.PODIEL_VO_FIRME,
   ]),
   category: z.string().optional(),
   description: z.string().optional(),
@@ -45,12 +45,12 @@ export const updateAssetSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').optional(),
   type: z
     .enum([
-      AssetType.LOAN,
-      AssetType.REAL_ESTATE,
-      AssetType.VEHICLE,
-      AssetType.STOCK,
-      AssetType.INVENTORY,
-      AssetType.SHARE_IN_COMPANY,
+      AssetType.POZICKY,
+      AssetType.NEHNUTELNOSTI,
+      AssetType.AUTA,
+      AssetType.AKCIE,
+      AssetType.MATERIAL,
+      AssetType.PODIEL_VO_FIRME,
     ])
     .optional(),
   category: z.string().optional(),
@@ -102,12 +102,12 @@ export const getAssetsQuerySchema = z.object({
   q: z.string().optional(), // Alternative search parameter
   type: z
     .enum([
-      AssetType.LOAN,
-      AssetType.REAL_ESTATE,
-      AssetType.VEHICLE,
-      AssetType.STOCK,
-      AssetType.INVENTORY,
-      AssetType.SHARE_IN_COMPANY,
+      AssetType.POZICKY,
+      AssetType.NEHNUTELNOSTI,
+      AssetType.AUTA,
+      AssetType.AKCIE,
+      AssetType.MATERIAL,
+      AssetType.PODIEL_VO_FIRME,
     ])
     .optional(),
   sortBy: z.enum(['name', 'type', 'currentValue', 'createdAt']).default('createdAt'),

@@ -83,12 +83,12 @@ export interface CreateCashflowRequest {
 
 // Asset types
 export type AssetType =
-  | 'loan'
-  | 'real_estate'
-  | 'vehicle'
-  | 'stock'
-  | 'inventory'
-  | 'share_in_company';
+  | 'PÔŽIČKY'
+  | 'NEHNUTEĽNOSTI'
+  | 'AUTÁ'
+  | 'AKCIE'
+  | 'MATERIÁL'
+  | 'PODIEL VO FIRME';
 export type AssetStatus = 'ACTIVE' | 'SOLD';
 
 export interface Asset {

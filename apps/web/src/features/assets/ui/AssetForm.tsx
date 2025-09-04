@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const assetFormSchema = z.object({
-  type: z.enum(['loan', 'real_estate', 'vehicle', 'stock', 'inventory', 'share_in_company']),
+  type: z.enum(['PÔŽIČKY', 'NEHNUTEĽNOSTI', 'AUTÁ', 'AKCIE', 'MATERIÁL', 'PODIEL VO FIRME']),
   name: z.string().min(1, 'Názov je povinný'),
   category: z.string().optional(),
   acquiredPrice: z.number().min(0).optional(),
@@ -23,12 +23,12 @@ interface AssetFormProps {
 }
 
 const assetTypeLabels: Record<AssetType, string> = {
-  loan: '💰 Pôžička',
-  real_estate: '🏢 Nehnuteľnosť',
-  vehicle: '🚗 Vozidlo',
-  stock: '📈 Akcie',
-  inventory: '📦 Inventár',
-  share_in_company: '🏭 Podiel v spoločnosti',
+  PÔŽIČKY: '💰 Pôžičky',
+  NEHNUTEĽNOSTI: '🏠 Nehnuteľnosti',
+  AUTÁ: '🚗 Autá',
+  AKCIE: '📈 Akcie',
+  MATERIÁL: '🔧 Materiál',
+  'PODIEL VO FIRME': '🏢 Podiel vo firme',
 };
 
 export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormProps) {
@@ -49,7 +49,7 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
           meta: asset.meta ?? {},
         }
       : {
-          type: 'real_estate',
+          type: 'NEHNUTEĽNOSTI',
           currentValue: 0,
           category: '',
         },
