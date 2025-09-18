@@ -15,8 +15,9 @@ export function InvestorReportCard({ filters }: InvestorReportCardProps) {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('sk-SK');
+  const formatDate = (date: Date | string) => {
+    const dateObj = date instanceof Date ? date : new Date(date);
+    return dateObj.toLocaleDateString('sk-SK');
   };
 
   const handleExport = () => {
@@ -95,7 +96,7 @@ export function InvestorReportCard({ filters }: InvestorReportCardProps) {
                     </span>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>Kapitál: {formatCurrency(investor.capitalAmount)}</span>
+                    <span>Kapitál: {formatCurrency(investor.capitalAmount ?? 0)}</span>
                     <span>
                       Posledná aktivita:{' '}
                       {investor.lastActivity ? formatDate(investor.lastActivity) : 'N/A'}

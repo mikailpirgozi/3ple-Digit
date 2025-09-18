@@ -52,7 +52,10 @@ export function RecentActivity() {
         type: 'snapshot',
         title: 'Snapshot vytvorený',
         description: `NAV: ${formatCurrency(snapshot.nav)}`,
-        date: snapshot.createdAt,
+        date:
+          snapshot.createdAt instanceof Date
+            ? snapshot.createdAt.toISOString()
+            : snapshot.createdAt,
         icon: '📈',
         amount: snapshot.nav,
       });

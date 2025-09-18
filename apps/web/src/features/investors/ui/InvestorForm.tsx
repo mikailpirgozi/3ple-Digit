@@ -1,4 +1,14 @@
 import type { CreateInvestorRequest } from '@/types/api';
+import {
+  Button,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Input,
+} from '@/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
 import { useForm } from 'react-hook-form';
@@ -27,72 +37,65 @@ export const InvestorForm: React.FC<InvestorFormProps> = ({
   isLoading = false,
   initialData,
 }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<InvestorFormData>({
+  const form = useForm<InvestorFormData>({
     resolver: zodResolver(investorSchema),
     defaultValues: initialData,
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          Meno investora
-        </label>
-        <input
-          {...register('name')}
-          type="text"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Zadajte meno investora"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Meno investora</FormLabel>
+              <FormControl>
+                <Input placeholder="Zadajte meno investora" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
-      </div>
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          Email
-        </label>
-        <input
-          {...register('email')}
-          type="email"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Zadajte email"
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="Zadajte email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
-      </div>
 
-      <div>
-        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-          Telefón (voliteľné)
-        </label>
-        <input
-          {...register('phone')}
-          type="tel"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Zadajte telefón"
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Telefón (voliteľné)</FormLabel>
+              <FormControl>
+                <Input type="tel" placeholder="Zadajte telefón" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
-      </div>
 
-      <div className="flex flex-col sm:flex-row justify-end gap-3 sm:space-x-3 sm:gap-0">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 order-2 sm:order-1"
-        >
-          Zrušiť
-        </button>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
-        >
-          {isLoading ? 'Ukladanie...' : 'Uložiť'}
-        </button>
-      </div>
-    </form>
+        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:space-x-3 sm:gap-0">
+          <Button type="button" variant="outline" onClick={onCancel} className="order-2 sm:order-1">
+            Zrušiť
+          </Button>
+          <Button type="submit" disabled={isLoading} className="order-1 sm:order-2">
+            {isLoading ? 'Ukladanie...' : 'Uložiť'}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };

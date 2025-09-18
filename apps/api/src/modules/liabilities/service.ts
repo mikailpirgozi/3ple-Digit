@@ -14,7 +14,7 @@ export class LiabilitiesService {
    * Helper function to convert undefined to null for Prisma compatibility
    */
   private toNullable<T>(value: T | undefined): T | null {
-    return value === undefined ? null : value;
+    return value ?? null;
   }
 
   /**
@@ -100,7 +100,7 @@ export class LiabilitiesService {
       allLiabilities.length > 0
         ? allLiabilities
             .filter(l => l.interestRate !== null)
-            .reduce((sum, l) => sum + (l.interestRate || 0), 0) /
+            .reduce((sum, l) => sum + (l.interestRate ?? 0), 0) /
           allLiabilities.filter(l => l.interestRate !== null).length
         : 0;
 
@@ -114,7 +114,7 @@ export class LiabilitiesService {
       },
       summary: {
         totalBalance,
-        averageInterestRate: averageInterestRate || 0,
+        averageInterestRate: averageInterestRate ?? 0,
         count: allLiabilities.length,
       },
     };
@@ -204,7 +204,7 @@ export class LiabilitiesService {
     const withInterestRate = liabilities.filter(l => l.interestRate !== null);
     const averageInterestRate =
       withInterestRate.length > 0
-        ? withInterestRate.reduce((sum, l) => sum + (l.interestRate || 0), 0) /
+        ? withInterestRate.reduce((sum, l) => sum + (l.interestRate ?? 0), 0) /
           withInterestRate.length
         : 0;
 
@@ -214,7 +214,7 @@ export class LiabilitiesService {
 
     const upcomingMaturity = liabilities
       .filter(l => l.maturityDate && l.maturityDate <= sixMonthsFromNow)
-      .sort((a, b) => (a.maturityDate?.getTime() || 0) - (b.maturityDate?.getTime() || 0))
+      .sort((a, b) => (a.maturityDate?.getTime() ?? 0) - (b.maturityDate?.getTime() ?? 0))
       .map(liability => this.formatLiabilityResponse(liability));
 
     return {
@@ -228,16 +228,16 @@ export class LiabilitiesService {
   /**
    * Format liability response
    */
-  private formatLiabilityResponse(liability: any): LiabilityResponse {
+  private formatLiabilityResponse(liability: Record<string, unknown>): LiabilityResponse {
     return {
-      id: liability.id,
-      name: liability.name,
-      description: liability.description,
-      currentBalance: liability.currentBalance,
-      interestRate: liability.interestRate,
-      maturityDate: liability.maturityDate,
-      createdAt: liability.createdAt,
-      updatedAt: liability.updatedAt,
+      id: liability.id as string,
+      name: liability.name as string,
+      description: liability.description as string | null,
+      currentBalance: liability.currentBalance as number,
+      interestRate: liability.interestRate as number | null,
+      maturityDate: liability.maturityDate as Date | null,
+      createdAt: liability.createdAt as Date,
+      updatedAt: liability.updatedAt as Date,
     };
   }
 }

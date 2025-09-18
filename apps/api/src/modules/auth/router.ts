@@ -75,7 +75,7 @@ router.get(
   '/me',
   authenticate,
   asyncHandler(async (req, res) => {
-    const user = await authService.getUserById(req.user!.id);
+    const user = await authService.getUserById(req.user?.id ?? '');
 
     res.json({
       user: {
@@ -98,7 +98,7 @@ router.get(
 router.post(
   '/verify',
   asyncHandler(async (req, res): Promise<void> => {
-    const { token } = req.body;
+    const { token } = req.body as { token: string };
 
     if (!token) {
       res.status(400).json({
@@ -120,7 +120,7 @@ router.post(
           role: user.role,
         },
       });
-    } catch (error) {
+    } catch {
       res.json({ valid: false });
     }
   })

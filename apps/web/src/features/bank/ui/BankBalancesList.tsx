@@ -1,4 +1,19 @@
 import type { BankBalance, BankFilters } from '@/types/api';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/ui/ui/alert-dialog';
+import { Button } from '@/ui/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/ui/ui/card';
+import { DatePicker } from '@/ui/ui/date-picker';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/ui/select';
+import { Skeleton } from '@/ui/ui/skeleton';
 import { useState } from 'react';
 import { useAccountNames, useBankBalances, useDeleteBankBalance } from '../hooks';
 
@@ -18,18 +33,34 @@ export function BankBalancesList({
   const [filters, setFilters] = useState<BankFilters>({});
   const [sortBy, setSortBy] = useState<SortOption>('amount');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    open: boolean;
+    balanceId: string;
+    accountName: string;
+  }>({
+    open: false,
+    balanceId: '',
+    accountName: '',
+  });
 
   const { data: balancesData, isLoading, error } = useBankBalances(filters);
   const { data: accountNames } = useAccountNames();
   const deleteBalanceMutation = useDeleteBankBalance();
 
-  const handleDeleteBalance = async (id: string) => {
-    if (window.confirm('Naozaj chcete odstrániť tento zostatok?')) {
-      try {
-        await deleteBalanceMutation.mutateAsync(id);
-      } catch (error) {
-        console.error('Error deleting balance:', error);
-      }
+  const handleDeleteBalance = (id: string, accountName: string) => {
+    setDeleteConfirm({
+      open: true,
+      balanceId: id,
+      accountName,
+    });
+  };
+
+  const confirmDeleteBalance = async () => {
+    try {
+      await deleteBalanceMutation.mutateAsync(deleteConfirm.balanceId);
+      setDeleteConfirm({ open: false, balanceId: '', accountName: '' });
+    } catch (error) {
+      console.error('Error deleting balance:', error);
     }
   };
 
@@ -40,24 +71,24 @@ export function BankBalancesList({
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('sk-SK');
+  const formatDate = (date: Date | string) => {
+    const dateObj = date instanceof Date ? date : new Date(date);
+    return dateObj.toLocaleDateString('sk-SK');
   };
 
   // Group balances by account name and get latest balance for each account
   const getAccountSummary = () => {
     if (!balancesData?.balances) return [];
 
-    const accountGroups = balancesData.balances.reduce(
-      (acc, balance) => {
-        if (!acc[balance.accountName]) {
-          acc[balance.accountName] = [];
-        }
-        acc[balance.accountName].push(balance);
-        return acc;
-      },
-      {} as Record<string, BankBalance[]>
-    );
+    const accountGroups =
+      balancesData?.balances?.reduce(
+        (acc, balance) => {
+          acc[balance.accountName] ??= [];
+          acc[balance.accountName]?.push(balance);
+          return acc;
+        },
+        {} as Record<string, BankBalance[]>
+      ) ?? {};
 
     return Object.entries(accountGroups).map(([accountName, balances]) => {
       const sortedBalances = balances.sort(
@@ -78,24 +109,42 @@ export function BankBalancesList({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-muted-foreground">Načítavam zostatky...</div>
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-8 w-48 mb-4" />
+            <Skeleton className="h-12 w-32" />
+          </CardContent>
+        </Card>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <Skeleton className="h-6 w-24 mb-2" />
+                <Skeleton className="h-8 w-20 mb-2" />
+                <Skeleton className="h-4 w-32" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-        <p className="text-red-800">Chyba pri načítavaní zostatkov</p>
-      </div>
+      <Card className="border-destructive">
+        <CardContent className="p-6">
+          <p className="text-destructive">Chyba pri načítavaní zostatkov</p>
+        </CardContent>
+      </Card>
     );
   }
 
   const balances = balancesData?.items ?? [];
   const accountSummary = getAccountSummary();
   const totalAmount = accountSummary.reduce(
-    (sum, account) => sum + account.latestBalance.amount,
+    (sum, account) => sum + (account.latestBalance?.amount ?? 0),
     0
   );
 
@@ -121,98 +170,115 @@ export function BankBalancesList({
     }
 
     if (sortBy === 'accountName') {
-      return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      return sortOrder === 'asc'
+        ? (aValue as string).localeCompare(bValue as string)
+        : (bValue as string).localeCompare(aValue as string);
     } else {
-      return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      return sortOrder === 'asc'
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
     }
   });
 
   return (
     <div className="space-y-6">
       {/* Summary Card */}
-      <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-medium text-foreground">Celkový zostatok</h3>
-            <p className="text-2xl font-bold text-primary">{formatCurrency(totalAmount)}</p>
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium text-foreground">Celkový zostatok</h3>
+              <p className="text-2xl font-bold text-primary">{formatCurrency(totalAmount)}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Počet účtov</p>
+              <p className="text-lg font-semibold text-foreground">{accountSummary.length}</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Počet účtov</p>
-            <p className="text-lg font-semibold text-foreground">{accountSummary.length}</p>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Filters and Actions */}
-      <div className="flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex flex-wrap gap-4">
-          <select
-            value={filters.accountName ?? ''}
-            onChange={e => setFilters({ ...filters, accountName: e.target.value ?? undefined })}
-            className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          >
-            <option value="">Všetky účty</option>
-            {accountNames?.map(name => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-wrap gap-4 items-center justify-between">
+            <div className="flex flex-wrap gap-4">
+              <Select
+                value={filters.accountName ?? 'all'}
+                onValueChange={(value: string) =>
+                  setFilters({ ...filters, accountName: value === 'all' ? undefined : value })
+                }
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Všetky účty" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Všetky účty</SelectItem>
+                  {accountNames?.map(name => (
+                    <SelectItem key={name} value={name}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-          <input
-            type="date"
-            placeholder="Od dátumu"
-            value={filters.dateFrom ?? ''}
-            onChange={e => setFilters({ ...filters, dateFrom: e.target.value ?? undefined })}
-            className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          />
+              <DatePicker
+                placeholder="Od dátumu"
+                date={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
+                onSelect={(date: Date | undefined) =>
+                  setFilters({
+                    ...filters,
+                    dateFrom: date ? date.toISOString().split('T')[0] : undefined,
+                  })
+                }
+              />
 
-          <input
-            type="date"
-            placeholder="Do dátumu"
-            value={filters.dateTo ?? ''}
-            onChange={e => setFilters({ ...filters, dateTo: e.target.value ?? undefined })}
-            className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          />
+              <DatePicker
+                placeholder="Do dátumu"
+                date={filters.dateTo ? new Date(filters.dateTo) : undefined}
+                onSelect={(date: Date | undefined) =>
+                  setFilters({
+                    ...filters,
+                    dateTo: date ? date.toISOString().split('T')[0] : undefined,
+                  })
+                }
+              />
 
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value as SortOption)}
-            className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          >
-            <option value="amount">Zoradiť podľa sumy</option>
-            <option value="date">Zoradiť podľa dátumu</option>
-            <option value="accountName">Zoradiť podľa účtu</option>
-          </select>
+              <Select
+                value={sortBy}
+                onValueChange={(value: string) => setSortBy(value as SortOption)}
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="amount">Zoradiť podľa sumy</SelectItem>
+                  <SelectItem value="date">Zoradiť podľa dátumu</SelectItem>
+                  <SelectItem value="accountName">Zoradiť podľa účtu</SelectItem>
+                </SelectContent>
+              </Select>
 
-          <button
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="px-3 py-2 border border-border rounded-md bg-background text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            title={sortOrder === 'asc' ? 'Zostupne' : 'Vzostupne'}
-          >
-            {sortOrder === 'asc' ? '↑' : '↓'}
-          </button>
-        </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                title={sortOrder === 'asc' ? 'Zostupne' : 'Vzostupne'}
+              >
+                {sortOrder === 'asc' ? '↑' : '↓'}
+              </Button>
+            </div>
 
-        <div className="flex gap-2">
-          {onImportCsv && (
-            <button
-              onClick={onImportCsv}
-              className="px-4 py-2 text-sm font-medium text-primary bg-primary/10 border border-primary/20 rounded-md hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            >
-              Import CSV
-            </button>
-          )}
-          {onCreateBalance && (
-            <button
-              onClick={onCreateBalance}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            >
-              Pridať zostatok
-            </button>
-          )}
-        </div>
-      </div>
+            <div className="flex gap-2">
+              {onImportCsv && (
+                <Button variant="outline" onClick={onImportCsv}>
+                  Import CSV
+                </Button>
+              )}
+              {onCreateBalance && <Button onClick={onCreateBalance}>Pridať zostatok</Button>}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Account Summary View */}
       {!filters.accountName && accountSummary.length > 0 && (
@@ -220,105 +286,135 @@ export function BankBalancesList({
           <h3 className="text-lg font-medium text-foreground">Prehľad účtov</h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {accountSummary.map(account => (
-              <div
-                key={account.accountName}
-                className="p-4 border border-border rounded-lg bg-card hover:shadow-md transition-shadow"
-              >
-                <div className="space-y-2">
-                  <h4 className="font-medium text-foreground">{account.accountName}</h4>
-                  <p className="text-2xl font-bold text-foreground">
-                    {formatCurrency(account.latestBalance.amount)}
-                  </p>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>Posledná aktualizácia</span>
-                    <span>{formatDate(account.latestBalance.date)}</span>
+              <Card key={account.accountName} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-foreground">{account.accountName}</h4>
+                    <p className="text-2xl font-bold text-foreground">
+                      {formatCurrency(account.latestBalance?.amount ?? 0)}
+                    </p>
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>Posledná aktualizácia</span>
+                      <span>{formatDate(account.latestBalance?.date ?? new Date())}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>Počet záznamov</span>
+                      <span>{account.balanceCount}</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFilters({ ...filters, accountName: account.accountName })}
+                      className="w-full mt-2"
+                    >
+                      Zobraziť históriu
+                    </Button>
                   </div>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>Počet záznamov</span>
-                    <span>{account.balanceCount}</span>
-                  </div>
-                  <button
-                    onClick={() => setFilters({ ...filters, accountName: account.accountName })}
-                    className="w-full mt-2 px-3 py-1 text-xs font-medium text-primary bg-primary/10 border border-primary/20 rounded hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  >
-                    Zobraziť históriu
-                  </button>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       )}
 
       {/* Detailed Balances List */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium text-foreground">
-            {filters.accountName ? `História účtu: ${filters.accountName}` : 'Všetky zostatky'}
-          </h3>
-          {filters.accountName && (
-            <button
-              onClick={() => setFilters({ ...filters, accountName: undefined })}
-              className="px-3 py-1 text-sm font-medium text-muted-foreground bg-background border border-border rounded hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            >
-              Zobraziť všetky účty
-            </button>
-          )}
-        </div>
-
-        {sortedBalances.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Žiadne zostatky nenájdené</p>
-            {onCreateBalance && (
-              <button
-                onClick={onCreateBalance}
-                className="mt-2 px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>
+              {filters.accountName ? `História účtu: ${filters.accountName}` : 'Všetky zostatky'}
+            </CardTitle>
+            {filters.accountName && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFilters({ ...filters, accountName: undefined })}
               >
-                Pridať prvý zostatok
-              </button>
+                Zobraziť všetky účty
+              </Button>
             )}
           </div>
-        ) : (
-          <div className="space-y-2">
-            {sortedBalances.map(balance => (
-              <div
-                key={balance.id}
-                className="flex items-center justify-between p-4 border border-border rounded-lg bg-card"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <h4 className="font-medium text-foreground">{balance.accountName}</h4>
-                    <span className="text-sm text-muted-foreground">
-                      {formatDate(balance.date)}
-                    </span>
-                  </div>
-                  <p className="text-lg font-semibold text-foreground mt-1">
-                    {formatCurrency(balance.amount)}
-                  </p>
-                </div>
+        </CardHeader>
+        <CardContent>
+          {sortedBalances.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Žiadne zostatky nenájdené</p>
+              {onCreateBalance && (
+                <Button onClick={onCreateBalance} className="mt-2">
+                  Pridať prvý zostatok
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {sortedBalances.map(balance => (
+                <Card key={balance.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <h4 className="font-medium text-foreground">{balance.accountName}</h4>
+                          <span className="text-sm text-muted-foreground">
+                            {formatDate(balance.date)}
+                          </span>
+                        </div>
+                        <p className="text-lg font-semibold text-foreground mt-1">
+                          {formatCurrency(balance.amount)}
+                        </p>
+                      </div>
 
-                <div className="flex items-center gap-2">
-                  {onEditBalance && (
-                    <button
-                      onClick={() => onEditBalance(balance)}
-                      className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
-                      Upraviť
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDeleteBalance(balance.id)}
-                    disabled={deleteBalanceMutation.isPending}
-                    className="px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-200 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
-                  >
-                    Odstrániť
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                      <div className="flex items-center gap-2">
+                        {onEditBalance && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onEditBalance(balance)}
+                          >
+                            Upraviť
+                          </Button>
+                        )}
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteBalance(balance.id, balance.accountName)}
+                          disabled={deleteBalanceMutation.isPending}
+                        >
+                          Odstrániť
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open: boolean) => setDeleteConfirm({ ...deleteConfirm, open })}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Odstrániť zostatok</AlertDialogTitle>
+            <AlertDialogDescription>
+              Naozaj chcete odstrániť zostatok pre účet &quot;{deleteConfirm.accountName}&quot;?
+              Táto akcia sa nedá vrátiť späť.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Zrušiť</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteBalance}
+              disabled={deleteBalanceMutation.isPending}
+            >
+              {deleteBalanceMutation.isPending ? 'Odstraňuje...' : 'Odstrániť'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -240,10 +240,19 @@ export function HomePage() {
               data={snapshotsData.snapshots
                 .slice()
                 .reverse()
-                .map(snapshot => ({
-                  date: snapshot.date,
-                  value: snapshot.nav,
-                }))}
+                .map(snapshot => {
+                  const dateStr =
+                    snapshot.date instanceof Date
+                      ? snapshot.date.toISOString().split('T')[0]
+                      : (snapshot.date as string).split('T')[0];
+                  return {
+                    date: dateStr ?? new Date().toISOString().split('T')[0],
+                    value: snapshot.nav,
+                  };
+                })
+                .filter(
+                  (point): point is { date: string; value: number } => point.date !== undefined
+                )}
               width={400}
               height={200}
               formatValue={formatCurrency}

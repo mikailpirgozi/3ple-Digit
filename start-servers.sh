@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# 3PLE DIGIT - Automatic Server Startup Script
-# Spúšťa backend a frontend servery s automatickým reštartovaním
+# 3PLE DIGIT - Simple Server Startup Script
+# Spúšťa backend a frontend servery bez PM2
 
 echo "🚀 Spúšťam 3PLE DIGIT servery..."
 
@@ -10,30 +10,37 @@ mkdir -p logs
 
 # Zastaviť existujúce procesy (ak bežia)
 echo "🛑 Zastavujem existujúce procesy..."
-pm2 delete 3ple-digit-api 2>/dev/null || true
-pm2 delete 3ple-digit-web 2>/dev/null || true
+./stop-servers.sh
 
-# Spustiť servery cez PM2
+# Spustiť backend server na pozadí
 echo "▶️  Spúšťam backend API server..."
-pm2 start ecosystem.config.cjs --only 3ple-digit-api
+cd apps/api
+nohup pnpm dev > ../../logs/api-out.log 2> ../../logs/api-error.log &
+API_PID=$!
+echo "Backend PID: $API_PID"
+cd ../..
 
+# Spustiť frontend server na pozadí
 echo "▶️  Spúšťam frontend web server..."
-pm2 start ecosystem.config.cjs --only 3ple-digit-web
+cd apps/web
+nohup pnpm dev > ../../logs/web-out.log 2> ../../logs/web-error.log &
+WEB_PID=$!
+echo "Frontend PID: $WEB_PID"
+cd ../..
 
-# Zobraziť status
-echo "📊 Status serverov:"
-pm2 status
+# Počkať chvíľu na spustenie
+sleep 3
 
 echo ""
 echo "✅ Servery sú spustené!"
-echo "🌐 Frontend: http://localhost:3000"
-echo "🔧 Backend API: http://localhost:4000"
+echo "🌐 Frontend: http://localhost:3000 (PID: $WEB_PID)"
+echo "🔧 Backend API: http://localhost:4000 (PID: $API_PID)"
 echo ""
 echo "📋 Užitočné príkazy:"
-echo "   pm2 status          - zobraziť status"
-echo "   pm2 logs            - zobraziť logy"
-echo "   pm2 restart all     - reštartovať všetky"
-echo "   pm2 stop all        - zastaviť všetky"
-echo "   pm2 delete all      - zmazať všetky procesy"
+echo "   ./stop-servers.sh   - zastaviť servery"
+echo "   tail -f logs/api-out.log    - sledovať API logy"
+echo "   tail -f logs/web-out.log    - sledovať web logy"
+echo "   lsof -i :3000       - skontrolovať port 3000"
+echo "   lsof -i :4000       - skontrolovať port 4000"
 echo ""
-echo "🔄 Servery sa automaticky reštartujú len pri páde (nie pri reštarte systému)"
+echo "⚠️  Servery sa už nerestartujú automaticky - použite Ctrl+C na ukončenie"

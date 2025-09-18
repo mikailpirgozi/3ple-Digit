@@ -1,0 +1,34 @@
+# RAILWAY BACKEND ENVIRONMENT VARIABLES
+# ======================================
+# Skopírujte tieto do Railway Backend Service → Variables tab
+
+DATABASE_URL=[SKOPÍRUJTE Z POSTGRES SERVICE - Variables tab]
+
+NODE_ENV=production
+PORT=4000
+
+# Authentication - DÔLEŽITÉ!
+JWT_SECRET=321e7020952c02839c7803d9441393f8e20d81d9882c3cb5533bf6b9109903e4f455a43481c2c05fc04f098612095dc5e13daf0b079c1613eab85a98fb60e693
+JWT_EXPIRES_IN=7d
+
+# CORS - pre Vercel frontend
+CORS_ORIGINS=http://localhost:3000,https://3ple-digit-qtqq.vercel.app,https://3ple-digit-qtqq-blackrents-projects.vercel.app
+
+# Logging
+LOG_LEVEL=info
+
+# ======================================
+# INŠTRUKCIE:
+# 1. Otvorte Railway Dashboard
+# 2. Kliknite na "backend" service  
+# 3. Choďte do "Variables" tab
+# 4. Kliknite "RAW Editor" (vpravo hore)
+# 5. Vymaže všetko a vložte tieto variables
+# 6. Upravte DATABASE_URL a CORS_ORIGINS
+# 7. Kliknite "Save"
+# 8. Backend sa automaticky redeployuje
+# ======================================
+
+# PRIHLASOVACIE ÚDAJE PO NASADENÍ:
+# Email: admin@3pledigit.sk
+# Heslo: Admin123!@#

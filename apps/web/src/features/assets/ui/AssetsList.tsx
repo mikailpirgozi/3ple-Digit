@@ -52,6 +52,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
           id: asset.id,
           data: {
             date: new Date().toISOString(),
+            saleDate: new Date().toISOString(),
             salePrice: Number(salePrice),
           },
         });
@@ -145,9 +146,9 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
   const typeTotals = Object.entries(assetsByType)
     .map(([type, typeAssets]) => ({
       type: type as AssetType,
-      assets: typeAssets,
-      count: typeAssets.length,
-      totalValue: typeAssets.reduce((sum, asset) => sum + asset.currentValue, 0),
+      assets: typeAssets as Asset[],
+      count: (typeAssets as Asset[]).length,
+      totalValue: (typeAssets as Asset[]).reduce((sum, asset) => sum + asset.currentValue, 0),
     }))
     .sort((a, b) => b.totalValue - a.totalValue);
 
@@ -245,7 +246,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
 
               {/* Assets in Category */}
               <div className="space-y-2 ml-4">
-                {typeAssets.map(asset => {
+                {(typeAssets as Asset[]).map(asset => {
                   const pnlData = calculatePnL(asset);
                   return (
                     <div

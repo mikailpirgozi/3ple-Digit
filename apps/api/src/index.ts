@@ -1,6 +1,7 @@
 import { env } from '@/core/env.js';
 import { errorHandler } from '@/core/error-handler.js';
 import { logger } from '@/core/logger.js';
+import compression from 'compression';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import rateLimit from 'express-rate-limit';
@@ -8,26 +9,92 @@ import helmet from 'helmet';
 
 const app: Express = express();
 
+// Performance middleware
+app.use(
+  compression({
+    filter: (req, res) => {
+      if (req.headers['x-no-compression']) {
+        return false;
+      }
+      return compression.filter(req, res);
+    },
+    level: 6, // Balanced compression level
+    threshold: 1024, // Only compress responses > 1KB
+  })
+);
+
 // Security middleware
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Disable for development
+  })
+);
+
 app.use(
   cors({
     origin: env.CORS_ORIGINS,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
 // Rate limiting
-const limiter = rateLimit({
+const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
   message: 'Too many requests from this IP, please try again later.',
 });
-app.use('/api/', limiter);
 
-// Body parsing
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // increased limit for development
+  message: 'Too many authentication attempts, please try again later.',
+  skipSuccessfulRequests: true,
+});
+
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20, // limit file uploads
+  message: 'Too many file uploads, please try again later.',
+});
+
+app.use('/api/', generalLimiter);
+app.use('/api/auth', authLimiter);
+app.use('/api/documents', uploadLimiter);
+
+// Body parsing with size limits
+app.use(
+  express.json({
+    limit: '2mb', // Reduced from 10mb for security
+    verify: (_req, _res, buf) => {
+      if (buf.length > 2 * 1024 * 1024) {
+        // 2MB
+        throw new Error('Request entity too large');
+      }
+    },
+  })
+);
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '2mb',
+    parameterLimit: 1000, // Limit number of parameters
+  })
+);
 
 // Health check
 app.get('/health', (_req, res) => {

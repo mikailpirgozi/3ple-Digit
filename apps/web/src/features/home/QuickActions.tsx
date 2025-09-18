@@ -1,5 +1,6 @@
 import { useCreateAsset } from '@/features/assets/hooks';
 import { useCreateSnapshot } from '@/features/snapshots/hooks';
+import type { AssetType } from '@/types/api';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -103,7 +104,7 @@ function CreateSnapshotModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
 function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [formData, setFormData] = useState({
     name: '',
-    type: 'NEHNUTEĽNOSTI' as const,
+    type: 'NEHNUTEĽNOSTI' as AssetType,
     acquiredPrice: '',
     currentValue: '',
     description: '',
@@ -170,13 +171,7 @@ function CreateAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
             onChange={e =>
               setFormData({
                 ...formData,
-                type: e.target.value as
-                  | 'PÔŽIČKY'
-                  | 'NEHNUTEĽNOSTI'
-                  | 'AUTÁ'
-                  | 'AKCIE'
-                  | 'MATERIÁL'
-                  | 'PODIEL VO FIRME',
+                type: e.target.value as AssetType,
               })
             }
             className="w-full px-3 py-2 border border-border rounded-md"

@@ -238,10 +238,10 @@ describe('Bank Service Unit Tests', () => {
       const summary = await bankService.getBankBalanceSummary();
 
       expect(summary.totalBalance).toBe(30000);
-      expect(summary.byCurrency.EUR.amount).toBe(25000);
-      expect(summary.byCurrency.EUR.count).toBe(2);
-      expect(summary.byCurrency.USD.amount).toBe(5000);
-      expect(summary.byCurrency.USD.count).toBe(1);
+      expect(summary.byCurrency.EUR!.amount).toBe(25000);
+      expect(summary.byCurrency.EUR!.count).toBe(2);
+      expect(summary.byCurrency.USD!.amount).toBe(5000);
+      expect(summary.byCurrency.USD!.count).toBe(1);
       expect(summary.byAccount).toHaveLength(3);
     });
   });
@@ -368,7 +368,7 @@ describe('Bank Service Unit Tests', () => {
 
       const eurBalances = result.balances.filter(b => b.currency === 'EUR');
       expect(eurBalances.length).toBeGreaterThanOrEqual(2);
-      expect(result.summary.byCurrency.EUR).toBeGreaterThan(0);
+      expect(result.summary.byCurrency.EUR!).toBeGreaterThan(0);
     });
 
     it('should filter by date range', async () => {

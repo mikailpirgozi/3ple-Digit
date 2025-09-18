@@ -1,11 +1,15 @@
 import type { AssetEvent, AssetEventKind, CreateAssetEventRequest } from '@/types/api';
+import { Button } from '@/ui/ui/button';
+import { DatePicker } from '@/ui/ui/date-picker';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const assetEventFormSchema = z.object({
-  date: z.string().min(1, 'Dátum je povinný'),
-  type: z.enum(['VALUATION', 'PAYMENT_IN', 'PAYMENT_OUT', 'CAPEX', 'NOTE']),
+  date: z.string({
+    required_error: 'Dátum je povinný',
+  }),
+  type: z.enum(['VALUATION', 'PAYMENT_IN', 'PAYMENT_OUT', 'CAPEX', 'NOTE', 'SALE']),
   amount: z.number().min(0).optional(),
   note: z.string().optional(),
 });
@@ -14,6 +18,7 @@ type AssetEventFormData = z.infer<typeof assetEventFormSchema>;
 
 interface AssetEventFormProps {
   event?: AssetEvent;
+  assetId: string;
   onSubmit: (data: CreateAssetEventRequest) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -25,6 +30,7 @@ const eventKindLabels: Record<AssetEventKind, string> = {
   PAYMENT_OUT: '💸 Výdaj',
   CAPEX: '🔧 Investícia (CAPEX)',
   NOTE: '📝 Poznámka',
+  SALE: '🏷️ Predaj',
 };
 
 const eventKindDescriptions: Record<AssetEventKind, string> = {
@@ -33,20 +39,31 @@ const eventKindDescriptions: Record<AssetEventKind, string> = {
   PAYMENT_OUT: 'Výdaj súvisiaci s aktívom (napr. opravy, poplatky)',
   CAPEX: 'Kapitálová investícia do aktíva (zvyšuje hodnotu)',
   NOTE: 'Poznámka bez finančného dopadu',
+  SALE: 'Predaj aktíva',
 };
 
-export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEventFormProps) {
+export function AssetEventForm({
+  event,
+  assetId,
+  onSubmit,
+  onCancel,
+  isLoading,
+}: AssetEventFormProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<AssetEventFormData>({
     resolver: zodResolver(assetEventFormSchema),
     defaultValues: event
       ? {
-          date: event.date.split('T')[0], // Convert to YYYY-MM-DD format
-          type: event.kind,
+          date:
+            event.date instanceof Date
+              ? event.date.toISOString().split('T')[0]
+              : (event.date as string).split('T')[0],
+          type: event.type,
           amount: event.amount ?? undefined,
           note: event.note ?? '',
         }
@@ -61,7 +78,9 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
 
   const handleFormSubmit = (data: AssetEventFormData) => {
     onSubmit({
+      assetId,
       ...data,
+      date: new Date(data.date).toISOString(),
       // Backend requires amount to be a number, use 0 for NOTE type
       amount: requiresAmount ? (data.amount ?? 0) : 0,
     });
@@ -84,11 +103,15 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
           <label htmlFor="date" className="block text-sm font-medium text-foreground mb-2">
             Dátum
           </label>
-          <input
-            id="date"
-            type="date"
-            {...register('date')}
-            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          <DatePicker
+            date={watch('date') ? new Date(watch('date') || '') : undefined}
+            onSelect={(date: Date | undefined) => {
+              if (date) {
+                const dateString = date.toISOString().split('T')[0] ?? '';
+                setValue('date', dateString);
+              }
+            }}
+            placeholder="Vyberte dátum"
           />
           {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>}
         </div>
@@ -111,7 +134,7 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
           </select>
           {selectedType && (
             <p className="mt-1 text-sm text-muted-foreground">
-              {eventKindDescriptions[selectedType]}
+              {eventKindDescriptions[selectedType as AssetEventKind]}
             </p>
           )}
           {errors.type && <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>}
@@ -152,20 +175,12 @@ export function AssetEventForm({ event, onSubmit, onCancel, isLoading }: AssetEv
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-3 pt-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground bg-background border border-border rounded-md hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-          >
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
             Zrušiť
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          </Button>
+          <Button type="submit" disabled={isLoading}>
             {isLoading ? 'Ukladám...' : event ? 'Uložiť zmeny' : 'Vytvoriť udalosť'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

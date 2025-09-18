@@ -1,17 +1,17 @@
-import type { Document, DocumentLinkedType } from '@/types/api';
+import type { Document, DocumentLinkedType, DocumentLinkedTypeRecord } from '@/types/api';
 import { useDeleteDocument, useDocuments, useDownloadDocument } from '../hooks';
 
 interface DocumentsListProps {
   onUploadDocument?: () => void;
 }
 
-const linkedTypeLabels: Record<DocumentLinkedType, string> = {
+const linkedTypeLabels: DocumentLinkedTypeRecord<string> = {
   asset: 'Aktívum',
   investor: 'Investor',
   liability: 'Záväzok',
 };
 
-const linkedTypeColors: Record<DocumentLinkedType, string> = {
+const linkedTypeColors: DocumentLinkedTypeRecord<string> = {
   asset: 'bg-blue-100 text-blue-800',
   investor: 'bg-green-100 text-green-800',
   liability: 'bg-red-100 text-red-800',
@@ -48,8 +48,9 @@ export function DocumentsList({ onUploadDocument }: DocumentsListProps) {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('sk-SK', {
+  const formatDate = (date: Date | string) => {
+    const dateObj = date instanceof Date ? date : new Date(date);
+    return dateObj.toLocaleDateString('sk-SK', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -72,13 +73,11 @@ export function DocumentsList({ onUploadDocument }: DocumentsListProps) {
   const groupDocumentsByType = (documents: Document[]) => {
     return documents.reduce(
       (acc, doc) => {
-        if (!acc[doc.linkedType]) {
-          acc[doc.linkedType] = [];
-        }
-        acc[doc.linkedType].push(doc);
+        acc[doc.linkedType] ??= [];
+        acc[doc.linkedType]?.push(doc);
         return acc;
       },
-      {} as Record<DocumentLinkedType, Document[]>
+      {} as DocumentLinkedTypeRecord<Document[]>
     );
   };
 
@@ -100,7 +99,7 @@ export function DocumentsList({ onUploadDocument }: DocumentsListProps) {
 
   const documents = documentsData?.documents ?? [];
   const groupedDocuments = groupDocumentsByType(documents);
-  const totalSize = documents.reduce((sum, doc) => sum + doc.size, 0);
+  const totalSize = documents.reduce((sum: number, doc) => sum + doc.size, 0);
 
   return (
     <div className="space-y-6">

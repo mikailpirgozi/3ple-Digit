@@ -1,0 +1,10 @@
+# Ignore template files
+src/core/templates/
+*.template.ts
+*.template.js
+
+# Ignore generated files
+*.d.ts
+dist/
+*.test.ts
+*.spec.ts

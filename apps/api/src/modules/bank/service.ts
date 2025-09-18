@@ -1,15 +1,15 @@
-import { prisma } from '@/core/prisma.js';
 import { errors } from '@/core/error-handler.js';
 import { log } from '@/core/logger.js';
-// BankBalance type removed as not exported from @prisma/client
+import { prisma } from '@/core/prisma.js';
+import type { BankBalance } from '@prisma/client';
 import type {
+  BankBalanceResponse,
   CreateBankBalanceRequest,
-  UpdateBankBalanceRequest,
   CsvImportRequest,
+  CsvImportResult,
   CsvRowData,
   GetBankBalancesQuery,
-  BankBalanceResponse,
-  CsvImportResult,
+  UpdateBankBalanceRequest,
 } from './schema.js';
 import { csvRowSchema } from './schema.js';
 
@@ -18,7 +18,7 @@ export class BankService {
    * Helper function to convert undefined to null for Prisma compatibility
    */
   private toNullable<T>(value: T | undefined): T | null {
-    return value === undefined ? null : value;
+    return value ?? null;
   }
 
   /**
@@ -28,7 +28,7 @@ export class BankService {
     const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
-        (filtered as any)[key] = value;
+        filtered[key] = value;
       }
     }
     return filtered;
@@ -88,7 +88,14 @@ export class BankService {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
+    const where: {
+      OR?: Array<{
+        accountName?: { contains: string };
+        bankName?: { contains: string };
+        accountType?: { contains: string };
+      }>;
+      currency?: string;
+    } = {};
 
     if (search) {
       where.OR = [
@@ -103,17 +110,18 @@ export class BankService {
     }
 
     if (accountName) {
-      where.accountName = { contains: accountName };
+      (where as Record<string, unknown>).accountName = { contains: accountName };
     }
 
     if (bankName) {
-      where.bankName = { contains: bankName };
+      (where as Record<string, unknown>).bankName = { contains: bankName };
     }
 
-    if (dateFrom || dateTo) {
-      where.date = {};
-      if (dateFrom) where.date.gte = dateFrom;
-      if (dateTo) where.date.lte = dateTo;
+    if (dateFrom ?? dateTo) {
+      const dateFilter: Record<string, unknown> = {};
+      if (dateFrom) dateFilter.gte = dateFrom;
+      if (dateTo) dateFilter.lte = dateTo;
+      (where as Record<string, unknown>).date = dateFilter;
     }
 
     // Get total count and balances
@@ -132,7 +140,7 @@ export class BankService {
     const totalAmount = allBalances.reduce((sum, balance) => sum + balance.amount, 0);
     const byCurrency = allBalances.reduce(
       (acc, balance) => {
-        acc[balance.currency] = (acc[balance.currency] || 0) + balance.amount;
+        acc[balance.currency] = (acc[balance.currency] ?? 0) + balance.amount;
         return acc;
       },
       {} as Record<string, number>
@@ -254,7 +262,11 @@ export class BankService {
         const row = dataRows[i];
 
         try {
-          const columns = this.parseCsvRow(row, delimiter as string);
+          if (!delimiter || !mapping) {
+            throw new Error('Missing delimiter or mapping configuration');
+          }
+          // @ts-expect-error - delimiter is checked above
+          const columns = this.parseCsvRow(row, delimiter);
           const rowData = this.mapCsvRow(columns, mapping);
           const validatedData = csvRowSchema.parse(rowData);
 
@@ -283,7 +295,8 @@ export class BankService {
           results.errors.push({
             row: rowIndex,
             errors: errorMessages,
-            data: this.parseCsvRowSafe(row, delimiter as string),
+            // @ts-expect-error - delimiter is checked above
+            data: delimiter ? this.parseCsvRowSafe(row, delimiter) : {},
           });
         }
       }
@@ -329,21 +342,24 @@ export class BankService {
 
     const byCurrency = balances.reduce(
       (acc, balance) => {
-        if (!acc[balance.currency]) {
-          acc[balance.currency] = { amount: 0, count: 0 };
+        acc[balance.currency] ??= { amount: 0, count: 0 };
+        const currencyKey = balance.currency;
+        const currencyData = acc[currencyKey];
+        if (currencyData) {
+          currencyData.amount += balance.amount;
+          currencyData.count++;
         }
-        acc[balance.currency]!.amount += balance.amount;
-        acc[balance.currency]!.count++;
         return acc;
       },
       {} as Record<string, { amount: number; count: number }>
     );
 
     // Group by account (latest balance per account)
-    const accountMap = new Map<string, any>();
+    const accountMap = new Map<string, BankBalance>();
     balances.forEach(balance => {
-      const key = `${balance.accountName}-${balance.bankName || 'unknown'}`;
-      if (!accountMap.has(key) || accountMap.get(key).date < balance.date) {
+      const key = `${balance.accountName}-${balance.bankName ?? 'unknown'}`;
+      const existing = accountMap.get(key);
+      if (!existing || existing.date < balance.date) {
         accountMap.set(key, balance);
       }
     });
@@ -410,9 +426,9 @@ export class BankService {
    */
   private mapCsvRow(columns: string[], mapping: CsvImportRequest['mapping']): CsvRowData {
     const data: CsvRowData = {
-      accountName: columns[mapping.accountName]?.trim() || '',
-      amount: parseFloat(columns[mapping.amount]?.replace(/[^\d.-]/g, '') || '0'),
-      date: new Date(columns[mapping.date]?.trim() || ''),
+      accountName: columns[mapping.accountName]?.trim() ?? '',
+      amount: parseFloat(columns[mapping.amount]?.replace(/[^\d.-]/g, '') ?? '0'),
+      date: new Date(columns[mapping.date]?.trim() ?? ''),
       currency: 'EUR',
     };
 
@@ -426,7 +442,7 @@ export class BankService {
     }
 
     if (mapping.currency !== undefined && columns[mapping.currency]) {
-      data.currency = columns[mapping.currency]?.trim().toUpperCase();
+      data.currency = columns[mapping.currency]?.trim().toUpperCase() ?? '';
     }
 
     return data;
@@ -435,7 +451,7 @@ export class BankService {
   /**
    * Format bank balance response
    */
-  private formatBankBalanceResponse(balance: any): BankBalanceResponse {
+  private formatBankBalanceResponse(balance: BankBalance): BankBalanceResponse {
     return {
       id: balance.id,
       accountName: balance.accountName,

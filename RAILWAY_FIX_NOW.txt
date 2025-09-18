@@ -1,0 +1,32 @@
+🚨 URGENTNÉ OPRAVY PRE RAILWAY BACKEND VARIABLES
+================================================
+
+1. ZMEŇTE JWT_SECRET na tento bezpečný:
+----------------------------------------
+JWT_SECRET=321e7020952c02839c7803d9441393f8e20d81d9882c3cb5533bf6b9109903e4f455a43481c2c05fc04f098612095dc5e13daf0b079c1613eab85a98fb60e693
+
+2. ZÍSKAJTE EXTERNÝ DATABASE_URL:
+----------------------------------
+a) Kliknite na Postgres service (modrá ikona)
+b) V záložke "Variables" nájdite DATABASE_URL
+c) MUSÍ začínať: postgresql://postgres:XXX@roundhouse.proxy.rlwy.net:XXXX/railway
+   (NIE postgres.railway.internal!)
+d) Skopírujte tento EXTERNÝ DATABASE_URL
+
+3. NASTAVTE PORT EXPLICITNE:
+-----------------------------
+PORT=4000
+
+4. FINÁLNE VARIABLES (použite RAW Editor):
+-------------------------------------------
+CORS_ORIGINS=http://localhost:3000,https://3ple-digit-qtqq.vercel.app,https://3ple-digit-qtqq-blackrents-projects.vercel.app
+DATABASE_URL=[EXTERNÝ URL z Postgres service - NIE internal!]
+JWT_EXPIRES_IN=7d
+JWT_SECRET=321e7020952c02839c7803d9441393f8e20d81d9882c3cb5533bf6b9109903e4f455a43481c2c05fc04f098612095dc5e13daf0b079c1613eab85a98fb60e693
+LOG_LEVEL=info
+NODE_ENV=production
+PORT=4000
+
+5. PO ULOŽENÍ:
+--------------
+Backend sa automaticky redeployuje. Počkajte 2-3 minúty.

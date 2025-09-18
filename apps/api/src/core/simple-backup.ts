@@ -85,8 +85,11 @@ async function createQuickBackup() {
       path: backupPath,
     });
 
+    // eslint-disable-next-line no-console
     console.log(`\n✅ Backup created: ${backupPath}`);
+    // eslint-disable-next-line no-console
     console.log(`📊 Total records: ${totalRecords}`);
+    // eslint-disable-next-line no-console
     console.log(`💾 File size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
   } catch (error) {
     log.error('❌ Backup failed', { error: error instanceof Error ? error.message : error });
@@ -100,5 +103,5 @@ async function createQuickBackup() {
 
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  createQuickBackup();
+  void createQuickBackup();
 }

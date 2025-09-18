@@ -1,7 +1,7 @@
-import type { Request, Response, NextFunction } from 'express';
-import { authService } from './service.js';
 import { errors } from '@/core/error-handler.js';
+import type { NextFunction, Request, Response } from 'express';
 import type { UserRoleType } from './schema.js';
+import { authService } from './service.js';
 
 // Extend Express Request type to include user
 declare global {
@@ -27,7 +27,7 @@ export const authenticate = async (
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       throw errors.unauthorized('Access token required');
     }
 
@@ -88,7 +88,7 @@ export const optionalAuth = async (
   try {
     const authHeader = req.headers.authorization;
 
-    if (authHeader && authHeader.startsWith('Bearer ')) {
+    if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
       const payload = await authService.verifyToken(token);
 
@@ -100,7 +100,7 @@ export const optionalAuth = async (
     }
 
     next();
-  } catch (error) {
+  } catch {
     // Ignore auth errors for optional auth
     next();
   }

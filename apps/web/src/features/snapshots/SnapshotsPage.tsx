@@ -11,7 +11,10 @@ export function SnapshotsPage() {
 
   const handleCreateSnapshot = async (data: { performanceFeeRate?: number }) => {
     try {
-      await createSnapshotMutation.mutateAsync(data);
+      await createSnapshotMutation.mutateAsync({
+        date: new Date().toISOString(),
+        performanceFeeRate: data.performanceFeeRate,
+      });
       setShowForm(false);
     } catch (error) {
       console.error('Error creating snapshot:', error);

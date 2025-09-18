@@ -1,6 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type {
+  DocumentLinkedType,
+  DocumentResponse,
+  DocumentsResponse,
+  PresignUploadRequest,
+} from '@/types/api';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationResult,
+  type UseQueryResult,
+} from '@tanstack/react-query';
 import { documentsApi } from './api';
-import type { PresignUploadRequest } from '@/types/api';
 // Document type removed as unused
 
 // Query keys factory
@@ -13,14 +24,14 @@ export const documentsKeys = {
 };
 
 // Documents queries
-export function useDocuments() {
+export function useDocuments(): UseQueryResult<DocumentsResponse, Error> {
   return useQuery({
     queryKey: documentsKeys.list(),
     queryFn: () => documentsApi.getDocuments(),
   });
 }
 
-export function useDocument(id: string) {
+export function useDocument(id: string): UseQueryResult<DocumentResponse, Error> {
   return useQuery({
     queryKey: documentsKeys.detail(id),
     queryFn: () => documentsApi.getDocument(id),
@@ -29,7 +40,7 @@ export function useDocument(id: string) {
 }
 
 // Documents mutations
-export function useDeleteDocument() {
+export function useDeleteDocument(): UseMutationResult<void, Error, string, unknown> {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -40,18 +51,27 @@ export function useDeleteDocument() {
   });
 }
 
-export function useUploadDocument() {
+export function useUploadDocument(): UseMutationResult<
+  DocumentResponse,
+  Error,
+  {
+    file: File;
+    linkedType: DocumentLinkedType;
+    linkedId: string;
+  },
+  unknown
+> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
       file,
+      linkedType,
+      linkedId,
     }: {
       file: File;
-      title: string;
-      linkedType: 'asset' | 'investor' | 'liability';
+      linkedType: DocumentLinkedType;
       linkedId: string;
-      note?: string;
     }) => {
       // Calculate SHA256 hash
       await documentsApi.calculateSHA256(file);
@@ -59,8 +79,12 @@ export function useUploadDocument() {
       // Get presigned upload URL
       const presignData: PresignUploadRequest = {
         fileName: file.name,
+        mimeType: file.type,
         fileType: file.type,
+        size: file.size,
         fileSize: file.size,
+        linkedType: linkedType as DocumentLinkedType,
+        linkedId,
       };
 
       const presignResponse = await documentsApi.getPresignedUpload(presignData);
@@ -76,7 +100,12 @@ export function useUploadDocument() {
   });
 }
 
-export function useDownloadDocument() {
+export function useDownloadDocument(): UseMutationResult<
+  { downloadUrl: string },
+  Error,
+  string,
+  unknown
+> {
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await documentsApi.getPresignedDownload(id);

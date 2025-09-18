@@ -1,5 +1,5 @@
 import type { Liability } from '@/types/api';
-import { useLiabilities, useDeleteLiability } from '../hooks';
+import { useDeleteLiability, useLiabilities } from '../hooks';
 
 interface LiabilitiesListProps {
   onCreateLiability?: () => void;
@@ -27,8 +27,9 @@ export function LiabilitiesList({ onCreateLiability, onEditLiability }: Liabilit
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('sk-SK');
+  const formatDate = (date: Date | string) => {
+    const dateObj = date instanceof Date ? date : new Date(date);
+    return dateObj.toLocaleDateString('sk-SK');
   };
 
   if (isLoading) {

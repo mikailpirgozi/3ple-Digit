@@ -10,7 +10,7 @@ type Env = z.infer<typeof envSchema>;
 
 function validateEnv(): Env {
   try {
-    return envSchema.parse(import.meta.env as Record<string, unknown>);
+    return envSchema.parse(import.meta.env);
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.errors

@@ -1,8 +1,12 @@
+import { Button } from '@/ui/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/ui/ui/card';
+import { DatePicker } from '@/ui/ui/date-picker';
+import { Label } from '@/ui/ui/label';
 import { useState } from 'react';
-import { PortfolioReportCard } from './ui/PortfolioReportCard';
+import { CashflowReportCard } from './ui/CashflowReportCard';
 import { InvestorReportCard } from './ui/InvestorReportCard';
 import { PerformanceReportCard } from './ui/PerformanceReportCard';
-import { CashflowReportCard } from './ui/CashflowReportCard';
+import { PortfolioReportCard } from './ui/PortfolioReportCard';
 
 type ReportType = 'portfolio' | 'investors' | 'performance' | 'cashflow';
 
@@ -62,75 +66,81 @@ export function ReportsPage() {
       </div>
 
       {/* Report Tabs */}
-      <div className="rounded-lg border border-border bg-card p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-4">Dostupné reporty</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {reportTabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveReport(tab.id)}
-              className={`p-4 border rounded-lg text-left transition-colors ${
-                activeReport === tab.id
-                  ? 'border-primary bg-primary/5 text-primary'
-                  : 'border-border hover:bg-muted text-foreground'
-              }`}
-            >
-              <div className="text-2xl mb-2">{tab.icon}</div>
-              <h3 className="font-medium">{tab.label}</h3>
-              <p className="text-sm text-muted-foreground">{tab.description}</p>
-            </button>
-          ))}
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-muted/30 rounded-lg">
-          <div className="flex items-center gap-2">
-            <label htmlFor="period" className="text-sm font-medium text-foreground">
-              Obdobie:
-            </label>
-            <input
-              id="period"
-              type="month"
-              value={(filters.period as string) ?? ''}
-              onChange={e => setFilters({ ...filters, period: e.target.value ?? undefined })}
-              className="px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
+      <Card>
+        <CardHeader>
+          <CardTitle>Dostupné reporty</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {reportTabs.map(tab => (
+              <Button
+                key={tab.id}
+                variant={activeReport === tab.id ? 'default' : 'outline'}
+                onClick={() => setActiveReport(tab.id)}
+                className="h-auto p-4 text-left justify-start"
+              >
+                <div className="flex flex-col items-start space-y-2">
+                  <div className="text-2xl">{tab.icon}</div>
+                  <h3 className="font-medium">{tab.label}</h3>
+                  <p className="text-sm text-muted-foreground">{tab.description}</p>
+                </div>
+              </Button>
+            ))}
           </div>
 
-          <div className="flex items-center gap-2">
-            <label htmlFor="dateFrom" className="text-sm font-medium text-foreground">
-              Od:
-            </label>
-            <input
-              id="dateFrom"
-              type="date"
-              value={(filters.dateFrom as string) ?? ''}
-              onChange={e => setFilters({ ...filters, dateFrom: e.target.value ?? undefined })}
-              className="px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
+          {/* Filters */}
+          <div className="flex flex-wrap gap-4 p-4 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="period" className="text-sm font-medium text-foreground">
+                Obdobie:
+              </Label>
+              <input
+                id="period"
+                type="month"
+                value={(filters.period as string) ?? ''}
+                onChange={e => setFilters({ ...filters, period: e.target.value ?? undefined })}
+                className="px-2 py-1 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
 
-          <div className="flex items-center gap-2">
-            <label htmlFor="dateTo" className="text-sm font-medium text-foreground">
-              Do:
-            </label>
-            <input
-              id="dateTo"
-              type="date"
-              value={(filters.dateTo as string) ?? ''}
-              onChange={e => setFilters({ ...filters, dateTo: e.target.value ?? undefined })}
-              className="px-2 py-1 text-sm border border-border rounded bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="dateFrom" className="text-sm font-medium text-foreground">
+                Od:
+              </Label>
+              <DatePicker
+                placeholder="Od dátumu"
+                date={filters.dateFrom ? new Date(filters.dateFrom as string) : undefined}
+                onSelect={(date: Date | undefined) =>
+                  setFilters({
+                    ...filters,
+                    dateFrom: date ? date.toISOString().split('T')[0] : undefined,
+                  })
+                }
+              />
+            </div>
 
-          <button
-            onClick={() => setFilters({})}
-            className="px-3 py-1 text-sm font-medium text-muted-foreground bg-background border border-border rounded hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-          >
-            Vymazať filtre
-          </button>
-        </div>
-      </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="dateTo" className="text-sm font-medium text-foreground">
+                Do:
+              </Label>
+              <DatePicker
+                placeholder="Do dátumu"
+                date={filters.dateTo ? new Date(filters.dateTo as string) : undefined}
+                onSelect={(date: Date | undefined) =>
+                  setFilters({
+                    ...filters,
+                    dateTo: date ? date.toISOString().split('T')[0] : undefined,
+                  })
+                }
+              />
+            </div>
+
+            <Button variant="outline" size="sm" onClick={() => setFilters({})}>
+              Vymazať filtre
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Active Report */}
       {renderActiveReport()}

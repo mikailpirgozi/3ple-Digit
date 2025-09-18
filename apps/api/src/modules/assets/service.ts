@@ -19,7 +19,7 @@ export class AssetsService {
    * Helper function to convert undefined to null for Prisma compatibility
    */
   private toNullable<T>(value: T | undefined): T | null {
-    return value === undefined ? null : value;
+    return value ?? null;
   }
 
   /**
@@ -70,10 +70,10 @@ export class AssetsService {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     // Support both 'search' and 'q' parameters for search
-    const searchTerm = search || q;
+    const searchTerm = search ?? q;
     if (searchTerm) {
       where.OR = [
         { name: { contains: searchTerm, mode: 'insensitive' } },
@@ -111,11 +111,11 @@ export class AssetsService {
 
       const totalInflows = asset.events
         .filter(event => ['PAYMENT_IN', 'VALUATION'].includes(event.type) && event.amount > 0)
-        .reduce((sum: number, event: any) => sum + event.amount, 0);
+        .reduce((sum: number, event: { amount: number }) => sum + event.amount, 0);
 
       const totalOutflows = asset.events
         .filter(event => ['PAYMENT_OUT', 'CAPEX'].includes(event.type) || event.amount < 0)
-        .reduce((sum: number, event: any) => sum + Math.abs(event.amount), 0);
+        .reduce((sum: number, event: { amount: number }) => sum + Math.abs(event.amount), 0);
 
       return this.formatAssetResponse({
         ...asset,
@@ -160,11 +160,11 @@ export class AssetsService {
 
     const totalInflows = asset.events
       .filter(event => ['PAYMENT_IN', 'VALUATION'].includes(event.type) && event.amount > 0)
-      .reduce((sum: number, event: any) => sum + event.amount, 0);
+      .reduce((sum: number, event: { amount: number }) => sum + event.amount, 0);
 
     const totalOutflows = asset.events
       .filter(event => ['PAYMENT_OUT', 'CAPEX'].includes(event.type) || event.amount < 0)
-      .reduce((sum: number, event: any) => sum + Math.abs(event.amount), 0);
+      .reduce((sum: number, event: { amount: number }) => sum + Math.abs(event.amount), 0);
 
     return this.formatAssetResponse({
       ...asset,
@@ -242,7 +242,7 @@ export class AssetsService {
     }
 
     // Create event and update asset value in transaction
-    const result = await prisma.$transaction(async (tx: any) => {
+    const result = await prisma.$transaction(async tx => {
       // Create the event
       const event = await tx.assetEvent.create({
         data: {
@@ -301,7 +301,7 @@ export class AssetsService {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     if (assetId) {
       where.assetId = assetId;
@@ -311,10 +311,10 @@ export class AssetsService {
       where.type = type;
     }
 
-    if (dateFrom || dateTo) {
-      where.date = {};
-      if (dateFrom) where.date.gte = dateFrom;
-      if (dateTo) where.date.lte = dateTo;
+    if (dateFrom ?? dateTo) {
+      where.date = {} as Record<string, unknown>;
+      if (dateFrom) (where.date as Record<string, unknown>).gte = dateFrom;
+      if (dateTo) (where.date as Record<string, unknown>).lte = dateTo;
     }
 
     // Get total count
@@ -366,7 +366,7 @@ export class AssetsService {
     }
 
     // Update event and recalculate asset value in transaction
-    const result = await prisma.$transaction(async (tx: any) => {
+    const result = await prisma.$transaction(async tx => {
       // Revert old event impact
       const revertedValue = this.revertAssetValue(
         existingEvent.asset.currentValue,
@@ -397,8 +397,8 @@ export class AssetsService {
       // Apply new event impact
       const newValue = this.calculateNewAssetValue(
         revertedValue,
-        (data.type || existingEvent.type) as AssetEventTypeEnum,
-        data.amount || existingEvent.amount
+        (data.type ?? existingEvent.type) as AssetEventTypeEnum,
+        data.amount ?? existingEvent.amount
       );
 
       await tx.asset.update({
@@ -502,39 +502,39 @@ export class AssetsService {
   /**
    * Format asset response
    */
-  private formatAssetResponse(asset: any): AssetResponse {
+  private formatAssetResponse(asset: Record<string, unknown>): AssetResponse {
     return {
-      id: asset.id,
-      name: asset.name,
-      type: asset.type,
-      description: asset.description,
-      currentValue: asset.currentValue,
-      status: asset.status,
-      acquiredPrice: asset.acquiredPrice,
-      salePrice: asset.salePrice,
-      saleDate: asset.saleDate,
-      createdAt: asset.createdAt,
-      updatedAt: asset.updatedAt,
-      eventsCount: asset.eventsCount,
-      totalInflows: asset.totalInflows,
-      totalOutflows: asset.totalOutflows,
+      id: asset.id as string,
+      name: asset.name as string,
+      type: asset.type as string,
+      description: asset.description as string | null,
+      currentValue: asset.currentValue as number,
+      status: asset.status as string,
+      acquiredPrice: asset.acquiredPrice as number | null,
+      salePrice: asset.salePrice as number | null,
+      saleDate: asset.saleDate as Date | null,
+      createdAt: asset.createdAt as Date,
+      updatedAt: asset.updatedAt as Date,
+      eventsCount: asset.eventsCount as number,
+      totalInflows: asset.totalInflows as number,
+      totalOutflows: asset.totalOutflows as number,
     };
   }
 
   /**
    * Format asset event response
    */
-  private formatAssetEventResponse(event: any): AssetEventResponse {
+  private formatAssetEventResponse(event: Record<string, unknown>): AssetEventResponse {
     return {
-      id: event.id,
-      assetId: event.assetId,
-      type: event.type,
-      amount: event.amount,
-      date: event.date,
-      note: event.note,
-      createdAt: event.createdAt,
-      updatedAt: event.updatedAt,
-      asset: event.asset,
+      id: event.id as string,
+      assetId: event.assetId as string,
+      type: event.type as string,
+      amount: event.amount as number,
+      date: event.date as Date,
+      note: event.note as string | null,
+      createdAt: event.createdAt as Date,
+      updatedAt: event.updatedAt as Date,
+      asset: event.asset as { type: string; name: string; id: string } | undefined,
     };
   }
 }

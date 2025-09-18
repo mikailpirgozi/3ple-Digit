@@ -25,15 +25,17 @@
     "skipLibCheck": true,
     "useUnknownInCatchVariables": true,
     "noPropertyAccessFromIndexSignature": false,
-    "noUncheckedIndexedAccess": false,
+    "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "declaration": true,
     "declarationMap": true,
     "strict": true,
     "strictNullChecks": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/core/templates/**/*"],
+  "exclude": ["node_modules", "dist", "src/core/templates/**/*", "src/**/*.test.ts"],
   "references": [{ "path": "../../packages/types" }]
 }

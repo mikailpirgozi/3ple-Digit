@@ -1,6 +1,21 @@
 import type { Asset, AssetType, CreateAssetRequest } from '@/types/api';
+import {
+  Button,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, type ControllerRenderProps } from 'react-hook-form';
 import { z } from 'zod';
 
 const assetFormSchema = z.object({
@@ -32,11 +47,7 @@ const assetTypeLabels: Record<AssetType, string> = {
 };
 
 export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<AssetFormData>({
+  const form = useForm<AssetFormData>({
     resolver: zodResolver(assetFormSchema),
     defaultValues: asset
       ? {
@@ -54,8 +65,6 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
           category: '',
         },
   });
-
-  // const selectedType = watch('type'); // Unused for now
 
   const handleFormSubmit = (data: AssetFormData) => {
     onSubmit({
@@ -75,139 +84,154 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        {/* Asset Type */}
-        <div>
-          <label htmlFor="type" className="block text-sm font-medium text-foreground mb-2">
-            Typ aktíva
-          </label>
-          <select
-            id="type"
-            {...register('type')}
-            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          >
-            {Object.entries(assetTypeLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-          {errors.type && <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>}
-        </div>
-
-        {/* Asset Name */}
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-            Názov aktíva
-          </label>
-          <input
-            id="name"
-            type="text"
-            {...register('name')}
-            placeholder="Napríklad: Office Building Bratislava"
-            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+          {/* Asset Type */}
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }: { field: ControllerRenderProps<AssetFormData, 'type'> }) => (
+              <FormItem>
+                <FormLabel>Typ aktíva</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Vyberte typ aktíva" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Object.entries(assetTypeLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
-        </div>
 
-        {/* Asset Category */}
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-foreground mb-2">
-            Kategória
-          </label>
-          <input
-            id="category"
-            type="text"
-            {...register('category')}
-            placeholder="Napríklad: Apartmány, Kancelárie, Pozemky..."
-            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          {/* Asset Name */}
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }: { field: ControllerRenderProps<AssetFormData, 'name'> }) => (
+              <FormItem>
+                <FormLabel>Názov aktíva</FormLabel>
+                <FormControl>
+                  <Input placeholder="Napríklad: Office Building Bratislava" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.category && (
-            <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
-          )}
-        </div>
 
-        {/* Financial Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label
-              htmlFor="acquiredPrice"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Nákupná cena (€)
-            </label>
-            <input
-              id="acquiredPrice"
-              type="number"
-              step="0.01"
-              {...register('acquiredPrice', { valueAsNumber: true })}
-              placeholder="0.00"
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-            {errors.acquiredPrice && (
-              <p className="mt-1 text-sm text-red-600">{errors.acquiredPrice.message}</p>
+          {/* Asset Category */}
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }: { field: ControllerRenderProps<AssetFormData, 'category'> }) => (
+              <FormItem>
+                <FormLabel>Kategória</FormLabel>
+                <FormControl>
+                  <Input placeholder="Napríklad: Apartmány, Kancelárie, Pozemky..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
+          />
+
+          {/* Financial Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="acquiredPrice"
+              render={({
+                field,
+              }: {
+                field: ControllerRenderProps<AssetFormData, 'acquiredPrice'>;
+              }) => (
+                <FormItem>
+                  <FormLabel>Nákupná cena (€)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...field}
+                      onChange={e =>
+                        field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="currentValue"
+              render={({
+                field,
+              }: {
+                field: ControllerRenderProps<AssetFormData, 'currentValue'>;
+              }) => (
+                <FormItem>
+                  <FormLabel>Aktuálna hodnota (€) *</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...field}
+                      onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="expectedSalePrice"
+              render={({
+                field,
+              }: {
+                field: ControllerRenderProps<AssetFormData, 'expectedSalePrice'>;
+              }) => (
+                <FormItem>
+                  <FormLabel>Očakávaná predajná cena (€)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...field}
+                      onChange={e =>
+                        field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
-          <div>
-            <label
-              htmlFor="currentValue"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Aktuálna hodnota (€) *
-            </label>
-            <input
-              id="currentValue"
-              type="number"
-              step="0.01"
-              {...register('currentValue', { valueAsNumber: true })}
-              placeholder="0.00"
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-            {errors.currentValue && (
-              <p className="mt-1 text-sm text-red-600">{errors.currentValue.message}</p>
-            )}
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Zrušiť
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Ukladám...' : asset ? 'Uložiť zmeny' : 'Vytvoriť aktívum'}
+            </Button>
           </div>
-
-          <div>
-            <label
-              htmlFor="expectedSalePrice"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Očakávaná predajná cena (€)
-            </label>
-            <input
-              id="expectedSalePrice"
-              type="number"
-              step="0.01"
-              {...register('expectedSalePrice', { valueAsNumber: true })}
-              placeholder="0.00"
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-            {errors.expectedSalePrice && (
-              <p className="mt-1 text-sm text-red-600">{errors.expectedSalePrice.message}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-end space-x-3 pt-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground bg-background border border-border rounded-md hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-          >
-            Zrušiť
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Ukladám...' : asset ? 'Uložiť zmeny' : 'Vytvoriť aktívum'}
-          </button>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   );
 }

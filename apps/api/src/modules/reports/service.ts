@@ -30,7 +30,7 @@ export class ReportsService {
     // Calculate total value for active assets only
     const activeAssets = assets.filter(asset => asset.status !== 'SOLD');
     const totalValue = activeAssets.reduce((sum, asset) => {
-      const value = asset.currentValue || 0;
+      const value = asset.currentValue ?? 0;
       return sum + (isNaN(value) ? 0 : value);
     }, 0);
     const totalCount = assets.length;
@@ -41,10 +41,12 @@ export class ReportsService {
       if (!typeGroups.has(asset.type)) {
         typeGroups.set(asset.type, { count: 0, totalValue: 0 });
       }
-      const group = typeGroups.get(asset.type)!;
-      group.count++;
-      const value = asset.currentValue || 0;
-      group.totalValue += isNaN(value) ? 0 : value;
+      const group = typeGroups.get(asset.type);
+      if (group) {
+        group.count++;
+        const value = asset.currentValue ?? 0;
+        group.totalValue += isNaN(value) ? 0 : value;
+      }
     });
 
     const byType = Array.from(typeGroups.entries()).map(([type, data]) => ({
@@ -60,8 +62,8 @@ export class ReportsService {
     // Get top assets (active only)
     const topAssets = activeAssets
       .sort((a, b) => {
-        const aValue = a.currentValue || 0;
-        const bValue = b.currentValue || 0;
+        const aValue = a.currentValue ?? 0;
+        const bValue = b.currentValue ?? 0;
         return (isNaN(bValue) ? 0 : bValue) - (isNaN(aValue) ? 0 : aValue);
       })
       .slice(0, 10)
@@ -73,7 +75,8 @@ export class ReportsService {
       }));
 
     // Group by month if requested
-    let byMonth;
+    let byMonth: Array<{ month: string; totalValue: number; count: number; percentage: number }> =
+      [];
     if (groupBy === 'month') {
       const monthGroups = new Map<string, { totalValue: number; count: number }>();
       assets.forEach(asset => {
@@ -81,15 +84,18 @@ export class ReportsService {
         if (!monthGroups.has(month)) {
           monthGroups.set(month, { totalValue: 0, count: 0 });
         }
-        const group = monthGroups.get(month)!;
-        group.totalValue += asset.currentValue;
-        group.count++;
+        const group = monthGroups.get(month);
+        if (group) {
+          group.totalValue += asset.currentValue;
+          group.count++;
+        }
       });
 
       byMonth = Array.from(monthGroups.entries()).map(([month, data]) => ({
         month,
         totalValue: data.totalValue,
         count: data.count,
+        percentage: (data.totalValue / totalValue) * 100,
       }));
     }
 
@@ -131,12 +137,14 @@ export class ReportsService {
       byType, // Keep for backward compatibility
       byMonth,
       // Frontend expects topAssets with value field
-      topAssets: topAssets.map(asset => ({
-        id: asset.id,
-        name: asset.name,
-        type: asset.type,
-        value: isNaN(asset.currentValue) ? 0 : asset.currentValue,
-      })),
+      topAssets: topAssets.map(
+        (asset: { id: string; name: string; type: string; currentValue: number }) => ({
+          id: asset.id,
+          name: asset.name,
+          type: asset.type,
+          value: isNaN(asset.currentValue) ? 0 : asset.currentValue,
+        })
+      ),
     };
   }
 
@@ -147,13 +155,13 @@ export class ReportsService {
     const { investorId, dateFrom, dateTo } = query;
 
     // Build filters
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (investorId) {
       where.id = investorId;
     }
 
-    const cashflowWhere: any = {};
-    if (dateFrom || dateTo) {
+    const cashflowWhere: Record<string, unknown> = {};
+    if (dateFrom ?? dateTo) {
       cashflowWhere.date = this.buildDateFilter(dateFrom, dateTo);
     }
 
@@ -187,7 +195,7 @@ export class ReportsService {
         investor.cashflows.length > 0
           ? investor.cashflows.reduce(
               (latest, cf) => (cf.date > latest ? cf.date : latest),
-              investor.cashflows[0]!.date
+              investor.cashflows[0]?.date ?? new Date()
             )
           : null;
 
@@ -253,8 +261,8 @@ export class ReportsService {
       orderBy: { date: 'desc' },
     });
 
-    const currentNav = snapshots.length > 0 ? snapshots[0]!.nav : 0;
-    const previousNav = snapshots.length > 1 ? snapshots[1]!.nav : null;
+    const currentNav = snapshots.length > 0 ? (snapshots[0]?.nav ?? 0) : 0;
+    const previousNav = snapshots.length > 1 ? (snapshots[1]?.nav ?? null) : null;
     const navChange = previousNav ? currentNav - previousNav : null;
     const navChangePercent =
       previousNav && previousNav !== 0 ? ((currentNav - previousNav) / previousNav) * 100 : null;
@@ -273,10 +281,13 @@ export class ReportsService {
     });
 
     // Get latest bank balances per account
-    const latestBankBalances = new Map<string, any>();
+    const latestBankBalances = new Map<string, Record<string, unknown>>();
     bankBalances.forEach(balance => {
-      const key = `${balance.accountName}-${balance.bankName || 'unknown'}`;
-      if (!latestBankBalances.has(key) || latestBankBalances.get(key).date < balance.date) {
+      const key = `${balance.accountName}-${balance.bankName ?? 'unknown'}`;
+      if (
+        !latestBankBalances.has(key) ||
+        (latestBankBalances.get(key) as { date: Date }).date < balance.date
+      ) {
         latestBankBalances.set(key, balance);
       }
     });
@@ -287,7 +298,7 @@ export class ReportsService {
       0
     );
     const totalBankBalance = Array.from(latestBankBalances.values()).reduce(
-      (sum, balance) => sum + balance.amount,
+      (sum, balance) => sum + (balance as { amount: number }).amount,
       0
     );
 
@@ -301,7 +312,7 @@ export class ReportsService {
         totalRealizedPnL += asset.salePrice - asset.acquiredPrice;
       } else {
         // Unrealized PnL from active assets
-        const acquiredPrice = asset.acquiredPrice || asset.currentValue;
+        const acquiredPrice = asset.acquiredPrice ?? asset.currentValue;
         totalUnrealizedPnL += asset.currentValue - acquiredPrice;
       }
     });
@@ -311,19 +322,19 @@ export class ReportsService {
       s => s.totalPerformanceFee && s.totalPerformanceFee > 0
     );
     const totalPerformanceFees = performanceFeeSnapshots.reduce(
-      (sum, s) => sum + (s.totalPerformanceFee || 0),
+      (sum, s) => sum + (s.totalPerformanceFee ?? 0),
       0
     );
     const averagePerformanceFeeRate =
       performanceFeeSnapshots.length > 0
-        ? performanceFeeSnapshots.reduce((sum, s) => sum + (s.performanceFeeRate || 0), 0) /
+        ? performanceFeeSnapshots.reduce((sum, s) => sum + (s.performanceFeeRate ?? 0), 0) /
           performanceFeeSnapshots.length
         : 0;
 
     const performanceFeesByPeriod = performanceFeeSnapshots.map(snapshot => ({
       period: snapshot.date.toISOString().substring(0, 7), // YYYY-MM
-      amount: snapshot.totalPerformanceFee || 0,
-      rate: snapshot.performanceFeeRate || 0,
+      amount: snapshot.totalPerformanceFee ?? 0,
+      rate: snapshot.performanceFeeRate ?? 0,
     }));
 
     // Count sold assets
@@ -379,7 +390,9 @@ export class ReportsService {
     const assetEvents = await prisma.assetEvent.findMany({
       where: {
         type: { in: ['PAYMENT_IN', 'PAYMENT_OUT'] },
-        ...(dateFrom || dateTo ? { date: this.buildDateFilter(dateFrom, dateTo) } : {}),
+        ...((dateFrom ?? dateTo)
+          ? { date: this.buildDateFilter(dateFrom, dateTo) as Record<string, unknown> }
+          : {}),
       },
       include: {
         asset: {
@@ -436,22 +449,23 @@ export class ReportsService {
         periodGroups.set(period, { inflows: 0, outflows: 0 });
       }
 
-      const group = periodGroups.get(period)!;
-
-      // Type guard to distinguish between cashflows and asset events
-      if ('investorId' in item) {
-        // Cashflow
-        if (item.type === 'DEPOSIT') {
-          group.inflows += item.amount;
+      const group = periodGroups.get(period);
+      if (group) {
+        // Type guard to distinguish between cashflows and asset events
+        if ('investorId' in item) {
+          // Cashflow
+          if (item.type === 'DEPOSIT') {
+            group.inflows += item.amount;
+          } else {
+            group.outflows += item.amount;
+          }
         } else {
-          group.outflows += item.amount;
-        }
-      } else {
-        // Asset event
-        if (item.type === 'PAYMENT_IN') {
-          group.inflows += item.amount;
-        } else {
-          group.outflows += Math.abs(item.amount);
+          // Asset event
+          if (item.type === 'PAYMENT_IN') {
+            group.inflows += item.amount;
+          } else {
+            group.outflows += Math.abs(item.amount);
+          }
         }
       }
     });
@@ -475,7 +489,7 @@ export class ReportsService {
       ...assetEvents
         .filter(ae => ae.type === 'PAYMENT_IN')
         .map(ae => ({
-          source: `Payment from ${ae.asset?.name || 'Unknown Asset'}`,
+          source: `Payment from ${(ae as { asset?: { name: string } }).asset?.name ?? 'Unknown Asset'}`,
           amount: ae.amount,
           date: ae.date,
         })),
@@ -494,7 +508,7 @@ export class ReportsService {
       ...assetEvents
         .filter(ae => ae.type === 'PAYMENT_OUT')
         .map(ae => ({
-          destination: `Payment for ${ae.asset?.name || 'Unknown Asset'}`,
+          destination: `Payment for ${(ae as { asset?: { name: string } }).asset?.name ?? 'Unknown Asset'}`,
           amount: Math.abs(ae.amount),
           date: ae.date,
         })),
@@ -575,7 +589,7 @@ export class ReportsService {
   private buildDateFilter(dateFrom?: Date, dateTo?: Date) {
     if (!dateFrom && !dateTo) return undefined;
 
-    const filter: any = {};
+    const filter: Record<string, unknown> = {};
     if (dateFrom) filter.gte = dateFrom;
     if (dateTo) filter.lte = dateTo;
 

@@ -80,29 +80,24 @@ export function PortfolioReportCard({ filters }: PortfolioReportCardProps) {
       </div>
 
       {/* Assets by Type */}
-      {report.assetsByType && report.assetsByType.length > 0 && (
+      {report.assetsByType && Object.keys(report.assetsByType).length > 0 && (
         <div className="space-y-4 mb-6">
           <h3 className="text-lg font-medium text-foreground">Rozdelenie podľa typu</h3>
           <div className="space-y-3">
-            {report.assetsByType.map(assetType => (
+            {Object.entries(report.assetsByType).map(([assetType, value]) => (
               <div
-                key={assetType.type}
+                key={assetType}
                 className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-foreground">
-                    {assetTypeLabels[assetType.type]}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    ({assetType.count} {assetType.count === 1 ? 'aktívum' : 'aktív'})
+                    {assetTypeLabels[assetType as AssetType]}
                   </span>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">
-                    {formatCurrency(assetType.value)}
-                  </p>
+                  <p className="text-sm font-medium text-foreground">{formatCurrency(value)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {assetType.percentage.toFixed(1)}%
+                    {((value / report.totalValue) * 100).toFixed(1)}%
                   </p>
                 </div>
               </div>
@@ -130,7 +125,7 @@ export function PortfolioReportCard({ filters }: PortfolioReportCardProps) {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-foreground">
-                    {formatCurrency(asset.value)}
+                    {formatCurrency(asset.currentValue)}
                   </p>
                 </div>
               </div>

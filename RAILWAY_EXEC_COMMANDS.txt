@@ -1,0 +1,22 @@
+# RAILWAY EXEC COMMANDS
+# ====================
+# Použite tieto príkazy v Railway Dashboard
+
+## 1. V Railway otvorte "backend" service
+## 2. Kliknite na záložku "Settings"
+## 3. Nájdite sekciu "Deploy" alebo "Exec"
+## 4. Alebo použite Railway CLI: railway run [command]
+
+# Príkazy na spustenie:
+
+# 1. Vytvorte databázovú schému:
+npx prisma db push --accept-data-loss
+
+# 2. Vytvorte admin účet:
+npx prisma db seed
+
+# Ak seed nefunguje, použite tento príkaz:
+node -e "const {PrismaClient}=require('@prisma/client');const bcrypt=require('bcrypt');const prisma=new PrismaClient();(async()=>{try{const pwd=await bcrypt.hash('Admin123!@#',10);await prisma.user.create({data:{email:'admin@3pledigit.sk',name:'Admin',password:pwd,role:'ADMIN'}});console.log('Admin created')}catch(e){console.error(e)}finally{await prisma.\$disconnect()}})()"
+
+# 3. Overte že funguje:
+node -e "const {PrismaClient}=require('@prisma/client');const prisma=new PrismaClient();prisma.user.count().then(c=>console.log('Users:',c)).finally(()=>prisma.\$disconnect())"

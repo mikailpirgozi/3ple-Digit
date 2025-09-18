@@ -17,7 +17,7 @@ export class SnapshotsService {
    * Helper function to convert undefined to null for Prisma compatibility
    */
   private toNullable<T>(value: T | undefined): T | null {
-    return value === undefined ? null : value;
+    return value ?? null;
   }
 
   /**
@@ -27,7 +27,7 @@ export class SnapshotsService {
     const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
-        (filtered as any)[key] = value;
+        (filtered as Record<string, unknown>)[key] = value;
       }
     }
     return filtered;
@@ -57,10 +57,11 @@ export class SnapshotsService {
     });
 
     // Group bank balances by account and take latest
-    const latestBankBalances = new Map<string, any>();
+    const latestBankBalances = new Map<string, { date: Date; amount: number }>();
     bankBalances.forEach(balance => {
-      const key = `${balance.accountName}-${balance.bankName || 'unknown'}`;
-      if (!latestBankBalances.has(key) || latestBankBalances.get(key).date < balance.date) {
+      const key = `${balance.accountName}-${balance.bankName ?? 'unknown'}`;
+      const existing = latestBankBalances.get(key);
+      if (!existing || existing.date < balance.date) {
         latestBankBalances.set(key, balance);
       }
     });
@@ -76,7 +77,7 @@ export class SnapshotsService {
     // Calculate totals
     const totalAssetValue = assets.reduce((sum, asset) => sum + asset.currentValue, 0);
     const totalBankBalance = Array.from(latestBankBalances.values()).reduce(
-      (sum, balance) => sum + balance.amount,
+      (sum, balance) => sum + (balance as { amount: number }).amount,
       0
     );
     const totalLiabilities = liabilities.reduce(
@@ -87,7 +88,12 @@ export class SnapshotsService {
 
     // Create breakdowns
     const assetBreakdown = this.createAssetBreakdown(assets);
-    const bankBreakdown = this.createBankBreakdown(Array.from(latestBankBalances.values()));
+    const bankBreakdown = this.createBankBreakdown(
+      Array.from(latestBankBalances.values()).map(balance => ({
+        currency: 'EUR', // Default currency
+        amount: balance.amount,
+      }))
+    );
     const liabilityBreakdown = liabilities.map(liability => ({
       name: liability.name,
       currentBalance: liability.currentBalance,
@@ -98,9 +104,9 @@ export class SnapshotsService {
       totalBankBalance,
       totalLiabilities,
       nav,
-      assetBreakdown,
-      bankBreakdown,
-      liabilityBreakdown,
+      assetBreakdown: assetBreakdown as unknown,
+      bankBreakdown: bankBreakdown as unknown,
+      liabilityBreakdown: liabilityBreakdown as unknown,
     };
   }
 
@@ -189,7 +195,7 @@ export class SnapshotsService {
       });
 
       // Create investor snapshots
-      const investorSnapshots: any[] = [];
+      const investorSnapshots: Record<string, unknown>[] = [];
       for (const ownership of investorOwnerships) {
         let performanceFee: number | null = null;
         if (totalPerformanceFee && data.performanceFeeRate) {
@@ -251,11 +257,11 @@ export class SnapshotsService {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
-    if (dateFrom || dateTo) {
-      where.date = {};
-      if (dateFrom) where.date.gte = dateFrom;
-      if (dateTo) where.date.lte = dateTo;
+    const where: Record<string, unknown> = {};
+    if (dateFrom ?? dateTo) {
+      where.date = {} as Record<string, unknown>;
+      if (dateFrom) (where.date as Record<string, unknown>).gte = dateFrom;
+      if (dateTo) (where.date as Record<string, unknown>).lte = dateTo;
     }
 
     // Get total count and snapshots
@@ -449,9 +455,11 @@ export class SnapshotsService {
       if (!breakdown.has(asset.type)) {
         breakdown.set(asset.type, { count: 0, totalValue: 0 });
       }
-      const current = breakdown.get(asset.type)!;
-      current.count++;
-      current.totalValue += asset.currentValue;
+      const current = breakdown.get(asset.type);
+      if (current) {
+        current.count++;
+        current.totalValue += asset.currentValue;
+      }
     });
 
     return Array.from(breakdown.entries()).map(([type, data]) => ({
@@ -468,7 +476,7 @@ export class SnapshotsService {
     const breakdown = new Map<string, number>();
 
     balances.forEach(balance => {
-      breakdown.set(balance.currency, (breakdown.get(balance.currency) || 0) + balance.amount);
+      breakdown.set(balance.currency, (breakdown.get(balance.currency) ?? 0) + balance.amount);
     });
 
     return Array.from(breakdown.entries()).map(([currency, totalAmount]) => ({
@@ -480,27 +488,27 @@ export class SnapshotsService {
   /**
    * Format snapshot response
    */
-  private formatSnapshotResponse(snapshot: any): SnapshotResponse {
+  private formatSnapshotResponse(snapshot: Record<string, unknown>): SnapshotResponse {
     return {
-      id: snapshot.id,
-      date: snapshot.date,
-      totalAssetValue: snapshot.totalAssetValue,
-      totalBankBalance: snapshot.totalBankBalance,
-      totalLiabilities: snapshot.totalLiabilities,
-      nav: snapshot.nav,
-      performanceFeeRate: snapshot.performanceFeeRate,
-      totalPerformanceFee: snapshot.totalPerformanceFee,
-      createdAt: snapshot.createdAt,
-      updatedAt: snapshot.updatedAt,
-      investorSnapshots: snapshot.investorSnapshots
-        ?.filter((is: any) => is.investor)
-        ?.map((is: any) => ({
-          id: is.id,
-          investorId: is.investorId,
-          capitalAmount: is.capitalAmount,
-          ownershipPercent: is.ownershipPercent,
-          performanceFee: is.performanceFee,
-          investor: is.investor,
+      id: snapshot.id as string,
+      date: snapshot.date as Date,
+      totalAssetValue: snapshot.totalAssetValue as number,
+      totalBankBalance: snapshot.totalBankBalance as number,
+      totalLiabilities: snapshot.totalLiabilities as number,
+      nav: snapshot.nav as number,
+      performanceFeeRate: snapshot.performanceFeeRate as number | null,
+      totalPerformanceFee: snapshot.totalPerformanceFee as number | null,
+      createdAt: snapshot.createdAt as Date,
+      updatedAt: snapshot.updatedAt as Date,
+      investorSnapshots: (snapshot.investorSnapshots as Record<string, unknown>[] | undefined)
+        ?.filter((is: Record<string, unknown>) => (is as { investor: unknown }).investor)
+        ?.map((is: Record<string, unknown>) => ({
+          id: is.id as string,
+          investorId: is.investorId as string,
+          capitalAmount: is.capitalAmount as number,
+          ownershipPercent: is.ownershipPercent as number,
+          performanceFee: is.performanceFee as number | null,
+          investor: is.investor as { name: string; id: string; email: string },
         })),
     };
   }
@@ -508,18 +516,22 @@ export class SnapshotsService {
   /**
    * Format investor snapshot response
    */
-  private formatInvestorSnapshotResponse(investorSnapshot: any): InvestorSnapshotResponse {
+  private formatInvestorSnapshotResponse(
+    investorSnapshot: Record<string, unknown>
+  ): InvestorSnapshotResponse {
     return {
-      id: investorSnapshot.id,
-      snapshotId: investorSnapshot.snapshotId,
-      investorId: investorSnapshot.investorId,
-      capitalAmount: investorSnapshot.capitalAmount,
-      ownershipPercent: investorSnapshot.ownershipPercent,
-      performanceFee: investorSnapshot.performanceFee,
-      createdAt: investorSnapshot.createdAt,
-      updatedAt: investorSnapshot.updatedAt,
-      investor: investorSnapshot.investor,
-      snapshot: investorSnapshot.snapshot,
+      id: investorSnapshot.id as string,
+      snapshotId: investorSnapshot.snapshotId as string,
+      investorId: investorSnapshot.investorId as string,
+      capitalAmount: investorSnapshot.capitalAmount as number,
+      ownershipPercent: investorSnapshot.ownershipPercent as number,
+      performanceFee: investorSnapshot.performanceFee as number | null,
+      createdAt: investorSnapshot.createdAt as Date,
+      updatedAt: investorSnapshot.updatedAt as Date,
+      investor: investorSnapshot.investor as
+        | { email: string; name: string; id: string }
+        | undefined,
+      snapshot: investorSnapshot.snapshot as { date: Date; id: string; nav: number } | undefined,
     };
   }
 }

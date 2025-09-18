@@ -1,11 +1,30 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import type { CreateCashflowRequest } from '@/types/api';
+import {
+  Button,
+  DatePicker,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from '@/ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React from 'react';
+import { useForm, type ControllerRenderProps } from 'react-hook-form';
+import { z } from 'zod';
 
 const cashflowSchema = z.object({
-  date: z.string().min(1, 'Dátum je povinný'),
+  date: z.date({
+    required_error: 'Dátum je povinný',
+  }),
   type: z.enum(['DEPOSIT', 'WITHDRAWAL'], {
     required_error: 'Typ je povinný',
   }),
@@ -16,6 +35,7 @@ const cashflowSchema = z.object({
 type CashflowFormData = z.infer<typeof cashflowSchema>;
 
 interface CashflowFormProps {
+  investorId: string;
   onSubmit: (data: CreateCashflowRequest) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -23,105 +43,120 @@ interface CashflowFormProps {
 }
 
 export const CashflowForm: React.FC<CashflowFormProps> = ({
+  investorId,
   onSubmit,
   onCancel,
   isLoading = false,
   initialData,
 }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<CashflowFormData>({
+  const form = useForm<CashflowFormData>({
     resolver: zodResolver(cashflowSchema),
     defaultValues: {
       ...initialData,
-      date: initialData?.date ?? new Date().toISOString().split('T')[0],
+      date: initialData?.date ? new Date(initialData.date) : new Date(),
     },
   });
 
   const handleFormSubmit = (data: CashflowFormData) => {
     onSubmit({
+      investorId,
       ...data,
       amount: Number(data.amount),
+      date: data.date.toISOString(),
     });
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="date" className="block text-sm font-medium text-gray-700">
-            Dátum
-          </label>
-          <input
-            {...register('date')}
-            type="date"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="date"
+            render={({ field }: { field: ControllerRenderProps<CashflowFormData, 'date'> }) => (
+              <FormItem>
+                <FormLabel>Dátum</FormLabel>
+                <FormControl>
+                  <DatePicker
+                    date={field.value}
+                    onSelect={field.onChange}
+                    placeholder="Vyberte dátum"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>}
+
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }: { field: ControllerRenderProps<CashflowFormData, 'type'> }) => (
+              <FormItem>
+                <FormLabel>Typ</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Vyberte typ" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="DEPOSIT">Vklad</SelectItem>
+                    <SelectItem value="WITHDRAWAL">Výber</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
-        <div>
-          <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-            Typ
-          </label>
-          <select
-            {...register('type')}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          >
-            <option value="">Vyberte typ</option>
-            <option value="DEPOSIT">Vklad</option>
-            <option value="WITHDRAWAL">Výber</option>
-          </select>
-          {errors.type && <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>}
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }: { field: ControllerRenderProps<CashflowFormData, 'amount'> }) => (
+            <FormItem>
+              <FormLabel>Suma (€)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  {...field}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    field.onChange(e.target.value ? parseFloat(e.target.value) : 0)
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="note"
+          render={({ field }: { field: ControllerRenderProps<CashflowFormData, 'note'> }) => (
+            <FormItem>
+              <FormLabel>Poznámka (voliteľné)</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Zadajte poznámku..." className="resize-none" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end space-x-3">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+            Zrušiť
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Ukladanie...' : 'Uložiť'}
+          </Button>
         </div>
-      </div>
-
-      <div>
-        <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-          Suma (€)
-        </label>
-        <input
-          {...register('amount', { valueAsNumber: true })}
-          type="number"
-          step="0.01"
-          min="0"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="0.00"
-        />
-        {errors.amount && <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>}
-      </div>
-
-      <div>
-        <label htmlFor="note" className="block text-sm font-medium text-gray-700">
-          Poznámka (voliteľné)
-        </label>
-        <textarea
-          {...register('note')}
-          rows={3}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Zadajte poznámku..."
-        />
-        {errors.note && <p className="mt-1 text-sm text-red-600">{errors.note.message}</p>}
-      </div>
-
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Zrušiť
-        </button>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? 'Ukladanie...' : 'Uložiť'}
-        </button>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 };

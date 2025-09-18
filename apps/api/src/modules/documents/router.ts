@@ -49,7 +49,7 @@ router.post(
   '/',
   adminOrInternal,
   asyncHandler(async (req, res) => {
-    const { r2Key, ...documentData } = req.body;
+    const { r2Key, ...documentData } = req.body as { r2Key: string; [key: string]: unknown };
     const data = createDocumentSchema.parse(documentData);
     const document = await documentsService.createDocument(data, r2Key, req.user?.id);
     res.status(201).json(document);

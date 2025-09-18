@@ -1,31 +1,5 @@
 // Database types (simplified for development)
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// User type is now defined in api.ts to avoid conflicts
 
-export interface Investor {
-  id: string;
-  userId: string;
-  name: string;
-  email: string;
-  phone?: string;
-  address?: string;
-  taxId?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface Asset {
-  id: string;
-  name: string;
-  type: string;
-  description?: string;
-  currentValue: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Database-specific types that don't conflict with API types
+export {};

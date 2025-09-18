@@ -95,7 +95,11 @@ router.post(
   adminOrInternal,
   asyncHandler(async (req, res) => {
     const id = validateRequiredParam(req.params.id, 'id');
-    const { salePrice, date, note } = req.body;
+    const { salePrice, date, note } = req.body as {
+      salePrice: number;
+      date: string;
+      note?: string;
+    };
 
     // Create a sale event
     const saleEvent = await assetsService.createAssetEvent(
@@ -104,7 +108,7 @@ router.post(
         type: 'SALE',
         amount: salePrice,
         date: new Date(date),
-        note: note || 'Asset sold',
+        note: note ?? 'Asset sold',
       },
       req.user?.id
     );
@@ -121,7 +125,7 @@ router.post(
     );
 
     // Calculate PnL
-    const pnl = salePrice - (asset.acquiredPrice || 0);
+    const pnl = salePrice - (asset.acquiredPrice ?? 0);
 
     res.json({
       id: asset.id,

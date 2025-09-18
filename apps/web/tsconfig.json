@@ -1,5 +1,4 @@
 {
-
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
@@ -16,17 +15,19 @@
     "jsx": "react-jsx",
     "strict": true,
     "exactOptionalPropertyTypes": false,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "@/ui/*": ["./src/ui/*"],
       "@/lib/*": ["./src/lib/*"],
-      "@/features/*": ["./src/features/*"]
+      "@/features/*": ["./src/features/*"],
+      "@/types/*": ["../../packages/types/src/*"]
     }
   },
-  "include": [
-    "src",
-    "vite.config.ts"
-  ],
-
+  "include": ["src", "vite.config.ts", "../../packages/types/src"]
 }

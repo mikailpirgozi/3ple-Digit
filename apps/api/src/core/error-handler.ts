@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { log } from './logger.js';
 
@@ -48,7 +48,7 @@ export const errorHandler = (
   error: Error | ApiError,
   _req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars
 ): void => {
   let statusCode = 500;
   let code = 'INTERNAL_ERROR';

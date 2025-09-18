@@ -8,7 +8,7 @@
  * USAGE: Use for all optional Prisma fields
  */
 export function toNullable<T>(value: T | undefined): T | null {
-  return value === undefined ? null : value;
+  return value ?? null;
 }
 
 /**

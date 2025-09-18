@@ -19,7 +19,7 @@ export class DocumentsService {
    * Helper function to convert undefined to null for Prisma compatibility
    */
   private toNullable<T>(value: T | undefined): T | null {
-    return value === undefined ? null : value;
+    return value ?? null;
   }
 
   /**
@@ -29,7 +29,7 @@ export class DocumentsService {
     const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
-        (filtered as any)[key] = value;
+        (filtered as Record<string, unknown>)[key] = value;
       }
     }
     return filtered;
@@ -45,7 +45,7 @@ export class DocumentsService {
     // Generate unique R2 key
     const timestamp = Date.now();
     const randomId = crypto.randomBytes(8).toString('hex');
-    const fileExtension = data.fileName.split('.').pop() || '';
+    const fileExtension = data.fileName.split('.').pop() ?? '';
     // Generate unique R2 key for the document (unused in current implementation)
     // const r2Key = `documents/${timestamp}-${randomId}.${fileExtension}`;
 
@@ -166,8 +166,8 @@ export class DocumentsService {
 
     const byCategory = allDocuments.reduce(
       (acc, doc) => {
-        const cat = doc.category || 'uncategorized';
-        acc[cat] = (acc[cat] || 0) + 1;
+        const cat = doc.category ?? 'uncategorized';
+        acc[cat] = (acc[cat] ?? 0) + 1;
         return acc;
       },
       {} as Record<string, number>
@@ -175,7 +175,7 @@ export class DocumentsService {
 
     const byMimeType = allDocuments.reduce(
       (acc, doc) => {
-        acc[doc.mimeType] = (acc[doc.mimeType] || 0) + 1;
+        acc[doc.mimeType] = (acc[doc.mimeType] ?? 0) + 1;
         return acc;
       },
       {} as Record<string, number>
@@ -366,20 +366,20 @@ export class DocumentsService {
   /**
    * Format document response
    */
-  private formatDocumentResponse(document: any): DocumentResponse {
+  private formatDocumentResponse(document: Record<string, unknown>): DocumentResponse {
     return {
-      id: document.id,
-      name: document.name,
-      originalName: document.originalName,
-      r2Key: document.r2Key,
-      mimeType: document.mimeType,
-      size: document.size,
-      sha256: document.sha256,
-      category: document.category,
-      description: document.description,
-      uploadedBy: document.uploadedBy,
-      createdAt: document.createdAt,
-      updatedAt: document.updatedAt,
+      id: document.id as string,
+      name: document.name as string,
+      originalName: document.originalName as string,
+      r2Key: document.r2Key as string,
+      mimeType: document.mimeType as string,
+      size: document.size as number,
+      sha256: document.sha256 as string,
+      category: document.category as string,
+      description: document.description as string | null,
+      uploadedBy: document.uploadedBy as string,
+      createdAt: document.createdAt as Date,
+      updatedAt: document.updatedAt as Date,
     };
   }
 }

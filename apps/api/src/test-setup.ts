@@ -7,7 +7,7 @@ process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
 // 🚨 ULTIMATE PROTECTION: NEVER use production database in tests
 // FORCE override any existing DATABASE_URL to use test database
 const originalDatabaseUrl = process.env.DATABASE_URL;
-if (originalDatabaseUrl?.includes('railway.app') || originalDatabaseUrl?.includes('rlwy.net')) {
+if (originalDatabaseUrl?.includes('railway.app') ?? originalDatabaseUrl?.includes('rlwy.net')) {
   console.error('🚨 CRITICAL: Production DATABASE_URL detected in tests!');
   console.error('Original URL:', originalDatabaseUrl);
   console.error('FORCING test database to prevent data loss...');
@@ -18,12 +18,15 @@ import { prisma, reinitializePrismaClient } from './core/prisma.js';
 
 beforeAll(async () => {
   // Test setup - reinitialize Prisma client with SQLite URL
+  // eslint-disable-next-line no-console
   console.log('🧪 Test environment initialized with SQLite');
+  // eslint-disable-next-line no-console
   console.log('🔄 Reinitializing Prisma client for SQLite...');
 
   // Reinitialize Prisma client to use the new DATABASE_URL
   reinitializePrismaClient();
 
+  // eslint-disable-next-line no-console
   console.log('✅ Prisma client reinitialized for SQLite');
 });
 
@@ -42,7 +45,7 @@ async function cleanDatabase() {
   const isProduction = process.env.NODE_ENV === 'production';
   const isRailwayEnv = process.env.RAILWAY_ENVIRONMENT === 'production';
   const hasProductionUrl =
-    process.env.DATABASE_URL?.includes('railway.app') ||
+    process.env.DATABASE_URL?.includes('railway.app') ??
     process.env.DATABASE_URL?.includes('rlwy.net');
 
   if (isProduction || isRailwayEnv || hasProductionUrl) {

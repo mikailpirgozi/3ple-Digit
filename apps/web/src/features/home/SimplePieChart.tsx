@@ -103,7 +103,7 @@ export function SimplePieChart({
               d={slice.pathData}
               fill={slice.color}
               className="hover:opacity-80 transition-opacity cursor-pointer drop-shadow-sm"
-              title={`${slice.label}: ${formatValue(slice.value)} (${slice.percentage.toFixed(1)}%)`}
+              data-tooltip={`${slice.label}: ${formatValue(slice.value)} (${slice.percentage.toFixed(1)}%)`}
             />
           ))}
         </svg>

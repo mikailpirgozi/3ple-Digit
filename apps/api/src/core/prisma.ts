@@ -25,7 +25,7 @@ function createPrismaClient() {
     ],
     datasources: {
       db: {
-        url: process.env.DATABASE_URL || env.DATABASE_URL,
+        url: process.env.DATABASE_URL ?? env.DATABASE_URL,
       },
     },
   });
@@ -54,7 +54,7 @@ export function reinitializePrismaClient() {
 function setupPrismaEventListeners() {
   // Log database queries in development
   if (process.env.NODE_ENV === 'development') {
-    prisma.$on('query', (e: any) => {
+    prisma.$on('query', (e: { query: string; params: string; duration: number }) => {
       log.debug('Database query', {
         query: e.query,
         params: e.params,
@@ -64,7 +64,7 @@ function setupPrismaEventListeners() {
   }
 
   // Log database errors
-  prisma.$on('error', (e: any) => {
+  prisma.$on('error', (e: { message: string; target: string }) => {
     log.error('Database error', {
       message: e.message,
       target: e.target,
@@ -72,7 +72,7 @@ function setupPrismaEventListeners() {
   });
 
   // Log database info
-  prisma.$on('info', (e: any) => {
+  prisma.$on('info', (e: { message: string; target: string }) => {
     log.info('Database info', {
       message: e.message,
       target: e.target,
@@ -80,7 +80,7 @@ function setupPrismaEventListeners() {
   });
 
   // Log database warnings
-  prisma.$on('warn', (e: any) => {
+  prisma.$on('warn', (e: { message: string; target: string }) => {
     log.warn('Database warning', {
       message: e.message,
       target: e.target,
@@ -147,34 +147,34 @@ async function reconnectDatabase() {
 }
 
 // Initial connection check
-checkConnection().then(connected => {
+void checkConnection().then(connected => {
   isConnected = connected;
   if (!connected) {
-    reconnectDatabase();
+    void reconnectDatabase();
   }
 });
 
 // Periodic health check
-setInterval(async () => {
+void setInterval(async () => {
   const connected = await checkConnection();
   if (!connected && reconnectAttempts === 0) {
-    reconnectDatabase();
+    void reconnectDatabase();
   }
 }, 30000); // Check every 30 seconds
 
 // Graceful shutdown
-process.on('beforeExit', async () => {
+void process.on('beforeExit', async () => {
   log.info('Disconnecting from database...');
   await prisma.$disconnect();
 });
 
-process.on('SIGINT', async () => {
+void process.on('SIGINT', async () => {
   log.info('Received SIGINT, disconnecting from database...');
   await prisma.$disconnect();
   process.exit(0);
 });
 
-process.on('SIGTERM', async () => {
+void process.on('SIGTERM', async () => {
   log.info('Received SIGTERM, disconnecting from database...');
   await prisma.$disconnect();
   process.exit(0);

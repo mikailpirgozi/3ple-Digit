@@ -15,8 +15,9 @@ export function CashflowReportCard({ filters }: CashflowReportCardProps) {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('sk-SK');
+  const formatDate = (date: Date | string) => {
+    const dateObj = date instanceof Date ? date : new Date(date);
+    return dateObj.toLocaleDateString('sk-SK');
   };
 
   // const formatPeriod = (period: string) => {
@@ -97,25 +98,25 @@ export function CashflowReportCard({ filters }: CashflowReportCardProps) {
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Vklady</p>
             <p className="text-xl font-bold text-green-600">
-              +{formatCurrency(report.byType.deposits)}
+              +{formatCurrency(report.byType.deposits ?? 0)}
             </p>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Výbery</p>
             <p className="text-xl font-bold text-red-600">
-              -{formatCurrency(report.byType.withdrawals)}
+              -{formatCurrency(report.byType.withdrawals ?? 0)}
             </p>
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Platby z aktív</p>
             <p className="text-xl font-bold text-blue-600">
-              +{formatCurrency(report.byType.assetPayments)}
+              +{formatCurrency(report.byType.assetPayments ?? 0)}
             </p>
           </div>
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Výdavky</p>
             <p className="text-xl font-bold text-orange-600">
-              -{formatCurrency(report.byType.expenses)}
+              -{formatCurrency(report.byType.expenses ?? 0)}
             </p>
           </div>
         </div>

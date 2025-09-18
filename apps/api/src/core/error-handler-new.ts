@@ -22,7 +22,9 @@ export interface ApiError extends Error {
 /**
  * Async handler wrapper to catch promise rejections
  */
-export const asyncHandler = (fn: Function) => {
+export const asyncHandler = (
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<void>
+) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
@@ -33,7 +35,7 @@ export const errorHandler = (
   error: Error | ApiError,
   _req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars
 ): void => {
   let statusCode = 500;
   let code = 'INTERNAL_ERROR';
@@ -61,8 +63,8 @@ export const errorHandler = (
     details = validationError.details;
   } else if (error.constructor.name === 'PrismaClientKnownRequestError') {
     const dbError = appError.database('Database operation failed', {
-      code: (error as any).code,
-      meta: (error as any).meta,
+      code: (error as unknown as Record<string, unknown>).code as string,
+      meta: (error as unknown as Record<string, unknown>).meta as Record<string, unknown>,
     });
     statusCode = dbError.statusCode;
     code = dbError.code;
@@ -110,7 +112,7 @@ export const errorHandler = (
           error: {
             code,
             message,
-            details: details || null,
+            details: details ?? null,
           },
         };
 

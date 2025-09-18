@@ -1,4 +1,16 @@
+import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 import type { CreateInvestorRequest } from '@/types/api';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/ui';
 import { useState } from 'react';
 import { useCreateInvestor, useDeleteInvestor, useInvestors } from './hooks';
 import { InvestorForm } from './ui/InvestorForm';
@@ -10,6 +22,16 @@ export function InvestorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('totalCapital');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    open: boolean;
+    investorId: string;
+    investorName: string;
+  }>({
+    open: false,
+    investorId: '',
+    investorName: '',
+  });
+  const { toast } = useToast();
 
   // API hooks
   const {
@@ -27,18 +49,47 @@ export function InvestorsPage() {
     try {
       await createInvestorMutation.mutateAsync(data);
       setShowForm(false);
-    } catch (error) {
-      console.error('Failed to create investor:', error);
+      toast({
+        title: 'Úspech',
+        description: 'Investor bol úspešne vytvorený.',
+      });
+    } catch (error: unknown) {
+      logger.apiError('create investor', error, { investorData: data });
+      const errorMessage =
+        error instanceof Error ? error.message : 'Nepodarilo sa vytvoriť investora.';
+      toast({
+        title: 'Chyba',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
   };
 
-  const handleDeleteInvestor = async (id: string) => {
-    if (window.confirm('Ste si istí, že chcete odstrániť tohto investora?')) {
-      try {
-        await deleteInvestorMutation.mutateAsync(id);
-      } catch (error) {
-        console.error('Failed to delete investor:', error);
-      }
+  const handleDeleteInvestor = async (id: string, name: string) => {
+    setDeleteConfirm({
+      open: true,
+      investorId: id,
+      investorName: name,
+    });
+  };
+
+  const confirmDeleteInvestor = async () => {
+    try {
+      await deleteInvestorMutation.mutateAsync(deleteConfirm.investorId);
+      toast({
+        title: 'Úspech',
+        description: 'Investor bol úspešne odstránený.',
+      });
+      setDeleteConfirm({ open: false, investorId: '', investorName: '' });
+    } catch (error: unknown) {
+      logger.apiError('delete investor', error, { investorId: deleteConfirm.investorId });
+      const errorMessage =
+        error instanceof Error ? error.message : 'Nepodarilo sa odstrániť investora.';
+      toast({
+        title: 'Chyba',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -82,29 +133,24 @@ export function InvestorsPage() {
 
   // Sort investors based on selected criteria
   const sortedInvestors = [...investors].sort((a, b) => {
-    let aValue: string | number, bValue: string | number;
-
     switch (sortBy) {
-      case 'totalCapital':
-        aValue = a.totalCapital ?? 0;
-        bValue = b.totalCapital ?? 0;
-        break;
-      case 'name':
-        aValue = a.name.toLowerCase();
-        bValue = b.name.toLowerCase();
-        break;
-      case 'createdAt':
-        aValue = new Date(a.createdAt).getTime();
-        bValue = new Date(b.createdAt).getTime();
-        break;
+      case 'totalCapital': {
+        const aValue = a.totalCapital ?? 0;
+        const bValue = b.totalCapital ?? 0;
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      case 'name': {
+        const aValue = a.name.toLowerCase();
+        const bValue = b.name.toLowerCase();
+        return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      }
+      case 'createdAt': {
+        const aValue = new Date(a.createdAt).getTime();
+        const bValue = new Date(b.createdAt).getTime();
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
       default:
         return 0;
-    }
-
-    if (sortBy === 'name') {
-      return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-    } else {
-      return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
     }
   });
 
@@ -190,7 +236,7 @@ export function InvestorsPage() {
                     {investor.name}
                   </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Kapitál: €{investor.totalCapital.toLocaleString('sk-SK')}
+                    Kapitál: €{(investor.totalCapital ?? 0).toLocaleString('sk-SK')}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Vytvorený: {new Date(investor.createdAt).toLocaleDateString('sk-SK')}
@@ -198,7 +244,7 @@ export function InvestorsPage() {
                 </div>
                 <div className="flex items-center justify-end sm:justify-start">
                   <button
-                    onClick={() => handleDeleteInvestor(investor.id)}
+                    onClick={() => handleDeleteInvestor(investor.id, investor.name)}
                     disabled={deleteInvestorMutation.isPending}
                     className="px-3 py-1 text-xs sm:text-sm text-red-600 border border-red-300 rounded hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
                   >
@@ -210,6 +256,34 @@ export function InvestorsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open: boolean) => setDeleteConfirm({ ...deleteConfirm, open })}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Odstrániť investora</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ste si istí, že chcete odstrániť investora &quot;{deleteConfirm.investorName}&quot;?
+              Táto akcia sa nedá vrátiť späť.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteInvestorMutation.isPending}>
+              Zrušiť
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteInvestor}
+              disabled={deleteInvestorMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleteInvestorMutation.isPending ? 'Spracúvam...' : 'Odstrániť'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

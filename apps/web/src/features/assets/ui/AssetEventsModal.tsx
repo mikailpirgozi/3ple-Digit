@@ -25,6 +25,7 @@ const eventKindLabels: Record<AssetEventKind, string> = {
   PAYMENT_OUT: '💸 Výdaj',
   CAPEX: '🔧 Investícia (CAPEX)',
   NOTE: '📝 Poznámka',
+  SALE: '🏷️ Predaj',
 };
 
 export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
@@ -78,8 +79,9 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('sk-SK');
+  const formatDate = (date: Date | string) => {
+    const dateObj = date instanceof Date ? date : new Date(date);
+    return dateObj.toLocaleDateString('sk-SK');
   };
 
   return (
@@ -113,6 +115,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
           {showForm ? (
             <AssetEventForm
               event={editingEvent ?? undefined}
+              assetId={asset.id}
               onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent}
               onCancel={() => {
                 setShowForm(false);
@@ -150,7 +153,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
                             <span className="text-sm font-medium text-foreground">
-                              {eventKindLabels[event.kind as AssetEventKind]}
+                              {eventKindLabels[event.type as AssetEventKind]}
                             </span>
                             <span className="text-sm text-muted-foreground">
                               {formatDate(event.date)}

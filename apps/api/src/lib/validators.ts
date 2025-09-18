@@ -45,8 +45,12 @@ export const PercentageSchema = z.number().min(0).max(100);
  */
 export const FileUploadSchema = z.object({
   fileName: z.string().min(1).max(255),
-  mimeType: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9!#$&\-\^_]*\/[a-zA-Z0-9][a-zA-Z0-9!#$&\-\^_.]*$/),
-  size: z.number().int().min(1).max(50 * 1024 * 1024), // 50MB max
+  mimeType: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9!#$&\-^_]*\/[a-zA-Z0-9][a-zA-Z0-9!#$&\-^_.]*$/),
+  size: z
+    .number()
+    .int()
+    .min(1)
+    .max(50 * 1024 * 1024), // 50MB max
 });
 
 /**
@@ -141,7 +145,7 @@ export const AssetTypeSchema = z.enum([
   'bonds',
   'commodities',
   'crypto',
-  'other'
+  'other',
 ]);
 
 /**
@@ -158,7 +162,7 @@ export const AssetEventTypeSchema = z.enum([
   'PAYMENT_OUT',
   'CAPEX',
   'NOTE',
-  'SALE'
+  'SALE',
 ]);
 
 /**
@@ -169,7 +173,7 @@ export const DocumentCategorySchema = z.enum([
   'invoice',
   'report',
   'statement',
-  'other'
+  'other',
 ]);
 
 // Type exports for use in other files

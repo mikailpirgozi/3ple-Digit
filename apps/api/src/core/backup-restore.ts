@@ -6,16 +6,27 @@ import { prisma } from './prisma.js';
 
 interface BackupData {
   timestamp: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   users: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   investors: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   investorCashflows: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assets: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assetEvents: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   liabilities: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bankBalances: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   periodSnapshots: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   investorSnapshots: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   documents: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   auditLogs: any[];
 }
 
@@ -24,7 +35,7 @@ interface BackupData {
  */
 export async function createBackup(filename?: string): Promise<string> {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const backupFilename = filename || `backup-${timestamp}.json`;
+  const backupFilename = filename ?? `backup-${timestamp}.json`;
   const backupPath = path.join(process.cwd(), 'backups', backupFilename);
 
   log.info('🔄 Creating database backup...', { filename: backupFilename });
@@ -120,7 +131,7 @@ export async function restoreBackup(backupPath: string): Promise<void> {
   try {
     // Read backup file
     const backupContent = await fs.readFile(backupPath, 'utf-8');
-    const backupData: BackupData = JSON.parse(backupContent);
+    const backupData: BackupData = JSON.parse(backupContent) as BackupData;
 
     log.info('📊 Backup info', {
       timestamp: backupData.timestamp,
@@ -135,7 +146,7 @@ export async function restoreBackup(backupPath: string): Promise<void> {
     const isProduction = process.env.NODE_ENV === 'production';
     const isRailwayEnv = process.env.RAILWAY_ENVIRONMENT === 'production';
     const hasProductionUrl =
-      process.env.DATABASE_URL?.includes('railway.app') ||
+      process.env.DATABASE_URL?.includes('railway.app') ??
       process.env.DATABASE_URL?.includes('rlwy.net');
 
     if (isProduction || isRailwayEnv || hasProductionUrl) {
@@ -151,7 +162,7 @@ export async function restoreBackup(backupPath: string): Promise<void> {
     }
 
     // Clear existing data (in transaction)
-    await prisma.$transaction(async (tx: any) => {
+    await prisma.$transaction(async tx => {
       log.info('🧹 Clearing existing data...');
       await tx.auditLog.deleteMany();
       await tx.document.deleteMany();
@@ -225,7 +236,7 @@ export async function listBackups(): Promise<string[]> {
       .filter(file => file.endsWith('.json'))
       .sort()
       .reverse();
-  } catch (error) {
+  } catch {
     log.warn('No backup directory found');
     return [];
   }
@@ -239,6 +250,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     case 'backup':
       createBackup(process.argv[3])
         .then(path => {
+          // eslint-disable-next-line no-console
           console.log(`Backup created: ${path}`);
           process.exit(0);
         })
@@ -248,7 +260,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         });
       break;
 
-    case 'restore':
+    case 'restore': {
       const backupPath = process.argv[3];
       if (!backupPath) {
         console.error('Usage: tsx backup-restore.ts restore <backup-file>');
@@ -256,6 +268,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       }
       restoreBackup(backupPath)
         .then(() => {
+          // eslint-disable-next-line no-console
           console.log('Restore completed');
           process.exit(0);
         })
@@ -264,12 +277,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           process.exit(1);
         });
       break;
+    }
 
     case 'list':
       listBackups()
         .then(backups => {
+          // eslint-disable-next-line no-console
           console.log('Available backups:');
-          backups.forEach(backup => console.log(`  ${backup}`));
+          backups.forEach(backup => {
+            // eslint-disable-next-line no-console
+            console.log(`  ${backup}`);
+          });
           process.exit(0);
         })
         .catch(error => {
@@ -279,9 +297,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       break;
 
     default:
+      // eslint-disable-next-line no-console
       console.log('Usage:');
+      // eslint-disable-next-line no-console
       console.log('  tsx backup-restore.ts backup [filename]');
+      // eslint-disable-next-line no-console
       console.log('  tsx backup-restore.ts restore <backup-file>');
+      // eslint-disable-next-line no-console
       console.log('  tsx backup-restore.ts list');
       process.exit(1);
   }

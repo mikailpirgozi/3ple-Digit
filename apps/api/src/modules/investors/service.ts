@@ -18,7 +18,7 @@ export class InvestorsService {
    * Helper function to convert undefined to null for Prisma compatibility
    */
   private toNullable<T>(value: T | undefined): T | null {
-    return value === undefined ? null : value;
+    return value ?? null;
   }
 
   /**
@@ -28,7 +28,7 @@ export class InvestorsService {
     const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value !== undefined) {
-        (filtered as any)[key] = value;
+        (filtered as Record<string, unknown>)[key] = value;
       }
     }
     return filtered;
@@ -222,19 +222,32 @@ export class InvestorsService {
    * Delete investor
    */
   async deleteInvestor(id: string, userId?: string): Promise<void> {
+    log.info('Attempting to delete investor', { investorId: id, deletedBy: userId });
+
     const existingInvestor = await prisma.investor.findUnique({
       where: { id },
     });
 
     if (!existingInvestor) {
+      log.warn('Investor not found for deletion', { investorId: id });
       throw errors.notFound('Investor not found');
     }
 
-    await prisma.investor.delete({
-      where: { id },
-    });
+    try {
+      await prisma.investor.delete({
+        where: { id },
+      });
 
-    log.info('Investor deleted', { investorId: id, deletedBy: userId });
+      log.info('Investor deleted successfully', { investorId: id, deletedBy: userId });
+    } catch (error) {
+      log.error('Failed to delete investor', {
+        investorId: id,
+        deletedBy: userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
+    }
   }
 
   /**
@@ -296,7 +309,7 @@ export class InvestorsService {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     if (investorId) {
       where.investorId = investorId;
@@ -306,10 +319,10 @@ export class InvestorsService {
       where.type = type;
     }
 
-    if (dateFrom || dateTo) {
-      where.date = {};
-      if (dateFrom) where.date.gte = dateFrom;
-      if (dateTo) where.date.lte = dateTo;
+    if (dateFrom ?? dateTo) {
+      where.date = {} as Record<string, unknown>;
+      if (dateFrom) (where.date as Record<string, unknown>).gte = dateFrom;
+      if (dateTo) (where.date as Record<string, unknown>).lte = dateTo;
     }
 
     // Get total count
@@ -448,37 +461,37 @@ export class InvestorsService {
   /**
    * Format investor response
    */
-  private formatInvestorResponse(investor: any): InvestorResponse {
+  private formatInvestorResponse(investor: Record<string, unknown>): InvestorResponse {
     return {
-      id: investor.id,
-      userId: investor.userId,
-      name: investor.name,
-      email: investor.email,
-      phone: investor.phone,
-      address: investor.address,
-      taxId: investor.taxId,
-      createdAt: investor.createdAt,
-      updatedAt: investor.updatedAt,
-      totalCapital: investor.totalCapital,
-      totalDeposits: investor.totalDeposits,
-      totalWithdrawals: investor.totalWithdrawals,
+      id: investor.id as string,
+      userId: investor.userId as string,
+      name: investor.name as string,
+      email: investor.email as string,
+      phone: investor.phone as string | null,
+      address: investor.address as string | null,
+      taxId: investor.taxId as string | null,
+      createdAt: investor.createdAt as Date,
+      updatedAt: investor.updatedAt as Date,
+      totalCapital: investor.totalCapital as number,
+      totalDeposits: investor.totalDeposits as number,
+      totalWithdrawals: investor.totalWithdrawals as number,
     };
   }
 
   /**
    * Format cashflow response
    */
-  private formatCashflowResponse(cashflow: any): CashflowResponse {
+  private formatCashflowResponse(cashflow: Record<string, unknown>): CashflowResponse {
     return {
-      id: cashflow.id,
-      investorId: cashflow.investorId,
-      type: cashflow.type,
-      amount: cashflow.amount,
-      date: cashflow.date,
-      note: cashflow.note,
-      createdAt: cashflow.createdAt,
-      updatedAt: cashflow.updatedAt,
-      investor: cashflow.investor,
+      id: cashflow.id as string,
+      investorId: cashflow.investorId as string,
+      type: cashflow.type as string,
+      amount: cashflow.amount as number,
+      date: cashflow.date as Date,
+      note: cashflow.note as string | null,
+      createdAt: cashflow.createdAt as Date,
+      updatedAt: cashflow.updatedAt as Date,
+      investor: cashflow.investor as { id: string; name: string; email: string } | undefined,
     };
   }
 }
