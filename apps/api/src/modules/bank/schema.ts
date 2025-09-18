@@ -75,20 +75,20 @@ export const csvImportResultSchema = z.object({
   totalRows: z.number(),
   successfulRows: z.number(),
   failedRows: z.number(),
-  errors: z.array(z.object({
-    row: z.number(),
-    errors: z.array(z.string()),
-    data: z.record(z.unknown()).optional(),
-  })),
+  errors: z.array(
+    z.object({
+      row: z.number(),
+      errors: z.array(z.string()),
+      data: z.record(z.unknown()).optional(),
+    })
+  ),
   importedBalances: z.array(bankBalanceResponseSchema),
 });
 
 // Types
 export type CreateBankBalanceRequest = z.infer<typeof createBankBalanceSchema>;
 export type UpdateBankBalanceRequest = z.infer<typeof updateBankBalanceSchema>;
-export type CsvImportRequest = z.infer<typeof csvImportSchema> & {
-  delimiter: string; // Override to make delimiter required
-};
+export type CsvImportRequest = z.infer<typeof csvImportSchema>;
 export type CsvRowData = z.infer<typeof csvRowSchema>;
 export type GetBankBalancesQuery = z.infer<typeof getBankBalancesQuerySchema>;
 export type BankBalanceResponse = z.infer<typeof bankBalanceResponseSchema>;

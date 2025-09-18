@@ -18,9 +18,9 @@ import {
 } from '@/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
-import { useForm, type ControllerRenderProps } from 'react-hook-form';
+import type { ControllerRenderProps } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-
 const cashflowSchema = z.object({
   date: z.date({
     required_error: 'Dátum je povinný',

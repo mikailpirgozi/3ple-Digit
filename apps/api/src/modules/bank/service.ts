@@ -95,6 +95,9 @@ export class BankService {
         accountType?: { contains: string };
       }>;
       currency?: string;
+      accountName?: { contains: string };
+      bankName?: { contains: string };
+      date?: { gte?: Date; lte?: Date };
     } = {};
 
     if (search) {
@@ -110,18 +113,18 @@ export class BankService {
     }
 
     if (accountName) {
-      (where as Record<string, unknown>).accountName = { contains: accountName };
+      where.accountName = { contains: accountName };
     }
 
     if (bankName) {
-      (where as Record<string, unknown>).bankName = { contains: bankName };
+      where.bankName = { contains: bankName };
     }
 
     if (dateFrom ?? dateTo) {
-      const dateFilter: Record<string, unknown> = {};
+      const dateFilter: { gte?: Date; lte?: Date } = {};
       if (dateFrom) dateFilter.gte = dateFrom;
       if (dateTo) dateFilter.lte = dateTo;
-      (where as Record<string, unknown>).date = dateFilter;
+      where.date = dateFilter;
     }
 
     // Get total count and balances
@@ -138,13 +141,10 @@ export class BankService {
     // Calculate summary
     const allBalances = await prisma.bankBalance.findMany({ where });
     const totalAmount = allBalances.reduce((sum, balance) => sum + balance.amount, 0);
-    const byCurrency = allBalances.reduce(
-      (acc, balance) => {
-        acc[balance.currency] = (acc[balance.currency] ?? 0) + balance.amount;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
+    const byCurrency = allBalances.reduce<Record<string, number>>((acc, balance) => {
+      acc[balance.currency] = (acc[balance.currency] ?? 0) + balance.amount;
+      return acc;
+    }, {});
 
     return {
       balances: balances.map(balance => this.formatBankBalanceResponse(balance)),
@@ -234,8 +234,8 @@ export class BankService {
     const { file, skipFirstRow, mapping } = data;
     const delimiter = data.delimiter ?? ',';
 
-    if (!delimiter) {
-      throw new Error('Delimiter is required');
+    if (!delimiter || !mapping) {
+      throw new Error('Delimiter and mapping are required');
     }
 
     try {
@@ -259,14 +259,10 @@ export class BankService {
       // Process each row
       for (let i = 0; i < dataRows.length; i++) {
         const rowIndex = skipFirstRow ? i + 2 : i + 1; // Account for header and 1-based indexing
-        const row = dataRows[i];
+        const row = dataRows[i]!;
 
         try {
-          if (!delimiter || !mapping) {
-            throw new Error('Missing delimiter or mapping configuration');
-          }
-          // @ts-expect-error - delimiter is checked above
-          const columns = this.parseCsvRow(row, delimiter);
+          const columns = this.parseCsvRow(row, ',');
           const rowData = this.mapCsvRow(columns, mapping);
           const validatedData = csvRowSchema.parse(rowData);
 
@@ -295,8 +291,7 @@ export class BankService {
           results.errors.push({
             row: rowIndex,
             errors: errorMessages,
-            // @ts-expect-error - delimiter is checked above
-            data: delimiter ? this.parseCsvRowSafe(row, delimiter) : {},
+            data: this.parseCsvRowSafe(row, ','),
           });
         }
       }
@@ -340,7 +335,7 @@ export class BankService {
 
     const totalBalance = balances.reduce((sum, balance) => sum + balance.amount, 0);
 
-    const byCurrency = balances.reduce(
+    const byCurrency = balances.reduce<Record<string, { amount: number; count: number }>>(
       (acc, balance) => {
         acc[balance.currency] ??= { amount: 0, count: 0 };
         const currencyKey = balance.currency;
@@ -351,7 +346,7 @@ export class BankService {
         }
         return acc;
       },
-      {} as Record<string, { amount: number; count: number }>
+      {}
     );
 
     // Group by account (latest balance per account)
@@ -409,13 +404,10 @@ export class BankService {
   private parseCsvRowSafe(row: string, delimiter: string): Record<string, unknown> {
     try {
       const columns = this.parseCsvRow(row, delimiter);
-      return columns.reduce(
-        (acc, col, index) => {
-          acc[`column_${index}`] = col;
-          return acc;
-        },
-        {} as Record<string, unknown>
-      );
+      return columns.reduce<Record<string, unknown>>((acc, col, index) => {
+        acc[`column_${index}`] = col;
+        return acc;
+      }, {});
     } catch {
       return { raw: row };
     }
