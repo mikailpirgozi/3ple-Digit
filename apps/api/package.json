@@ -15,7 +15,7 @@
     "lint": "eslint . --ext ts --report-unused-disable-directives",
     "lint:fix": "eslint . --ext ts --fix",
     "type-check": "tsc --noEmit",
-    "test": "node tests-minimal.js",
+    "test": "node tests-minimal.cjs",
     "test:full": "node setup-test-db.js && vitest --run",
     "test:core": "vitest --run --testNamePattern='(NAV|calculation|auth|critical)'",
     "test:watch": "vitest",
