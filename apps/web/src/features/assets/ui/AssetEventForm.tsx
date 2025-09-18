@@ -77,13 +77,15 @@ export function AssetEventForm({
   const requiresAmount = ['VALUATION', 'PAYMENT_IN', 'PAYMENT_OUT', 'CAPEX'].includes(selectedType);
 
   const handleFormSubmit = (data: AssetEventFormData) => {
-    onSubmit({
-      assetId,
-      ...data,
+    const payload = {
       date: new Date(data.date).toISOString(),
-      // Backend requires amount to be a number, use 0 for NOTE type
-      amount: requiresAmount ? (data.amount ?? 0) : 0,
-    });
+      type: data.type,
+      note: data.note ?? undefined,
+      assetId,
+      ...(requiresAmount && { amount: data.amount ?? 0 }),
+    } as CreateAssetEventRequest;
+
+    onSubmit(payload);
   };
 
   return (

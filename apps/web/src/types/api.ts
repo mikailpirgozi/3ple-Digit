@@ -98,6 +98,7 @@ export interface Asset {
   name: string;
   category?: string;
   acquiredPrice?: number;
+  acquiredDate?: string;
   currentValue: number;
   expectedSalePrice?: number;
   status: AssetStatus;
@@ -106,15 +107,15 @@ export interface Asset {
   updatedAt: string;
 }
 
-export type AssetEventKind = 'VALUATION' | 'PAYMENT_IN' | 'PAYMENT_OUT' | 'CAPEX' | 'NOTE';
+export type AssetEventKind = 'VALUATION' | 'PAYMENT_IN' | 'PAYMENT_OUT' | 'CAPEX' | 'NOTE' | 'SALE';
 
 export interface AssetEvent {
   id: string;
   assetId: string;
   date: string;
-  kind: AssetEventKind;
-  amount?: number;
-  note?: string;
+  type: AssetEventKind;
+  amount?: number | null;
+  note?: string | null;
   createdAt: string;
 }
 
@@ -123,6 +124,7 @@ export interface CreateAssetRequest {
   name: string;
   category?: string;
   acquiredPrice?: number;
+  acquiredDate?: string;
   currentValue: number;
   expectedSalePrice?: number;
   meta?: Record<string, unknown>;
@@ -130,9 +132,27 @@ export interface CreateAssetRequest {
 
 export interface CreateAssetEventRequest {
   date: string;
-  kind: AssetEventKind;
+  type: AssetEventKind;
   amount?: number;
   note?: string;
+  assetId?: string; // Optional because it's added by the backend router
+}
+
+export interface UpdateAssetEventRequest {
+  date?: string;
+  type?: AssetEventKind;
+  amount?: number;
+  note?: string;
+}
+
+export interface AssetEventsResponse {
+  events: AssetEvent[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface MarkAssetSoldRequest {

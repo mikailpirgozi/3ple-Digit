@@ -23,6 +23,7 @@ const assetFormSchema = z.object({
   name: z.string().min(1, 'Názov je povinný'),
   category: z.string().optional(),
   acquiredPrice: z.number().min(0).optional(),
+  acquiredDate: z.string().optional(),
   currentValue: z.number().min(0, 'Aktuálna hodnota musí byť kladná'),
   expectedSalePrice: z.number().min(0).optional(),
   meta: z.record(z.unknown()).optional(),
@@ -55,6 +56,7 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
           name: asset.name,
           category: asset.category ?? '',
           acquiredPrice: asset.acquiredPrice ?? undefined,
+          acquiredDate: asset.acquiredDate ? asset.acquiredDate.substring(0, 7) : undefined, // Extract YYYY-MM from ISO string
           currentValue: asset.currentValue,
           expectedSalePrice: asset.expectedSalePrice ?? undefined,
           meta: asset.meta ?? {},
@@ -69,6 +71,9 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
   const handleFormSubmit = (data: AssetFormData) => {
     onSubmit({
       ...data,
+      acquiredDate: data.acquiredDate
+        ? new Date(data.acquiredDate + '-01').toISOString()
+        : undefined, // Add first day of month
       meta: data.meta ?? {},
     });
   };
@@ -164,6 +169,24 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
                         field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)
                       }
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="acquiredDate"
+              render={({
+                field,
+              }: {
+                field: ControllerRenderProps<AssetFormData, 'acquiredDate'>;
+              }) => (
+                <FormItem>
+                  <FormLabel>Dátum nadobudnutia (mesiac/rok)</FormLabel>
+                  <FormControl>
+                    <Input type="month" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

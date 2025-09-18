@@ -412,11 +412,11 @@ export class ReportsService {
       .filter(cf => cf.type === 'WITHDRAWAL')
       .reduce((sum, cf) => sum + cf.amount, 0);
     const assetPaymentsIn = assetEvents
-      .filter(ae => ae.type === 'PAYMENT_IN')
-      .reduce((sum, ae) => sum + ae.amount, 0);
+      .filter(ae => ae.type === 'PAYMENT_IN' && ae.amount != null)
+      .reduce((sum, ae) => sum + (ae.amount ?? 0), 0);
     const assetPaymentsOut = assetEvents
-      .filter(ae => ae.type === 'PAYMENT_OUT')
-      .reduce((sum, ae) => sum + Math.abs(ae.amount), 0);
+      .filter(ae => ae.type === 'PAYMENT_OUT' && ae.amount != null)
+      .reduce((sum, ae) => sum + Math.abs(ae.amount ?? 0), 0);
 
     const totalInflows = deposits + assetPaymentsIn;
     const totalOutflows = withdrawals + assetPaymentsOut;
@@ -462,9 +462,9 @@ export class ReportsService {
         } else {
           // Asset event
           if (item.type === 'PAYMENT_IN') {
-            group.inflows += item.amount;
+            group.inflows += item.amount ?? 0;
           } else {
-            group.outflows += Math.abs(item.amount);
+            group.outflows += Math.abs(item.amount ?? 0);
           }
         }
       }
@@ -478,7 +478,7 @@ export class ReportsService {
     }));
 
     // Top inflows and outflows
-    const topInflows = [
+    const topInflows: { source: string; amount: number; date: Date }[] = [
       ...cashflows
         .filter(cf => cf.type === 'DEPOSIT')
         .map(cf => ({
@@ -490,14 +490,14 @@ export class ReportsService {
         .filter(ae => ae.type === 'PAYMENT_IN')
         .map(ae => ({
           source: `Payment from ${(ae as { asset?: { name: string } }).asset?.name ?? 'Unknown Asset'}`,
-          amount: ae.amount,
+          amount: ae.amount ?? 0,
           date: ae.date,
         })),
     ]
-      .sort((a, b) => b.amount - a.amount)
+      .sort((a, b) => (b.amount ?? 0) - (a.amount ?? 0))
       .slice(0, 10);
 
-    const topOutflows = [
+    const topOutflows: { destination: string; amount: number; date: Date }[] = [
       ...cashflows
         .filter(cf => cf.type === 'WITHDRAWAL')
         .map(cf => ({
@@ -509,7 +509,7 @@ export class ReportsService {
         .filter(ae => ae.type === 'PAYMENT_OUT')
         .map(ae => ({
           destination: `Payment for ${(ae as { asset?: { name: string } }).asset?.name ?? 'Unknown Asset'}`,
-          amount: Math.abs(ae.amount),
+          amount: Math.abs(ae.amount ?? 0),
           date: ae.date,
         })),
     ]

@@ -84,6 +84,144 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
     return dateObj.toLocaleDateString('sk-SK');
   };
 
+  const calculateTimePeriod = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Calculate difference in months more accurately
+    const yearsDiff = end.getFullYear() - start.getFullYear();
+    const monthsDiff = end.getMonth() - start.getMonth();
+    const totalMonths = yearsDiff * 12 + monthsDiff;
+
+    // Add partial month if we're past the start day
+    const daysDiff = end.getDate() - start.getDate();
+    const adjustedMonths = daysDiff >= 0 ? totalMonths : totalMonths - 1;
+    const finalMonths = Math.max(1, adjustedMonths); // Minimum 1 month
+
+    const years = finalMonths / 12;
+
+    if (finalMonths < 12) {
+      return {
+        days: 0,
+        months: finalMonths,
+        years: years,
+        text: finalMonths === 1 ? `${finalMonths} mesiac` : `${finalMonths} mesiacov`,
+      };
+    } else {
+      const wholeYears = Math.floor(finalMonths / 12);
+      const remainingMonths = finalMonths % 12;
+
+      if (remainingMonths === 0) {
+        return {
+          days: 0,
+          months: finalMonths,
+          years: wholeYears,
+          text: wholeYears === 1 ? `${wholeYears} rok` : `${wholeYears} rokov`,
+        };
+      } else {
+        return {
+          days: 0,
+          months: finalMonths,
+          years: years,
+          text: `${wholeYears} rokov ${remainingMonths} mesiacov`,
+        };
+      }
+    }
+  };
+
+  const calculateAnnualizedReturn = (startValue: number, endValue: number, months: number) => {
+    if (months <= 0 || startValue <= 0) return 0;
+
+    // Calculate simple percentage change
+    const percentChange = ((endValue - startValue) / startValue) * 100;
+
+    // Annualize by simple proportion: (percentage / months) * 12
+    return (percentChange / months) * 12;
+  };
+
+  const getValueChangeText = (event: AssetEvent, events: AssetEvent[]) => {
+    if (!event.amount) return null;
+
+    switch (event.type) {
+      case 'VALUATION': {
+        // Find previous valuation to show the change
+        const sortedEvents = events
+          .filter(e => e.type === 'VALUATION' && new Date(e.date) < new Date(event.date))
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        const previousValuation = sortedEvents[0];
+
+        if (previousValuation?.amount) {
+          // Compare with previous valuation
+          const change = event.amount - previousValuation.amount;
+          const changePercent = (change / previousValuation.amount) * 100;
+          const timePeriod = calculateTimePeriod(
+            typeof previousValuation.date === 'string'
+              ? previousValuation.date
+              : previousValuation.date.toISOString(),
+            typeof event.date === 'string' ? event.date : event.date.toISOString()
+          );
+          const annualizedReturn = calculateAnnualizedReturn(
+            previousValuation.amount,
+            event.amount,
+            timePeriod.months
+          );
+
+          const changeText =
+            change > 0 ? ` (+${formatCurrency(change)})` : ` (${formatCurrency(change)})`;
+
+          const percentText = `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}%`;
+          const timeText = `za ${timePeriod.text}`;
+          const annualText =
+            timePeriod.months > 0 ? ` (${annualizedReturn.toFixed(1)}% ročne)` : '';
+
+          return `Nová hodnota: ${formatCurrency(event.amount)}${changeText} | ${percentText} ${timeText}${annualText}`;
+        } else {
+          // First valuation - compare with purchase price (asset.acquiredPrice)
+          const purchasePrice = asset.acquiredPrice ?? 0;
+          if (purchasePrice > 0) {
+            const change = event.amount - purchasePrice;
+            const changePercent = (change / purchasePrice) * 100;
+
+            // Calculate time from asset acquisition to first valuation
+            const startDate = asset.acquiredDate ?? asset.createdAt;
+            const timePeriod = calculateTimePeriod(
+              typeof startDate === 'string' ? startDate : startDate.toISOString(),
+              typeof event.date === 'string' ? event.date : event.date.toISOString()
+            );
+            const annualizedReturn = calculateAnnualizedReturn(
+              purchasePrice,
+              event.amount,
+              timePeriod.months
+            );
+
+            const changeText =
+              change > 0 ? ` (+${formatCurrency(change)})` : ` (${formatCurrency(change)})`;
+
+            const percentText = `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}%`;
+            const timeText = `za ${timePeriod.text}`;
+            const annualText =
+              timePeriod.months > 0 ? ` (${annualizedReturn.toFixed(1)}% ročne)` : '';
+
+            return `Nová hodnota: ${formatCurrency(event.amount)}${changeText} | ${percentText} ${timeText}${annualText} (vs nákupná cena)`;
+          }
+
+          return `Nová hodnota: ${formatCurrency(event.amount)}`;
+        }
+      }
+      case 'PAYMENT_IN':
+        return `+${formatCurrency(event.amount)} (príjem)`;
+      case 'PAYMENT_OUT':
+        return `-${formatCurrency(Math.abs(event.amount))} (výdaj)`;
+      case 'CAPEX':
+        return `+${formatCurrency(event.amount)} (investícia)`;
+      case 'SALE':
+        return `Predané za ${formatCurrency(event.amount)}`;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
@@ -158,10 +296,10 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
                             <span className="text-sm text-muted-foreground">
                               {formatDate(event.date)}
                             </span>
-                            {event.amount && (
-                              <span className="text-sm font-medium text-foreground">
-                                {formatCurrency(event.amount)}
-                              </span>
+                            {getValueChangeText(event, events || []) && (
+                              <div className="text-sm font-medium text-blue-600">
+                                {getValueChangeText(event, events || [])}
+                              </div>
                             )}
                           </div>
                           {event.note && (

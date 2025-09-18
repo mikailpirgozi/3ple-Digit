@@ -111,12 +111,25 @@ export class AssetsService {
       const eventsCount = asset.events.length;
 
       const totalInflows = asset.events
-        .filter(event => ['PAYMENT_IN', 'VALUATION'].includes(event.type) && event.amount > 0)
-        .reduce((sum: number, event: { amount: number }) => sum + event.amount, 0);
+        .filter(
+          event =>
+            ['PAYMENT_IN', 'VALUATION'].includes(event.type) &&
+            event.amount != null &&
+            event.amount > 0
+        )
+        .reduce((sum: number, event: { amount: number | null }) => sum + (event.amount ?? 0), 0);
 
       const totalOutflows = asset.events
-        .filter(event => ['PAYMENT_OUT', 'CAPEX'].includes(event.type) || event.amount < 0)
-        .reduce((sum: number, event: { amount: number }) => sum + Math.abs(event.amount), 0);
+        .filter(
+          event =>
+            (['PAYMENT_OUT', 'CAPEX'].includes(event.type) ||
+              (event.amount != null && event.amount < 0)) &&
+            event.amount != null
+        )
+        .reduce(
+          (sum: number, event: { amount: number | null }) => sum + Math.abs(event.amount ?? 0),
+          0
+        );
 
       return this.formatAssetResponse({
         ...asset,
@@ -160,12 +173,25 @@ export class AssetsService {
     const eventsCount = asset.events.length;
 
     const totalInflows = asset.events
-      .filter(event => ['PAYMENT_IN', 'VALUATION'].includes(event.type) && event.amount > 0)
-      .reduce((sum: number, event: { amount: number }) => sum + event.amount, 0);
+      .filter(
+        event =>
+          ['PAYMENT_IN', 'VALUATION'].includes(event.type) &&
+          event.amount != null &&
+          event.amount > 0
+      )
+      .reduce((sum: number, event: { amount: number | null }) => sum + (event.amount ?? 0), 0);
 
     const totalOutflows = asset.events
-      .filter(event => ['PAYMENT_OUT', 'CAPEX'].includes(event.type) || event.amount < 0)
-      .reduce((sum: number, event: { amount: number }) => sum + Math.abs(event.amount), 0);
+      .filter(
+        event =>
+          (['PAYMENT_OUT', 'CAPEX'].includes(event.type) ||
+            (event.amount != null && event.amount < 0)) &&
+          event.amount != null
+      )
+      .reduce(
+        (sum: number, event: { amount: number | null }) => sum + Math.abs(event.amount ?? 0),
+        0
+      );
 
     return this.formatAssetResponse({
       ...asset,

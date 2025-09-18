@@ -69,11 +69,81 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
     }).format(amount);
   };
 
+  const calculateTimePeriod = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Calculate difference in months more accurately
+    const yearsDiff = end.getFullYear() - start.getFullYear();
+    const monthsDiff = end.getMonth() - start.getMonth();
+    const totalMonths = yearsDiff * 12 + monthsDiff;
+
+    // Add partial month if we're past the start day
+    const daysDiff = end.getDate() - start.getDate();
+    const adjustedMonths = daysDiff >= 0 ? totalMonths : totalMonths - 1;
+    const finalMonths = Math.max(1, adjustedMonths); // Minimum 1 month
+
+    const years = finalMonths / 12;
+
+    if (finalMonths < 12) {
+      return {
+        days: 0,
+        months: finalMonths,
+        years: years,
+        text: finalMonths === 1 ? `${finalMonths} mesiac` : `${finalMonths} mesiacov`,
+      };
+    } else {
+      const wholeYears = Math.floor(finalMonths / 12);
+      const remainingMonths = finalMonths % 12;
+
+      if (remainingMonths === 0) {
+        return {
+          days: 0,
+          months: finalMonths,
+          years: wholeYears,
+          text: wholeYears === 1 ? `${wholeYears} rok` : `${wholeYears} rokov`,
+        };
+      } else {
+        return {
+          days: 0,
+          months: finalMonths,
+          years: years,
+          text: `${wholeYears} rokov ${remainingMonths} mesiacov`,
+        };
+      }
+    }
+  };
+
+  const calculateAnnualizedReturn = (startValue: number, endValue: number, months: number) => {
+    if (months <= 0 || startValue <= 0) return 0;
+
+    // Calculate simple percentage change
+    const percentChange = ((endValue - startValue) / startValue) * 100;
+
+    // Annualize by simple proportion: (percentage / months) * 12
+    return (percentChange / months) * 12;
+  };
+
   const calculatePnL = (asset: Asset) => {
     if (!asset.acquiredPrice) return null;
     const pnl = asset.currentValue - asset.acquiredPrice;
     const pnlPercent = (pnl / asset.acquiredPrice) * 100;
-    return { pnl, pnlPercent };
+
+    // Calculate time period and annualized return
+    const startDate = asset.acquiredDate ?? asset.createdAt;
+    const timePeriod = calculateTimePeriod(startDate, new Date().toISOString());
+    const annualizedReturn = calculateAnnualizedReturn(
+      asset.acquiredPrice,
+      asset.currentValue,
+      timePeriod.months
+    );
+
+    return {
+      pnl,
+      pnlPercent,
+      timePeriod,
+      annualizedReturn: timePeriod.months > 0 ? annualizedReturn : null,
+    };
   };
 
   if (isLoading) {
@@ -289,6 +359,12 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
                             >
                               {pnlData.pnl >= 0 ? '+' : ''}
                               {formatCurrency(pnlData.pnl)} ({pnlData.pnlPercent.toFixed(1)}%)
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              za {pnlData.timePeriod.text}
+                              {pnlData.annualizedReturn && (
+                                <span> ({pnlData.annualizedReturn.toFixed(1)}% ročne)</span>
+                              )}
                             </p>
                           </div>
                         )}
