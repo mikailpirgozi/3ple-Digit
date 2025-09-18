@@ -94,7 +94,7 @@ export class SnapshotsService {
     const assetBreakdown = this.createAssetBreakdown(assets);
     const bankBreakdown = this.createBankBreakdown(
       Array.from(latestBankBalances.values()).map(balance => ({
-        currency: balance.currency || 'EUR', // Use actual currency or default to EUR
+        currency: balance.currency ?? 'EUR', // Use actual currency or default to EUR
         amount: balance.amount,
       }))
     );
@@ -108,9 +108,9 @@ export class SnapshotsService {
       totalBankBalance,
       totalLiabilities,
       nav,
-      assetBreakdown: assetBreakdown as any,
-      bankBreakdown: bankBreakdown as any,
-      liabilityBreakdown: liabilityBreakdown as any,
+      assetBreakdown,
+      bankBreakdown,
+      liabilityBreakdown,
     };
   }
 
