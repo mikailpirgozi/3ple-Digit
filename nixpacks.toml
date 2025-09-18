@@ -10,9 +10,9 @@ cmds = ["pnpm install --frozen-lockfile"]
 [phases.build]
 cmds = [
   "cd apps/api",
-  "pnpm db:generate",
+  "npx prisma generate",
   "pnpm build"
 ]
 
 [start]
-cmd = "cd apps/api && pnpm start"
+cmd = "cd apps/api && pnpm start:railway"

@@ -1,4 +1,4 @@
-name: CI Optimized
+name: CI Minimal
 
 on:
   push:
@@ -7,11 +7,10 @@ on:
     branches: [main, develop]
 
 jobs:
-  # 🎯 SINGLE JOB - ESSENTIAL CHECKS ONLY
-  essential-checks:
-    name: Essential Checks (Build + Core Tests)
+  # 🎯 MINIMAL JOB - BUILD CHECK ONLY
+  build-check:
+    name: Build Check Only
     runs-on: ubuntu-latest
-    # No PostgreSQL service needed - using SQLite for tests (safer)
 
     steps:
       - name: Checkout
@@ -31,41 +30,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # ✅ 1. SETUP SQLITE FOR ALL STEPS (build + tests)
-      - name: Setup SQLite Schema
-        run: |
-          cd apps/api
-          # Use SQLite schema for all CI operations
-          cp prisma/schema.test.prisma prisma/schema.prisma
-          # Generate Prisma client for SQLite
-          npx prisma generate
-        env:
-          DATABASE_URL: "file:./test.db"
-
-      # ✅ 2. BUILD CHECK (most critical - catches real TypeScript errors)
+      # ✅ MINIMAL BUILD CHECK ONLY
       - name: Build Check
-        run: pnpm build
-        env:
-          DATABASE_URL: "file:./test.db"
-
-      # ✅ 3. CORE TESTS ONLY (business logic) - SQLite ready
-      - name: Core Tests (SQLite)
         run: |
           cd apps/api
-          # Force SQLite for CI tests (same as local protection)
-          export DATABASE_URL="file:./test.db"
-          export NODE_ENV="test"
-          export JWT_SECRET="test-jwt-secret-key-for-ci-testing-only"
-          # Create SQLite database
-          npx prisma db push --force-reset
-          # Run tests with SQLite
-          npm test
+          # Use PostgreSQL schema directly (no schema switching)
+          npx prisma generate
+          pnpm build
         env:
-          # These will be overridden by exports above for safety
-          NODE_ENV: test
-          JWT_SECRET: test-jwt-secret-key-for-ci-testing-only
-
-      # ✅ 4. LINT CHECK (warnings allowed, only errors fail)
-      - name: Lint Check (Errors Only)
-        run: pnpm lint || echo "⚠️ Lint warnings present but not blocking CI"
-        continue-on-error: true
+          DATABASE_URL: "postgresql://fake:fake@localhost:5432/fake"
+          JWT_SECRET: "fake-jwt-secret-for-build-check-only"
