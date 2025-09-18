@@ -57,12 +57,16 @@ export class SnapshotsService {
     });
 
     // Group bank balances by account and take latest
-    const latestBankBalances = new Map<string, { date: Date; amount: number }>();
+    const latestBankBalances = new Map<string, { date: Date; amount: number; currency?: string }>();
     bankBalances.forEach(balance => {
       const key = `${balance.accountName}-${balance.bankName ?? 'unknown'}`;
       const existing = latestBankBalances.get(key);
       if (!existing || existing.date < balance.date) {
-        latestBankBalances.set(key, balance);
+        latestBankBalances.set(key, {
+          date: balance.date,
+          amount: balance.amount,
+          currency: balance.currency,
+        });
       }
     });
 
@@ -104,9 +108,9 @@ export class SnapshotsService {
       totalBankBalance,
       totalLiabilities,
       nav,
-      assetBreakdown: assetBreakdown as unknown,
-      bankBreakdown: bankBreakdown as unknown,
-      liabilityBreakdown: liabilityBreakdown as unknown,
+      assetBreakdown: assetBreakdown as any,
+      bankBreakdown: bankBreakdown as any,
+      liabilityBreakdown: liabilityBreakdown as any,
     };
   }
 
