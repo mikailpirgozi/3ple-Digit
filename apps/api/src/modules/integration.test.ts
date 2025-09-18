@@ -207,7 +207,7 @@ describe('Integration Tests - Key Application Flows', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Test Real Estate',
-          type: 'real_estate',
+          type: 'NEHNUTEĽNOSTI',
           acquiredPrice: 500000,
           currentValue: 500000,
         })
@@ -301,7 +301,7 @@ describe('Integration Tests - Key Application Flows', () => {
           .set('Authorization', `Bearer ${authToken}`)
           .send({
             name: 'Test Real Estate',
-            type: 'real_estate',
+            type: 'NEHNUTEĽNOSTI',
             currentValue: 500000,
             acquiredPrice: 500000,
           })
@@ -481,7 +481,7 @@ describe('Integration Tests - Key Application Flows', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Commercial Property',
-          type: 'real_estate',
+          type: 'NEHNUTEĽNOSTI',
           acquiredPrice: 1000000,
           currentValue: 1000000,
         })
@@ -492,7 +492,7 @@ describe('Integration Tests - Key Application Flows', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Stock Portfolio',
-          type: 'stock',
+          type: 'AKCIE',
           acquiredPrice: 500000,
           currentValue: 500000,
         })
