@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc && tsc-alias",
-    "start": "node scripts/init-db.js && node dist/index.js",
+    "start": "node dist/index.js",
     "start:basic": "node dist/index.js",
-    "init:db": "node scripts/init-db.js",
+    "init:db": "prisma db push --accept-data-loss && node seed-admin.cjs",
+    "seed": "node seed-admin.cjs",
     "lint": "eslint . --ext ts --report-unused-disable-directives",
     "lint:fix": "eslint . --ext ts --fix",
     "type-check": "tsc --noEmit",
