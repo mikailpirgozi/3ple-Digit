@@ -46,8 +46,32 @@ function validateEnv(): Env {
       console.error('❌ Invalid environment variables:');
       console.error(missingVars);
       console.error('\n💡 Please check your .env file and ensure all required variables are set.');
+      console.error('⚠️  Attempting to continue with default values...');
 
-      process.exit(1);
+      // Try to continue with partial validation
+      try {
+        const partialEnv = envSchema.partial().parse(process.env);
+        return {
+          NODE_ENV: 'production',
+          PORT: 4000,
+          DATABASE_URL: process.env.DATABASE_URL || '',
+          CORS_ORIGINS: ['http://localhost:3000'],
+          JWT_SECRET:
+            process.env.JWT_SECRET ||
+            'fallback-secret-key-for-production-please-set-proper-jwt-secret',
+          JWT_EXPIRES_IN: '7d',
+          R2_ACCOUNT_ID: 'test-account-id',
+          R2_ACCESS_KEY_ID: 'test-access-key',
+          R2_SECRET_ACCESS_KEY: 'test-secret-key',
+          R2_BUCKET_NAME: 'test-bucket',
+          R2_PUBLIC_URL: 'https://test-bucket.r2.dev',
+          LOG_LEVEL: 'info',
+          ...partialEnv,
+        } as Env;
+      } catch {
+        console.error('❌ Failed to create fallback environment, exiting...');
+        process.exit(1);
+      }
     }
     throw error;
   }

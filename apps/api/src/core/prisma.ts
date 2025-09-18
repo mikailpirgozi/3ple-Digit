@@ -146,13 +146,20 @@ async function reconnectDatabase() {
   }
 }
 
-// Initial connection check
-void checkConnection().then(connected => {
-  isConnected = connected;
-  if (!connected) {
-    void reconnectDatabase();
+// Initial connection check - don't block startup
+setTimeout(async () => {
+  try {
+    const connected = await checkConnection();
+    isConnected = connected;
+    if (!connected) {
+      void reconnectDatabase();
+    }
+  } catch (error) {
+    log.warn('Initial database connection check failed, will retry later', {
+      error: (error as Error).message,
+    });
   }
-});
+}, 1000); // Wait 1 second after startup
 
 // Periodic health check
 void setInterval(async () => {
