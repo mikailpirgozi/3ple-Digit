@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "composite": false,
+    "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2022",
     "lib": ["ES2022"],
@@ -28,8 +28,8 @@
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": true,
     "noImplicitAny": false,
-    "declaration": false,
-    "declarationMap": false,
+    "declaration": true,
+    "declarationMap": true,
     "strict": true,
     "strictNullChecks": true
   },

@@ -2,11 +2,11 @@ import { env } from '@/core/env.js';
 import { errorHandler } from '@/core/error-handler.js';
 import { logger } from '@/core/logger.js';
 import cors from 'cors';
-import express from 'express';
+import express, { type Express } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
-const app = express();
+const app: Express = express();
 
 // Security middleware
 app.use(helmet());
