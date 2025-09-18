@@ -90,7 +90,7 @@ export class SnapshotsService {
     const assetBreakdown = this.createAssetBreakdown(assets);
     const bankBreakdown = this.createBankBreakdown(
       Array.from(latestBankBalances.values()).map(balance => ({
-        currency: 'EUR', // Default currency
+        currency: balance.currency || 'EUR', // Use actual currency or default to EUR
         amount: balance.amount,
       }))
     );
