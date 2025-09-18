@@ -235,10 +235,21 @@ export function InvestorsPage() {
                   <h3 className="font-medium text-foreground text-sm sm:text-base">
                     {investor.name}
                   </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Kapitál: €{(investor.totalCapital ?? 0).toLocaleString('sk-SK')}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Kapitál:{' '}
+                      <span className="font-semibold text-green-600">
+                        €{(investor.totalCapital ?? 0).toLocaleString('sk-SK')}
+                      </span>
+                    </p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Podiel:{' '}
+                      <span className="font-semibold text-blue-600">
+                        {(investor.ownershipPercent ?? 0).toFixed(2)}%
+                      </span>
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
                     Vytvorený: {new Date(investor.createdAt).toLocaleDateString('sk-SK')}
                   </p>
                 </div>

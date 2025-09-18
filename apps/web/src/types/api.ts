@@ -43,6 +43,7 @@ export interface Investor {
   totalCapital: number;
   totalDeposits: number;
   totalWithdrawals: number;
+  ownershipPercent?: number;
 }
 
 export interface InvestorCashflow {

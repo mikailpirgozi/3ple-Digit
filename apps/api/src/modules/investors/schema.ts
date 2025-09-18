@@ -70,6 +70,7 @@ export const investorResponseSchema = z.object({
   totalCapital: z.number().optional(),
   totalDeposits: z.number().optional(),
   totalWithdrawals: z.number().optional(),
+  ownershipPercent: z.number().optional(),
 });
 
 export const cashflowResponseSchema = z.object({
@@ -81,11 +82,13 @@ export const cashflowResponseSchema = z.object({
   note: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
-  investor: z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string(),
-  }).optional(),
+  investor: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      email: z.string(),
+    })
+    .optional(),
 });
 
 // Types
@@ -104,4 +107,4 @@ export const CashflowType = {
   WITHDRAWAL: 'WITHDRAWAL',
 } as const;
 
-export type CashflowTypeEnum = typeof CashflowType[keyof typeof CashflowType];
+export type CashflowTypeEnum = (typeof CashflowType)[keyof typeof CashflowType];
