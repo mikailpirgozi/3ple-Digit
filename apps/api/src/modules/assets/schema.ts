@@ -39,6 +39,7 @@ export const createAssetSchema = z.object({
   description: z.string().optional(),
   currentValue: z.number().min(0, 'Current value must be non-negative'),
   acquiredPrice: z.number().min(0, 'Acquired price must be non-negative').optional(),
+  acquiredDate: z.coerce.date().optional(),
 });
 
 export const updateAssetSchema = z.object({
@@ -57,6 +58,7 @@ export const updateAssetSchema = z.object({
   description: z.string().optional(),
   currentValue: z.number().min(0, 'Current value must be non-negative').optional(),
   acquiredPrice: z.number().min(0, 'Acquired price must be non-negative').optional(),
+  acquiredDate: z.coerce.date().optional(),
   status: z.enum(['ACTIVE', 'SOLD']).optional(),
   salePrice: z.number().optional(),
   saleDate: z.coerce.date().optional(),
@@ -73,7 +75,7 @@ export const createAssetEventSchema = z.object({
     AssetEventType.NOTE,
     AssetEventType.SALE,
   ]),
-  amount: z.number(),
+  amount: z.number().optional(),
   date: z.coerce.date(),
   note: z.string().optional(),
 });
@@ -143,6 +145,7 @@ export const assetResponseSchema = z.object({
   currentValue: z.number(),
   status: z.string().optional(),
   acquiredPrice: z.number().nullable().optional(),
+  acquiredDate: z.date().nullable().optional(),
   salePrice: z.number().nullable().optional(),
   saleDate: z.date().nullable().optional(),
   createdAt: z.date(),
@@ -156,7 +159,7 @@ export const assetEventResponseSchema = z.object({
   id: z.string(),
   assetId: z.string(),
   type: z.string(),
-  amount: z.number(),
+  amount: z.number().nullable(),
   date: z.date(),
   note: z.string().nullable(),
   createdAt: z.date(),

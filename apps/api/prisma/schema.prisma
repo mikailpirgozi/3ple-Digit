@@ -61,6 +61,7 @@ model Asset {
   currentValue  Float
   status        String       @default("ACTIVE")
   acquiredPrice Float?
+  acquiredDate  DateTime?
   salePrice     Float?
   saleDate      DateTime?
   createdAt     DateTime     @default(now())
@@ -74,7 +75,7 @@ model AssetEvent {
   id        String   @id @default(cuid())
   assetId   String
   type      String
-  amount    Float
+  amount    Float?
   date      DateTime
   note      String?
   createdAt DateTime @default(now())

@@ -46,6 +46,7 @@ export class AssetsService {
         description: this.toNullable(data.description),
         currentValue: data.currentValue,
         acquiredPrice: this.toNullable(data.acquiredPrice),
+        acquiredDate: this.toNullable(data.acquiredDate),
       },
     });
 
@@ -192,6 +193,8 @@ export class AssetsService {
       description: data.description !== undefined ? this.toNullable(data.description) : undefined,
       acquiredPrice:
         data.acquiredPrice !== undefined ? this.toNullable(data.acquiredPrice) : undefined,
+      acquiredDate:
+        data.acquiredDate !== undefined ? this.toNullable(data.acquiredDate) : undefined,
       salePrice: data.salePrice !== undefined ? this.toNullable(data.salePrice) : undefined,
       saleDate: data.saleDate !== undefined ? this.toNullable(data.saleDate) : undefined,
     });
@@ -248,7 +251,7 @@ export class AssetsService {
         data: {
           assetId: data.assetId,
           type: data.type,
-          amount: data.amount,
+          amount: data.amount ?? null,
           date: data.date,
           note: this.toNullable(data.note),
         },
@@ -264,7 +267,7 @@ export class AssetsService {
       });
 
       // Update asset current value based on event type
-      const newValue = this.calculateNewAssetValue(asset.currentValue, data.type, data.amount);
+      const newValue = this.calculateNewAssetValue(asset.currentValue, data.type, data.amount ?? 0);
 
       await tx.asset.update({
         where: { id: data.assetId },
@@ -367,13 +370,6 @@ export class AssetsService {
 
     // Update event and recalculate asset value in transaction
     const result = await prisma.$transaction(async tx => {
-      // Revert old event impact
-      const revertedValue = this.revertAssetValue(
-        existingEvent.asset.currentValue,
-        existingEvent.type as AssetEventTypeEnum,
-        existingEvent.amount
-      );
-
       // Update the event
       const eventUpdateData = this.filterUpdateData({
         ...data,
@@ -394,12 +390,8 @@ export class AssetsService {
         },
       });
 
-      // Apply new event impact
-      const newValue = this.calculateNewAssetValue(
-        revertedValue,
-        (data.type ?? existingEvent.type) as AssetEventTypeEnum,
-        data.amount ?? existingEvent.amount
-      );
+      // Recalculate asset value based on all events
+      const newValue = await this.recalculateAssetValue(existingEvent.assetId, tx);
 
       await tx.asset.update({
         where: { id: existingEvent.assetId },
@@ -427,27 +419,56 @@ export class AssetsService {
       throw errors.notFound('Asset event not found');
     }
 
-    // Delete event and revert asset value in transaction
+    // Delete event and recalculate asset value in transaction
     await prisma.$transaction(async tx => {
       // Delete the event
       await tx.assetEvent.delete({
         where: { id },
       });
 
-      // Revert asset value
-      const revertedValue = this.revertAssetValue(
-        existingEvent.asset.currentValue,
-        existingEvent.type as AssetEventTypeEnum,
-        existingEvent.amount
-      );
+      // Recalculate asset value based on remaining events
+      const newValue = await this.recalculateAssetValue(existingEvent.assetId, tx);
 
       await tx.asset.update({
         where: { id: existingEvent.assetId },
-        data: { currentValue: revertedValue },
+        data: { currentValue: newValue },
       });
     });
 
     log.info('Asset event deleted', { eventId: id, deletedBy: userId });
+  }
+
+  /**
+   * Recalculate asset value based on all remaining events
+   */
+  private async recalculateAssetValue(assetId: string, tx?: any): Promise<number> {
+    const prismaClient = tx ?? prisma;
+
+    // Get the asset's original acquired price (base value)
+    const asset = await prismaClient.asset.findUnique({
+      where: { id: assetId },
+      select: { acquiredPrice: true },
+    });
+
+    const baseValue = asset?.acquiredPrice ?? 0;
+
+    // Get all remaining events for this asset, ordered by date
+    const events = await prismaClient.assetEvent.findMany({
+      where: { assetId },
+      orderBy: { date: 'asc' },
+    });
+
+    // Apply each event to calculate final value
+    let currentValue = baseValue;
+    for (const event of events) {
+      currentValue = this.calculateNewAssetValue(
+        currentValue,
+        event.type as AssetEventTypeEnum,
+        event.amount ?? 0
+      );
+    }
+
+    return currentValue;
   }
 
   /**
@@ -475,31 +496,6 @@ export class AssetsService {
   }
 
   /**
-   * Revert asset value change from an event
-   */
-  private revertAssetValue(
-    currentValue: number,
-    eventType: AssetEventTypeEnum,
-    amount: number
-  ): number {
-    switch (eventType) {
-      case 'VALUATION':
-        // For valuation, we can't easily revert, so keep current value
-        return currentValue;
-      case 'PAYMENT_IN':
-        return currentValue - amount; // Subtract the income
-      case 'PAYMENT_OUT':
-        return currentValue + Math.abs(amount); // Add back the outflow
-      case 'CAPEX':
-        return currentValue - amount; // Subtract the capex
-      case 'NOTE':
-        return currentValue; // No change for notes
-      default:
-        return currentValue;
-    }
-  }
-
-  /**
    * Format asset response
    */
   private formatAssetResponse(asset: Record<string, unknown>): AssetResponse {
@@ -511,6 +507,7 @@ export class AssetsService {
       currentValue: asset.currentValue as number,
       status: asset.status as string,
       acquiredPrice: asset.acquiredPrice as number | null,
+      acquiredDate: asset.acquiredDate as Date | null,
       salePrice: asset.salePrice as number | null,
       saleDate: asset.saleDate as Date | null,
       createdAt: asset.createdAt as Date,
@@ -529,7 +526,7 @@ export class AssetsService {
       id: event.id as string,
       assetId: event.assetId as string,
       type: event.type as string,
-      amount: event.amount as number,
+      amount: event.amount as number | null,
       date: event.date as Date,
       note: event.note as string | null,
       createdAt: event.createdAt as Date,
