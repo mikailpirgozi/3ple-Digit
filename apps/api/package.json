@@ -10,6 +10,7 @@
     "start:basic": "node dist/index.js",
     "init:db": "prisma db push --accept-data-loss && node seed-admin.cjs",
     "seed": "node seed-admin.cjs",
+    "update-admin": "node update-admin.cjs",
     "lint": "eslint . --ext ts --report-unused-disable-directives",
     "lint:fix": "eslint . --ext ts --fix",
     "type-check": "tsc --noEmit",
