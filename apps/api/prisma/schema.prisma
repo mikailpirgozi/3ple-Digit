@@ -1,13 +1,14 @@
-// Production Prisma schema for PostgreSQL
-// This is the main schema used for Railway deployment
+// Test-specific Prisma schema for SQLite
+// This ensures CI tests run safely with SQLite instead of PostgreSQL
+// Auto-generated from production schema - DO NOT EDIT MANUALLY
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./test.db"
 }
 
 model User {

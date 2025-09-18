@@ -262,7 +262,7 @@ export class BankService {
         const row = dataRows[i]!;
 
         try {
-          const columns = this.parseCsvRow(row, ',');
+          const columns = this.parseCsvRow(row, delimiter);
           const rowData = this.mapCsvRow(columns, mapping);
           const validatedData = csvRowSchema.parse(rowData);
 
@@ -291,7 +291,7 @@ export class BankService {
           results.errors.push({
             row: rowIndex,
             errors: errorMessages,
-            data: this.parseCsvRowSafe(row, ','),
+            data: this.parseCsvRowSafe(row, delimiter),
           });
         }
       }
