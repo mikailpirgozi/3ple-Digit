@@ -259,7 +259,8 @@ export class BankService {
       // Process each row
       for (let i = 0; i < dataRows.length; i++) {
         const rowIndex = skipFirstRow ? i + 2 : i + 1; // Account for header and 1-based indexing
-        const row = dataRows[i]!;
+        const row = dataRows[i];
+        if (!row) continue;
 
         try {
           const columns = this.parseCsvRow(row, delimiter);

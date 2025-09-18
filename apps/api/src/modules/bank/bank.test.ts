@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { prisma } from '../../core/prisma.js';
+import { testPrisma as prisma } from '../../test-prisma.js';
 import { BankService } from './service.js';
 
 describe('Bank Service Unit Tests', () => {

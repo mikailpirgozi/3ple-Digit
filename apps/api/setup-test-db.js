@@ -24,21 +24,19 @@ try {
     NODE_ENV: 'test',
   };
 
-  // Use test schema for SQLite
-  console.log('📋 Copying SQLite schema...');
-  execSync('cp prisma/schema.test.prisma prisma/schema.prisma.temp', { env });
+  // Generate Prisma client for SQLite using test schema
+  console.log('🔧 Generating Prisma client for SQLite...');
+  execSync('npx prisma generate --schema=prisma/schema.test.prisma', { env, stdio: 'pipe' });
 
-  // Copy SQLite schema to main schema for client generation
-  console.log('⚙️ Preparing schema...');
-  execSync('cp prisma/schema.test.prisma prisma/schema.prisma', { env });
-
-  // Generate Prisma client for SQLite
-  console.log('🔧 Generating Prisma client...');
-  execSync('npx prisma generate', { env, stdio: 'pipe' });
+  // Set environment variable for tests to use test schema
+  process.env.PRISMA_SCHEMA_PATH = 'prisma/schema.test.prisma';
 
   // Create SQLite database with schema
   console.log('🏗️ Creating database schema...');
-  execSync('npx prisma db push --force-reset --accept-data-loss', { env, stdio: 'pipe' });
+  execSync(
+    'npx prisma db push --force-reset --accept-data-loss --schema=prisma/schema.test.prisma',
+    { env, stdio: 'pipe' }
+  );
 
   console.log('✅ SQLite test database ready!');
 } catch (error) {
@@ -46,14 +44,7 @@ try {
   process.exit(1);
 }
 
-// Cleanup function to restore original schema after tests
+// Cleanup function - no longer needed since we don't modify main schema
 process.on('exit', () => {
-  try {
-    if (existsSync('prisma/schema.prisma.temp')) {
-      execSync('mv prisma/schema.prisma.temp prisma/schema.prisma');
-      execSync('npx prisma generate', { stdio: 'pipe' });
-    }
-  } catch (error) {
-    // Silent cleanup failure
-  }
+  // No cleanup needed - main schema is never modified
 });

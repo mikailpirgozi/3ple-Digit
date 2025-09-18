@@ -14,20 +14,20 @@ if (originalDatabaseUrl?.includes('railway.app') ?? originalDatabaseUrl?.include
 }
 process.env.DATABASE_URL = 'file:./test.db'; // FORCE test database
 
-import { prisma, reinitializePrismaClient } from './core/prisma.js';
+// Import test Prisma client
+import { testPrisma as prisma } from './test-prisma.js';
 
 beforeAll(async () => {
-  // Test setup - reinitialize Prisma client with SQLite URL
+  // Test setup - connect to SQLite test database
   // eslint-disable-next-line no-console
   console.log('🧪 Test environment initialized with SQLite');
   // eslint-disable-next-line no-console
-  console.log('🔄 Reinitializing Prisma client for SQLite...');
+  console.log('🔄 Connecting to SQLite test database...');
 
-  // Reinitialize Prisma client to use the new DATABASE_URL
-  reinitializePrismaClient();
+  await prisma.$connect();
 
   // eslint-disable-next-line no-console
-  console.log('✅ Prisma client reinitialized for SQLite');
+  console.log('✅ Connected to SQLite test database');
 });
 
 // Note: Individual test files should handle their own cleanup
@@ -39,6 +39,9 @@ afterAll(async () => {
   await prisma.$disconnect();
   // Tests cleanup completed - silent in production
 });
+
+// Export prisma client for tests
+export { prisma };
 
 async function cleanDatabase() {
   // CRITICAL SAFETY CHECK - NEVER DELETE PRODUCTION DATA

@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { prisma } from '../../core/prisma.js';
+import { testPrisma as prisma } from '../../test-prisma.js';
 import app from '../../index.js';
 
 describe('Auth API', () => {

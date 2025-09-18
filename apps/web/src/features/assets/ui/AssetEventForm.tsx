@@ -104,7 +104,7 @@ export function AssetEventForm({
             Dátum
           </label>
           <DatePicker
-            date={watch('date') ? new Date(watch('date') || '') : undefined}
+            date={watch('date') ? new Date(watch('date') ?? '') : undefined}
             onSelect={(date: Date | undefined) => {
               if (date) {
                 const dateString = date.toISOString().split('T')[0] ?? '';
