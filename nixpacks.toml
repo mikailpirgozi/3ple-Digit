@@ -15,4 +15,4 @@ cmds = [
 ]
 
 [start]
-cmd = "cd apps/api && pnpm start:railway"
+cmd = "pnpm start:railway"

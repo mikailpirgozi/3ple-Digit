@@ -7,7 +7,7 @@ healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
-startCommand = "cd apps/api && pnpm start:railway"
+startCommand = "pnpm start:railway"
 
 [environments.production]
 variables = { NODE_ENV = "production" }
