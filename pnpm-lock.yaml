@@ -166,8 +166,8 @@ importers:
   apps/web:
     dependencies:
       '@3ple-digit/types':
-        specifier: workspace:*
-        version: link:../../packages/types
+        specifier: file:../../packages/types
+        version: file:packages/types
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.62.0)
@@ -10596,4 +10596,11 @@ packages:
 
   /zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+    dev: false
+
+  file:packages/types:
+    resolution: {directory: packages/types, type: directory}
+    name: '@3ple-digit/types'
+    dependencies:
+      zod: 3.25.76
     dev: false

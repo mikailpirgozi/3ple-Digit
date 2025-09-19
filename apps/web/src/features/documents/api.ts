@@ -71,7 +71,6 @@ export const documentsApi = {
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
-        // eslint-disable-next-line no-console
         console.error('R2 Upload failed:', {
           status: response.status,
           statusText: response.statusText,
@@ -81,7 +80,6 @@ export const documentsApi = {
         throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('R2 Upload error:', {
         error: error instanceof Error ? error.message : 'Unknown error',
         uploadUrl: `${uploadUrl.substring(0, 100)}...`, // Log partial URL for debugging
