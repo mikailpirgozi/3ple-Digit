@@ -1,4 +1,4 @@
-import { api } from '@/lib/api-client';
+import { api, apiClient } from '@/lib/api-client';
 import type {
   Document,
   PresignUploadRequest,
@@ -46,7 +46,7 @@ export const documentsApi = {
     }
   ): Promise<Document> => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file, file.name);
     
     if (metadata?.linkedType) formData.append('linkedType', metadata.linkedType);
     if (metadata?.linkedId) formData.append('linkedId', metadata.linkedId);
@@ -56,10 +56,20 @@ export const documentsApi = {
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type,
+      formDataEntries: Array.from(formData.entries()).map(([key, value]) => ({
+        key,
+        value: value instanceof File ? `File: ${value.name}` : value
+      }))
     });
 
-    // Don't set Content-Type header - let browser set it with boundary
-    return api.post('/documents/upload-proxy', formData);
+    // Use raw axios for multipart/form-data
+    const response = await apiClient.post('/documents/upload-proxy', formData, {
+      headers: {
+        // Let axios/browser set Content-Type with boundary
+      }
+    });
+    
+    return response.data;
   },
 
   // Upload file to R2 using presigned URL
