@@ -81,8 +81,7 @@ export function useUploadDocument(): UseMutationResult<
       const USE_PROXY = true; // Set to false to use old presigned URL method
       
       if (USE_PROXY) {
-        // NEW: Upload through backend proxy (no CORS issues)
-        console.log('📤 Using proxy upload to avoid CORS issues');
+        // Upload through backend proxy (no CORS issues)
         const document = await documentsApi.uploadFileProxy(file, {
           linkedType,
           linkedId,

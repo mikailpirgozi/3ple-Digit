@@ -82,12 +82,6 @@ export class R2Service {
         expiresIn: expiresInMinutes * 60,
       });
 
-      // Log original URL for debugging
-      log.debug('Original presigned URL generated', {
-        urlLength: uploadUrl.length,
-        hasXId: uploadUrl.includes('x-id='),
-        hasChecksum: uploadUrl.includes('x-amz-checksum'),
-      });
 
       // Manually remove problematic parameters that cause CORS issues
       uploadUrl = uploadUrl.replace(/&x-id=PutObject/g, '');
@@ -98,14 +92,6 @@ export class R2Service {
       const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
       const publicUrl = `${this.publicUrl}/${r2Key}`;
 
-      log.info('Generated presigned upload URL', {
-        r2Key,
-        mimeType: metadata.mimeType,
-        size: metadata.size,
-        expiresAt,
-        bucketName: this.bucketName,
-        accountId: env.R2_ACCOUNT_ID.substring(0, 8) + '...',
-      });
 
       return {
         uploadUrl,
