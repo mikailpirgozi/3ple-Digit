@@ -114,9 +114,6 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
-// Export the raw axios client for special cases (like FormData)
-export { apiClient };
-
 // Generic API methods
 export const api = {
   get: <T>(url: string, params?: Record<string, unknown>) =>
