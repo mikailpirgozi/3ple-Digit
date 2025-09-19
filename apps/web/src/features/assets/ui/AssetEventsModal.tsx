@@ -193,7 +193,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
             const changePercent = (change / purchasePrice) * 100;
 
             // Calculate time from asset acquisition to first valuation
-            const startDate = (asset as any).acquiredDate ?? asset.createdAt;
+            const startDate = (asset as { acquiredDate?: string | Date }).acquiredDate ?? asset.createdAt;
             const timePeriod = calculateTimePeriod(
               typeof startDate === 'string' ? startDate : startDate.toISOString(),
               typeof event.date === 'string' ? event.date : event.date.toISOString()
@@ -232,7 +232,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
           const totalPercent = (totalGain / purchasePrice) * 100;
           
           // Calculate time from acquisition to sale
-          const startDate = (asset as any).acquiredDate ?? asset.createdAt;
+          const startDate = (asset as { acquiredDate?: string | Date }).acquiredDate ?? asset.createdAt;
           const timePeriod = calculateTimePeriod(
             typeof startDate === 'string' ? startDate : (startDate as Date).toISOString(),
             typeof event.date === 'string' ? event.date : event.date.toISOString()
@@ -295,9 +295,9 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
             asset.type === 'PÔŽIČKY' && !editingEvent ? (
               <LoanEventForm
                 assetId={asset.id}
-                loanPrincipal={(asset as any).loanPrincipal ?? undefined}
-                interestRate={(asset as any).interestRate ?? undefined}
-                interestPeriod={(asset as any).interestPeriod ?? undefined}
+                loanPrincipal={(asset as { loanPrincipal?: number }).loanPrincipal ?? undefined}
+                interestRate={(asset as { interestRate?: number }).interestRate ?? undefined}
+                interestPeriod={(asset as { interestPeriod?: string }).interestPeriod ?? undefined}
                 onSubmit={handleCreateEvent}
                 onCancel={() => {
                   setShowForm(false);

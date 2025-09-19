@@ -88,8 +88,8 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
     if (finalMonths < 12) {
       return {
         days: 0,
-        months: finalMonths,
-        years: years,
+        finalMonths,
+        years,
         text: finalMonths === 1 ? `${finalMonths} mesiac` : `${finalMonths} mesiacov`,
       };
     } else {
@@ -106,8 +106,8 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
       } else {
         return {
           days: 0,
-          months: finalMonths,
-          years: years,
+          finalMonths,
+          years,
           text: `${wholeYears} rokov ${remainingMonths} mesiacov`,
         };
       }
@@ -262,7 +262,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
         <input
           type="text"
           placeholder="Hľadať podľa názvu..."
-          value={filters.q || ''}
+          value={filters.q ?? ''}
           onChange={e => setFilters({ ...filters, q: e.target.value || undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />

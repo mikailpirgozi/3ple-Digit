@@ -32,7 +32,7 @@ export const assetsApi = {
 
   // Get asset events
   getAssetEvents: (id: string): Promise<AssetEvent[]> =>
-    api.get<AssetEventsResponse>(`/assets/${id}/events`).then((response: any) => response.events),
+    api.get<AssetEventsResponse>(`/assets/${id}/events`).then((response: AssetEventsResponse) => response.events),
 
   // Get asset event validation info
   getAssetEventValidationInfo: (id: string): Promise<AssetEventValidationInfo> =>

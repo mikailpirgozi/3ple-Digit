@@ -742,7 +742,7 @@ export class AssetsService {
    */
   private async calculateNewAssetValueWithLoanSupport(
     tx: Prisma.TransactionClient,
-    asset: { type: string; currentValue: number },
+    asset: { id: string; type: string; currentValue: number },
     eventType: AssetEventTypeEnum,
     amount: number,
     eventData: CreateAssetEventRequest

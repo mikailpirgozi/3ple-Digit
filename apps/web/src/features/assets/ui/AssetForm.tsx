@@ -72,7 +72,7 @@ export function AssetForm({ asset, onSubmit, onCancel, isLoading }: AssetFormPro
     onSubmit({
       ...data,
       acquiredDate: data.acquiredDate
-        ? new Date(data.acquiredDate + '-01').toISOString()
+        ? new Date(`${data.acquiredDate}-01`).toISOString()
         : undefined, // Add first day of month
       meta: data.meta ?? {},
     });

@@ -228,24 +228,6 @@ export interface LoanStatistics {
   outstandingPrincipal: number;
 }
 
-export interface AssetEventsResponse {
-  events: AssetEvent[];
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export interface AssetEventValidationInfo {
-  canAddEvents: boolean;
-  minDate: Date | string | null;
-  lastEventDate: Date | string | null;
-  lastEventType: string | null;
-  isSold: boolean;
-  acquiredDate: Date | string | null;
-}
 
 export interface UpdateAssetEventRequest {
   date?: string;
