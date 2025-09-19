@@ -69,16 +69,12 @@ export class R2Service {
         };
       }
 
-      // Create presigned URL without ContentLength to avoid checksum
+      // Create presigned URL with minimal parameters to avoid CORS issues
       const command = new PutObjectCommand({
         Bucket: this.bucketName,
         Key: r2Key,
         ContentType: metadata.mimeType,
-        // Remove ContentLength to prevent automatic checksum generation
-        Metadata: {
-          originalName: metadata.originalName,
-          uploadedAt: new Date().toISOString(),
-        },
+        // Remove ContentLength and Metadata to prevent complications
       });
 
       // Generate presigned URL
@@ -90,6 +86,7 @@ export class R2Service {
       uploadUrl = uploadUrl.replace(/&x-id=PutObject/g, '');
       uploadUrl = uploadUrl.replace(/&x-amz-sdk-checksum-algorithm=[^&]*/g, '');
       uploadUrl = uploadUrl.replace(/&x-amz-checksum-[^&]*=[^&]*/g, '');
+      uploadUrl = uploadUrl.replace(/&x-amz-meta-[^&]*=[^&]*/g, ''); // Remove metadata parameters
 
       const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
       const publicUrl = `${this.publicUrl}/${r2Key}`;
