@@ -489,16 +489,13 @@ export class DocumentsService {
         mimeType: document.mimeType,
         size: document.size,
         r2Key: document.r2Key,
-        publicUrl: `${env.R2_PUBLIC_URL}/${document.r2Key}`,
         sha256: document.sha256 as string | null,
         category: document.category as string,
         description: document.description as string | null,
-        linkedType: document.linkedType as string | null,
-        linkedId: document.linkedId as string | null,
         uploadedBy: document.uploadedBy as string,
         createdAt: document.createdAt as Date,
         updatedAt: document.updatedAt as Date,
-      };
+      } as DocumentResponse;
     } catch (error) {
       log.error('Failed to upload file through proxy', {
         error: error instanceof Error ? error.message : 'Unknown error',
