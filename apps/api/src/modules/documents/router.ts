@@ -2,6 +2,7 @@ import { asyncHandler } from '@/core/error-handler';
 import { validateRequiredParam } from '@/core/validation';
 import { adminOrInternal, authenticate } from '@/modules/auth/middleware';
 import { Router, type Router as ExpressRouter } from 'express';
+import multer from 'multer';
 import {
   createDocumentSchema,
   getDocumentsQuerySchema,
@@ -11,6 +12,34 @@ import {
 import { documentsService } from './service';
 
 const router: ExpressRouter = Router();
+
+// Configure multer for memory storage (temporary)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB max
+  },
+  fileFilter: (_req, file, cb) => {
+    // Allowed mime types
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'application/pdf',
+      'text/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain',
+    ];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  },
+});
 
 // All document routes require authentication
 router.use(authenticate);
@@ -37,6 +66,40 @@ router.post(
   asyncHandler(async (req, res) => {
     const data = getPresignedUploadUrlSchema.parse(req.body);
     const result = await documentsService.getPresignedUploadUrl(data, req.user?.id);
+    res.json(result);
+  })
+);
+
+/**
+ * POST /api/documents/upload-proxy
+ * Upload file through backend proxy (avoids CORS issues)
+ */
+router.post(
+  '/upload-proxy',
+  upload.single('file'),
+  asyncHandler(async (req, res) => {
+    if (!req.file) {
+      res.status(400).json({ error: 'No file provided' });
+      return;
+    }
+
+    // Get additional metadata from request body
+    const { linkedType, linkedId, note } = req.body;
+
+    // Upload file through backend
+    const result = await documentsService.uploadFileProxy(
+      {
+        file: req.file.buffer,
+        fileName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        linkedType,
+        linkedId,
+        note,
+      },
+      req.user?.id
+    );
+
     res.json(result);
   })
 );

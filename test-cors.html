@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R2 CORS Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        .success { border-color: #4caf50; }
+        .error { border-color: #f44336; }
+        .pending { border-color: #ff9800; }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1976D2; }
+        pre {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 R2 CORS Test</h1>
+    
+    <div class="test pending">
+        <h2>Test 1: OPTIONS Preflight Request</h2>
+        <button onclick="testPreflight()">Run Preflight Test</button>
+        <pre id="preflight-result">Not tested yet</pre>
+    </div>
+
+    <div class="test pending">
+        <h2>Test 2: Direct PUT Request (Simple)</h2>
+        <button onclick="testSimplePut()">Run Simple PUT Test</button>
+        <pre id="simple-result">Not tested yet</pre>
+    </div>
+
+    <div class="test pending">
+        <h2>Test 3: Get Presigned URL from Backend</h2>
+        <button onclick="getPresignedUrl()">Get Presigned URL</button>
+        <pre id="presigned-result">Not tested yet</pre>
+    </div>
+
+    <div class="test pending">
+        <h2>Test 4: Upload File with Presigned URL</h2>
+        <input type="file" id="fileInput" accept=".pdf,.jpg,.png">
+        <button onclick="uploadWithPresigned()">Upload File</button>
+        <pre id="upload-result">Not tested yet</pre>
+    </div>
+
+    <script>
+        const R2_ENDPOINT = 'https://9ccdca0d876e24bd9acefabe56f94f53.r2.cloudflarestorage.com';
+        const BACKEND_URL = 'https://backend-production-2bd2.up.railway.app/api';
+        let savedPresignedUrl = null;
+        let authToken = null;
+
+        // Auto-login for testing
+        async function login() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@3pledigit.sk',
+                        password: 'Admin123!@#'
+                    })
+                });
+                const data = await response.json();
+                authToken = data.token;
+                console.log('✅ Logged in successfully');
+                return authToken;
+            } catch (error) {
+                console.error('❌ Login failed:', error);
+                return null;
+            }
+        }
+
+        async function testPreflight() {
+            const resultEl = document.getElementById('preflight-result');
+            resultEl.textContent = 'Testing preflight request...';
+            
+            try {
+                console.log('🚀 Sending OPTIONS request to:', R2_ENDPOINT);
+                
+                const response = await fetch(`${R2_ENDPOINT}/test`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'PUT',
+                        'Access-Control-Request-Headers': 'content-type'
+                    }
+                });
+
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+
+                resultEl.textContent = `Status: ${response.status}\n\nHeaders:\n${JSON.stringify(headers, null, 2)}`;
+                
+                if (headers['access-control-allow-origin']) {
+                    resultEl.parentElement.className = 'test success';
+                } else {
+                    resultEl.parentElement.className = 'test error';
+                }
+            } catch (error) {
+                resultEl.textContent = `Error: ${error.message}\n\nThis likely means CORS is blocking the request.`;
+                resultEl.parentElement.className = 'test error';
+            }
+        }
+
+        async function testSimplePut() {
+            const resultEl = document.getElementById('simple-result');
+            resultEl.textContent = 'Testing simple PUT request...';
+            
+            try {
+                const testData = 'test-data-' + Date.now();
+                const response = await fetch(`${R2_ENDPOINT}/test-${Date.now()}.txt`, {
+                    method: 'PUT',
+                    body: testData,
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    }
+                });
+
+                resultEl.textContent = `Status: ${response.status}\nStatus Text: ${response.statusText}`;
+                
+                if (response.status === 403) {
+                    resultEl.textContent += '\n\n✅ 403 is expected (no auth), but CORS seems OK if you see this!';
+                    resultEl.parentElement.className = 'test success';
+                } else {
+                    resultEl.parentElement.className = 'test error';
+                }
+            } catch (error) {
+                resultEl.textContent = `Error: ${error.message}\n\n❌ CORS is blocking the request!`;
+                resultEl.parentElement.className = 'test error';
+            }
+        }
+
+        async function getPresignedUrl() {
+            const resultEl = document.getElementById('presigned-result');
+            resultEl.textContent = 'Getting presigned URL from backend...';
+            
+            try {
+                // Login first if not logged in
+                if (!authToken) {
+                    await login();
+                }
+
+                const response = await fetch(`${BACKEND_URL}/documents/upload-url`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        fileName: 'test-file.pdf',
+                        fileSize: 1024,
+                        mimeType: 'application/pdf'
+                    })
+                });
+
+                const data = await response.json();
+                savedPresignedUrl = data.uploadUrl;
+                
+                resultEl.textContent = `✅ Got presigned URL!\n\nURL: ${savedPresignedUrl.substring(0, 100)}...\n\nR2 Key: ${data.r2Key}`;
+                resultEl.parentElement.className = 'test success';
+            } catch (error) {
+                resultEl.textContent = `Error: ${error.message}`;
+                resultEl.parentElement.className = 'test error';
+            }
+        }
+
+        async function uploadWithPresigned() {
+            const resultEl = document.getElementById('upload-result');
+            const fileInput = document.getElementById('fileInput');
+            
+            if (!fileInput.files[0]) {
+                resultEl.textContent = 'Please select a file first!';
+                return;
+            }
+
+            if (!savedPresignedUrl) {
+                resultEl.textContent = 'Get presigned URL first!';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            resultEl.textContent = `Uploading ${file.name}...`;
+            
+            try {
+                console.log('📤 Uploading to:', savedPresignedUrl);
+                console.log('📍 Origin:', window.location.origin);
+                
+                const response = await fetch(savedPresignedUrl, {
+                    method: 'PUT',
+                    body: file,
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': file.type || 'application/octet-stream'
+                    }
+                });
+
+                if (response.ok) {
+                    resultEl.textContent = `✅ Upload successful!\n\nStatus: ${response.status}`;
+                    resultEl.parentElement.className = 'test success';
+                } else {
+                    const text = await response.text();
+                    resultEl.textContent = `❌ Upload failed!\n\nStatus: ${response.status}\nResponse: ${text}`;
+                    resultEl.parentElement.className = 'test error';
+                }
+            } catch (error) {
+                resultEl.textContent = `❌ Error: ${error.message}\n\nCORS is likely blocking the upload!`;
+                resultEl.parentElement.className = 'test error';
+                console.error('Upload error:', error);
+            }
+        }
+
+        // Auto-login on page load
+        window.addEventListener('load', () => {
+            login();
+        });
+    </script>
+</body>
+</html>

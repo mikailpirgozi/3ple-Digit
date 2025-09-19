@@ -1,0 +1,26 @@
+[
+  {
+    "AllowedOrigins": [
+      "https://3ple-digit-qtqq.vercel.app",
+      "https://3ple-digit-qtqq-blackrents-projects.vercel.app",
+      "http://localhost:3000",
+      "http://localhost:5173"
+    ],
+    "AllowedMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "HEAD",
+      "DELETE"
+    ],
+    "AllowedHeaders": [
+      "*"
+    ],
+    "ExposeHeaders": [
+      "ETag",
+      "Content-Length",
+      "Content-Type"
+    ],
+    "MaxAgeSeconds": 3600
+  }
+]

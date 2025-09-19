@@ -77,47 +77,62 @@ export function useUploadDocument(): UseMutationResult<
       title: string;
       note?: string;
     }) => {
-      // Calculate SHA256 hash
-      await documentsApi.calculateSHA256(file);
+      // Use proxy upload to avoid CORS issues
+      const USE_PROXY = true; // Set to false to use old presigned URL method
+      
+      if (USE_PROXY) {
+        // NEW: Upload through backend proxy (no CORS issues)
+        console.log('📤 Using proxy upload to avoid CORS issues');
+        const document = await documentsApi.uploadFileProxy(file, {
+          linkedType,
+          linkedId,
+          note,
+        });
+        return document;
+      } else {
+        // OLD METHOD: Direct upload with presigned URL (has CORS issues)
+        // Calculate SHA256 hash
+        await documentsApi.calculateSHA256(file);
 
-      // Get presigned upload URL
-      const presignData: PresignUploadRequest = {
-        fileName: file.name,
-        mimeType: file.type,
-        fileType: file.type,
-        size: file.size,
-        fileSize: file.size,
-        linkedType: linkedType as DocumentLinkedType,
-        linkedId,
-      };
+        // Get presigned upload URL
+        const presignData: PresignUploadRequest = {
+          fileName: file.name,
+          mimeType: file.type,
+          fileType: file.type,
+          size: file.size,
+          fileSize: file.size,
+          linkedType: linkedType as DocumentLinkedType,
+          linkedId,
+        };
 
-      // eslint-disable-next-line no-console
-      console.log('Getting presigned upload URL...', { fileName: file.name, size: file.size });
-      const presignResponse = await documentsApi.getPresignedUpload(presignData);
-      // eslint-disable-next-line no-console
-      console.log('Presigned response received:', { 
-        uploadUrl: `${presignResponse.uploadUrl.substring(0, 100)}...`, 
-        r2Key: presignResponse.r2Key 
-      });
+        // eslint-disable-next-line no-console
+        console.log('Getting presigned upload URL...', { fileName: file.name, size: file.size });
+        const presignResponse = await documentsApi.getPresignedUpload(presignData);
+        // eslint-disable-next-line no-console
+        console.log('Presigned response received:', { 
+          uploadUrl: `${presignResponse.uploadUrl.substring(0, 100)}...`, 
+          r2Key: presignResponse.r2Key 
+        });
 
-      // Upload file to R2 (skip in development with mock URL)
-      if (!presignResponse.uploadUrl.includes('mock-upload-url.com') && !presignResponse.uploadUrl.includes('mock')) {
-        await documentsApi.uploadFile(presignResponse.uploadUrl, file, presignResponse.fields);
+        // Upload file to R2 (skip in development with mock URL)
+        if (!presignResponse.uploadUrl.includes('mock-upload-url.com') && !presignResponse.uploadUrl.includes('mock')) {
+          await documentsApi.uploadFile(presignResponse.uploadUrl, file, presignResponse.fields);
+        }
+
+        // Create document record in database
+        const document = await documentsApi.createDocument({
+          name: title,
+          originalName: file.name,
+          mimeType: file.type,
+          size: file.size,
+          r2Key: presignResponse.r2Key,
+          linkedType,
+          linkedId,
+          note,
+        });
+
+        return document;
       }
-
-      // Create document record in database
-      const document = await documentsApi.createDocument({
-        name: title,
-        originalName: file.name,
-        mimeType: file.type,
-        size: file.size,
-        r2Key: presignResponse.r2Key,
-        linkedType,
-        linkedId,
-        note,
-      });
-
-      return document;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: documentsKeys.lists() });

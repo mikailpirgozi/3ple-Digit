@@ -82,6 +82,13 @@ export class R2Service {
         expiresIn: expiresInMinutes * 60,
       });
 
+      // Log original URL for debugging
+      log.debug('Original presigned URL generated', {
+        urlLength: uploadUrl.length,
+        hasXId: uploadUrl.includes('x-id='),
+        hasChecksum: uploadUrl.includes('x-amz-checksum'),
+      });
+
       // Manually remove problematic parameters that cause CORS issues
       uploadUrl = uploadUrl.replace(/&x-id=PutObject/g, '');
       uploadUrl = uploadUrl.replace(/&x-amz-sdk-checksum-algorithm=[^&]*/g, '');
@@ -96,6 +103,8 @@ export class R2Service {
         mimeType: metadata.mimeType,
         size: metadata.size,
         expiresAt,
+        bucketName: this.bucketName,
+        accountId: env.R2_ACCOUNT_ID.substring(0, 8) + '...',
       });
 
       return {

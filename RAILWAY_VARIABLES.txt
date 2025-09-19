@@ -17,6 +17,13 @@ CORS_ORIGINS=http://localhost:3000,https://3ple-digit-qtqq.vercel.app,https://3p
 # Logging
 LOG_LEVEL=info
 
+# Cloudflare R2 Storage - POVINNÉ PRE UPLOAD DOKUMENTOV!
+R2_ACCOUNT_ID=<your-cloudflare-account-id>
+R2_ACCESS_KEY_ID=<your-r2-access-key-id>
+R2_SECRET_ACCESS_KEY=<your-r2-secret-access-key>
+R2_BUCKET_NAME=3ple-digit-documents-prod
+R2_PUBLIC_URL=https://pub-<hash>.r2.dev
+
 # ======================================
 # INŠTRUKCIE:
 # 1. Otvorte Railway Dashboard
@@ -25,8 +32,9 @@ LOG_LEVEL=info
 # 4. Kliknite "RAW Editor" (vpravo hore)
 # 5. Vymaže všetko a vložte tieto variables
 # 6. Upravte DATABASE_URL a CORS_ORIGINS
-# 7. Kliknite "Save"
-# 8. Backend sa automaticky redeployuje
+# 7. DÔLEŽITÉ: Vyplňte R2 premenné z Cloudflare Dashboard!
+# 8. Kliknite "Save"
+# 9. Backend sa automaticky redeployuje
 # ======================================
 
 # PRIHLASOVACIE ÚDAJE PO NASADENÍ:

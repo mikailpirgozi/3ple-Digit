@@ -2,6 +2,8 @@ import { errors } from '@/core/error-handler';
 import { log } from '@/core/logger';
 import { prisma } from '@/core/prisma';
 import { r2Service } from '@/core/r2-client';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { env } from '@/core/env';
 // Document type removed as not exported from @prisma/client
 import crypto from 'crypto';
 import type {
@@ -403,6 +405,107 @@ export class DocumentsService {
       createdAt: document.createdAt as Date,
       updatedAt: document.updatedAt as Date,
     };
+  }
+
+  /**
+   * Upload file through backend proxy (avoids CORS issues)
+   */
+  async uploadFileProxy(
+    data: {
+      file: Buffer;
+      fileName: string;
+      mimeType: string;
+      size: number;
+      linkedType?: string;
+      linkedId?: string;
+      note?: string;
+    },
+    userId?: string
+  ): Promise<DocumentResponse> {
+    try {
+      log.info('Starting proxy file upload', {
+        fileName: data.fileName,
+        mimeType: data.mimeType,
+        size: data.size,
+        userId,
+      });
+
+      // Generate unique key for R2
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      const extension = data.fileName.substring(data.fileName.lastIndexOf('.'));
+      const r2Key = `uploads/${timestamp}-${randomSuffix}${extension}`;
+
+      // Initialize S3 client for R2
+      const r2Client = new S3Client({
+        region: 'auto',
+        endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: env.R2_ACCESS_KEY_ID,
+          secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+        },
+        forcePathStyle: true,
+      });
+
+      // Upload directly to R2
+      const putCommand = new PutObjectCommand({
+        Bucket: env.R2_BUCKET_NAME,
+        Key: r2Key,
+        Body: data.file,
+        ContentType: data.mimeType,
+        ContentLength: data.size,
+      });
+
+      await r2Client.send(putCommand);
+
+      log.info('File uploaded to R2 successfully', { r2Key });
+
+      // Calculate SHA256 hash
+      const sha256 = crypto.createHash('sha256').update(data.file).digest('hex');
+
+      // Create document record in database
+      const document = await prisma.document.create({
+        data: {
+          name: data.fileName,
+          originalName: data.fileName,
+          mimeType: data.mimeType,
+          size: data.size,
+          r2Key,
+          sha256,
+          category: 'other',
+          linkedType: this.toNullable(data.linkedType),
+          linkedId: this.toNullable(data.linkedId),
+          description: this.toNullable(data.note),
+          uploadedBy: userId || 'system',
+        },
+      });
+
+      log.info('Document record created', { documentId: document.id });
+
+      return {
+        id: document.id,
+        name: document.name,
+        originalName: document.originalName,
+        mimeType: document.mimeType,
+        size: document.size,
+        r2Key: document.r2Key,
+        publicUrl: `${env.R2_PUBLIC_URL}/${document.r2Key}`,
+        sha256: document.sha256 as string | null,
+        category: document.category as string,
+        description: document.description as string | null,
+        linkedType: document.linkedType as string | null,
+        linkedId: document.linkedId as string | null,
+        uploadedBy: document.uploadedBy as string,
+        createdAt: document.createdAt as Date,
+        updatedAt: document.updatedAt as Date,
+      };
+    } catch (error) {
+      log.error('Failed to upload file through proxy', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        fileName: data.fileName,
+      });
+      throw errors.internal('Failed to upload file');
+    }
   }
 }
 

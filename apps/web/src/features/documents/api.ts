@@ -36,6 +36,35 @@ export const documentsApi = {
     note?: string;
   }): Promise<Document> => api.post('/documents', data),
 
+  // Upload file through backend proxy (NEW - avoids CORS)
+  uploadFileProxy: async (
+    file: File,
+    metadata?: {
+      linkedType?: string;
+      linkedId?: string;
+      note?: string;
+    }
+  ): Promise<Document> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    if (metadata?.linkedType) formData.append('linkedType', metadata.linkedType);
+    if (metadata?.linkedId) formData.append('linkedId', metadata.linkedId);
+    if (metadata?.note) formData.append('note', metadata.note);
+
+    console.log('📤 Uploading file through proxy:', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+    });
+
+    return api.post('/documents/upload-proxy', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
   // Upload file to R2 using presigned URL
   uploadFile: async (
     uploadUrl: string,
@@ -57,6 +86,9 @@ export const documentsApi = {
         fileType: file.type,
         method: 'PUT'
       });
+
+      // Log the origin for CORS debugging
+      console.log('📍 Current origin:', window.location.origin);
 
       // Upload directly to R2 using PUT (matches backend PutObjectCommand)
       const response = await fetch(uploadUrl, {
