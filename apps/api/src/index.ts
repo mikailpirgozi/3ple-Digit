@@ -52,6 +52,11 @@ app.use(
   })
 );
 
+// Trust proxy for Railway deployment
+if (env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Rate limiting
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
