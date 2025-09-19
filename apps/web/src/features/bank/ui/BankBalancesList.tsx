@@ -358,9 +358,21 @@ export function BankBalancesList({
                             {formatDate(balance.date)}
                           </span>
                         </div>
-                        <p className="text-lg font-semibold text-foreground mt-1">
-                          {formatCurrency(balance.amount)}
-                        </p>
+                        <div className="mt-1 space-y-1">
+                          <p className="text-lg font-semibold text-foreground">
+                            {formatCurrency(balance.amount)}
+                          </p>
+                          {balance.bankName && (
+                            <p className="text-sm text-muted-foreground">
+                              Banka: {balance.bankName}
+                            </p>
+                          )}
+                          {balance.accountType && (
+                            <p className="text-sm text-muted-foreground">
+                              Typ: {balance.accountType}
+                            </p>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-2">

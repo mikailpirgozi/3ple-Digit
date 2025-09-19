@@ -26,7 +26,7 @@ export const LoginPage: React.FC = () => {
 
   // Redirect if already authenticated
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/" />;
   }
 
   const onSubmit = async (data: LoginFormData) => {

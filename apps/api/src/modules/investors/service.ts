@@ -194,6 +194,31 @@ export class InvestorsService {
       throw errors.notFound('Investor not found');
     }
 
+    // Get all investors for total capital calculation (needed for ownership percentage)
+    const allInvestors = await prisma.investor.findMany({
+      include: {
+        cashflows: {
+          select: {
+            type: true,
+            amount: true,
+          },
+        },
+      },
+    });
+
+    // Calculate total capital across all investors
+    const totalCapitalAll = allInvestors.reduce((sum, inv) => {
+      const totalDeposits = inv.cashflows
+        .filter(cf => cf.type === 'DEPOSIT')
+        .reduce((sum, cf) => sum + cf.amount, 0);
+
+      const totalWithdrawals = inv.cashflows
+        .filter(cf => cf.type === 'WITHDRAWAL')
+        .reduce((sum, cf) => sum + cf.amount, 0);
+
+      return sum + (totalDeposits - totalWithdrawals);
+    }, 0);
+
     const totalDeposits = investor.cashflows
       .filter(cf => cf.type === 'DEPOSIT')
       .reduce((sum, cf) => sum + cf.amount, 0);
@@ -202,13 +227,15 @@ export class InvestorsService {
       .filter(cf => cf.type === 'WITHDRAWAL')
       .reduce((sum, cf) => sum + cf.amount, 0);
 
-    const totalCapital = totalDeposits - totalWithdrawals;
+    const investorCapital = totalDeposits - totalWithdrawals;
+    const ownershipPercent = totalCapitalAll > 0 ? (investorCapital / totalCapitalAll) * 100 : 0;
 
     return this.formatInvestorResponse({
       ...investor,
-      totalCapital,
+      totalCapital: investorCapital,
       totalDeposits,
       totalWithdrawals,
+      ownershipPercent,
     });
   }
 

@@ -1,7 +1,6 @@
 import type { CreateCashflowRequest } from '@/types/api';
 import {
   Button,
-  DatePicker,
   Form,
   FormControl,
   FormField,
@@ -18,24 +17,23 @@ import {
 } from '@/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
-import type { ControllerRenderProps } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+
 const cashflowSchema = z.object({
-  date: z.date({
-    required_error: 'Dátum je povinný',
-  }),
   type: z.enum(['DEPOSIT', 'WITHDRAWAL'], {
-    required_error: 'Typ je povinný',
+    required_error: 'Vyberte typ cashflow',
   }),
-  amount: z.number().positive('Suma musí byť kladná'),
+  amount: z.number()
+    .min(0.01, 'Suma musí byť väčšia ako 0')
+    .max(10000000, 'Suma je príliš veľká (max 10M €)'),
+  date: z.string().min(1, 'Dátum je povinný'),
   note: z.string().optional(),
 });
 
 type CashflowFormData = z.infer<typeof cashflowSchema>;
 
 interface CashflowFormProps {
-  investorId: string;
   onSubmit: (data: CreateCashflowRequest) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -43,7 +41,6 @@ interface CashflowFormProps {
 }
 
 export const CashflowForm: React.FC<CashflowFormProps> = ({
-  investorId,
   onSubmit,
   onCancel,
   isLoading = false,
@@ -52,69 +49,52 @@ export const CashflowForm: React.FC<CashflowFormProps> = ({
   const form = useForm<CashflowFormData>({
     resolver: zodResolver(cashflowSchema),
     defaultValues: {
-      ...initialData,
-      date: initialData?.date ? new Date(initialData.date) : new Date(),
+      type: initialData?.type ?? 'DEPOSIT',
+      amount: initialData?.amount ?? 0,
+      date: initialData?.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      note: initialData?.note ?? '',
     },
   });
 
-  const handleFormSubmit = (data: CashflowFormData) => {
-    onSubmit({
-      investorId,
-      ...data,
+  const handleSubmit = (data: CashflowFormData) => {
+    const submitData = {
+      type: data.type,
       amount: Number(data.amount),
-      date: data.date.toISOString(),
-    });
+      date: new Date(data.date).toISOString(),
+      note: data.note,
+    } as CreateCashflowRequest;
+    onSubmit(submitData);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }: { field: ControllerRenderProps<CashflowFormData, 'date'> }) => (
-              <FormItem>
-                <FormLabel>Dátum</FormLabel>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Typ cashflow</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <DatePicker
-                    date={field.value}
-                    onSelect={field.onChange}
-                    placeholder="Vyberte dátum"
-                  />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Vyberte typ" />
+                  </SelectTrigger>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }: { field: ControllerRenderProps<CashflowFormData, 'type'> }) => (
-              <FormItem>
-                <FormLabel>Typ</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Vyberte typ" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="DEPOSIT">Vklad</SelectItem>
-                    <SelectItem value="WITHDRAWAL">Výber</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                <SelectContent>
+                  <SelectItem value="DEPOSIT">💰 Vklad</SelectItem>
+                  <SelectItem value="WITHDRAWAL">💸 Výber</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
           name="amount"
-          render={({ field }: { field: ControllerRenderProps<CashflowFormData, 'amount'> }) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Suma (€)</FormLabel>
               <FormControl>
@@ -122,11 +102,9 @@ export const CashflowForm: React.FC<CashflowFormProps> = ({
                   type="number"
                   step="0.01"
                   min="0"
-                  placeholder="0.00"
+                  placeholder="Zadajte sumu"
                   {...field}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    field.onChange(e.target.value ? parseFloat(e.target.value) : 0)
-                  }
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                 />
               </FormControl>
               <FormMessage />
@@ -136,23 +114,40 @@ export const CashflowForm: React.FC<CashflowFormProps> = ({
 
         <FormField
           control={form.control}
-          name="note"
-          render={({ field }: { field: ControllerRenderProps<CashflowFormData, 'note'> }) => (
+          name="date"
+          render={({ field }) => (
             <FormItem>
-              <FormLabel>Poznámka (voliteľné)</FormLabel>
+              <FormLabel>Dátum</FormLabel>
               <FormControl>
-                <Textarea placeholder="Zadajte poznámku..." className="resize-none" {...field} />
+                <Input type="date" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="flex justify-end space-x-3">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+        <FormField
+          control={form.control}
+          name="note"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Poznámka (voliteľné)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Zadajte poznámku"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:space-x-3 sm:gap-0">
+          <Button type="button" variant="outline" onClick={onCancel} className="order-2 sm:order-1">
             Zrušiť
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading} className="order-1 sm:order-2">
             {isLoading ? 'Ukladanie...' : 'Uložiť'}
           </Button>
         </div>

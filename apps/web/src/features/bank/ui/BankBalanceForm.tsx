@@ -1,4 +1,4 @@
-import type { BankBalance, CreateBankBalanceRequest } from '@/types/api';
+import type { BankBalance, CreateBankBalanceRequest, UpdateBankBalanceRequest } from '@/types/api';
 import { Button } from '@/ui/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/ui/ui/card';
 import { DatePicker } from '@/ui/ui/date-picker';
@@ -15,13 +15,15 @@ const bankBalanceFormSchema = z.object({
   date: z.string().min(1, 'Dátum je povinný'),
   amount: z.number().min(0, 'Suma musí byť kladná'),
   currency: z.string().min(1, 'Mena je povinná').default('EUR'),
+  bankName: z.string().optional(),
+  accountType: z.string().optional(),
 });
 
 type BankBalanceFormData = z.infer<typeof bankBalanceFormSchema>;
 
 interface BankBalanceFormProps {
   balance?: BankBalance;
-  onSubmit: (data: CreateBankBalanceRequest) => void;
+  onSubmit: (data: CreateBankBalanceRequest | UpdateBankBalanceRequest) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -46,11 +48,15 @@ export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: Bank
               : (balance.date as string).split('T')[0],
           amount: balance.amount,
           currency: balance.currency,
+          bankName: balance.bankName || '',
+          accountType: balance.accountType || '',
         }
       : {
           date: new Date().toISOString().split('T')[0],
           amount: 0,
           currency: 'EUR',
+          bankName: '',
+          accountType: '',
         },
   });
 
@@ -107,6 +113,44 @@ export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: Bank
             </div>
             {errors.accountName && (
               <p className="mt-1 text-sm text-destructive">{errors.accountName.message}</p>
+            )}
+          </div>
+
+          {/* Bank Name */}
+          <div>
+            <Label htmlFor="bankName">Názov banky (voliteľné)</Label>
+            <Input
+              id="bankName"
+              type="text"
+              {...register('bankName')}
+              placeholder="Napríklad: Tatra Banka"
+            />
+            {errors.bankName && (
+              <p className="mt-1 text-sm text-destructive">{errors.bankName.message}</p>
+            )}
+          </div>
+
+          {/* Account Type */}
+          <div>
+            <Label htmlFor="accountType">Typ účtu (voliteľné)</Label>
+            <Select
+              value={watch('accountType') || ''}
+              onValueChange={(value: string) => setValue('accountType', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Vyberte typ účtu" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Žiadny typ</SelectItem>
+                <SelectItem value="BUSINESS">Business účet</SelectItem>
+                <SelectItem value="PERSONAL">Osobný účet</SelectItem>
+                <SelectItem value="SAVINGS">Sporiaci účet</SelectItem>
+                <SelectItem value="CHECKING">Bežný účet</SelectItem>
+                <SelectItem value="INVESTMENT">Investičný účet</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.accountType && (
+              <p className="mt-1 text-sm text-destructive">{errors.accountType.message}</p>
             )}
           </div>
 

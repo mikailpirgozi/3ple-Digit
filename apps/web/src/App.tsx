@@ -19,6 +19,9 @@ const HomePage = lazy(() =>
 const InvestorsPage = lazy(() =>
   import('@/features/investors/InvestorsPage').then(m => ({ default: m.InvestorsPage }))
 );
+const InvestorDetailPage = lazy(() =>
+  import('@/features/investors/InvestorDetailPage').then(m => ({ default: m.InvestorDetailPage }))
+);
 const AssetsPage = lazy(() =>
   import('@/features/assets/AssetsPage').then(m => ({ default: m.AssetsPage }))
 );
@@ -78,6 +81,7 @@ function App() {
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/investors" element={<InvestorsPage />} />
+                      <Route path="/investors/:id" element={<InvestorDetailPage />} />
                       <Route path="/assets" element={<AssetsPage />} />
                       <Route path="/bank" element={<BankPage />} />
                       <Route path="/liabilities" element={<LiabilitiesPage />} />

@@ -87,6 +87,34 @@ export const InvestorForm: React.FC<InvestorFormProps> = ({
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Adresa (voliteľné)</FormLabel>
+              <FormControl>
+                <Input placeholder="Zadajte adresu" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="taxId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Daňové ID (voliteľné)</FormLabel>
+              <FormControl>
+                <Input placeholder="Zadajte daňové ID" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="flex flex-col sm:flex-row justify-end gap-3 sm:space-x-3 sm:gap-0">
           <Button type="button" variant="outline" onClick={onCancel} className="order-2 sm:order-1">
             Zrušiť

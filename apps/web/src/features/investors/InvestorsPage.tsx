@@ -1,6 +1,6 @@
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import type { CreateInvestorRequest } from '@/types/api';
+import type { CreateInvestorRequest, Investor } from '@/types/api';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,13 +12,17 @@ import {
   AlertDialogTitle,
 } from '@/ui';
 import { useState } from 'react';
-import { useCreateInvestor, useDeleteInvestor, useInvestors } from './hooks';
+import { Link } from 'react-router-dom';
+import { useCreateInvestor, useDeleteInvestor, useInvestors, useUpdateInvestor } from './hooks';
 import { InvestorForm } from './ui/InvestorForm';
+import { InvestorCashflowModal } from './ui/InvestorCashflowModal';
 
 type SortOption = 'name' | 'totalCapital' | 'createdAt';
 
 export function InvestorsPage() {
   const [showForm, setShowForm] = useState(false);
+  const [editingInvestor, setEditingInvestor] = useState<Investor | null>(null);
+  const [cashflowModal, setCashflowModal] = useState<Investor | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('totalCapital');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -42,6 +46,7 @@ export function InvestorsPage() {
     q: searchQuery ?? undefined,
   });
   const createInvestorMutation = useCreateInvestor();
+  const updateInvestorMutation = useUpdateInvestor();
   const deleteInvestorMutation = useDeleteInvestor();
 
   // Handlers
@@ -63,6 +68,42 @@ export function InvestorsPage() {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleUpdateInvestor = async (data: CreateInvestorRequest) => {
+    if (!editingInvestor) return;
+
+    try {
+      await updateInvestorMutation.mutateAsync({ id: editingInvestor.id, data });
+      setEditingInvestor(null);
+      toast({
+        title: 'Úspech',
+        description: 'Investor bol úspešne aktualizovaný.',
+      });
+    } catch (error: unknown) {
+      logger.apiError('update investor', error, { investorId: editingInvestor.id, investorData: data });
+      const errorMessage =
+        error instanceof Error ? error.message : 'Nepodarilo sa aktualizovať investora.';
+      toast({
+        title: 'Chyba',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEditInvestor = (investor: Investor) => {
+    setEditingInvestor(investor);
+    setShowForm(true);
+  };
+
+  const handleCashflowInvestor = (investor: Investor) => {
+    setCashflowModal(investor);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingInvestor(null);
   };
 
   const handleDeleteInvestor = async (id: string, name: string) => {
@@ -163,6 +204,14 @@ export function InvestorsPage() {
         </p>
       </div>
 
+      {/* Info banner */}
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 xs:p-4">
+        <p className="text-xs xs:text-sm text-blue-800">
+          💡 <strong>Tip:</strong> Po každej zmene cashflow sa automaticky prepočíta vlastníctvo všetkých investorov. 
+          Kliknite na meno investora pre detailný pohľad alebo použite tlačidlo &quot;Cashflow&quot; pre správu vkladov a výberov.
+        </p>
+      </div>
+
       {/* Actions bar */}
       <div className="flex flex-col xs:flex-row items-stretch xs:items-center justify-between gap-3 xs:gap-4">
         <div className="flex flex-col xs:flex-row xs:flex-wrap gap-2 xs:gap-4 items-stretch xs:items-center">
@@ -200,14 +249,23 @@ export function InvestorsPage() {
         </button>
       </div>
 
-      {/* Create investor form */}
+      {/* Create/Edit investor form */}
       {showForm && (
         <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
-          <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-foreground mb-3 xs:mb-4">Nový investor</h2>
+          <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-foreground mb-3 xs:mb-4">
+            {editingInvestor ? 'Upraviť investora' : 'Nový investor'}
+          </h2>
           <InvestorForm
-            onSubmit={handleCreateInvestor}
-            onCancel={() => setShowForm(false)}
-            isLoading={createInvestorMutation.isPending}
+            onSubmit={editingInvestor ? handleUpdateInvestor : handleCreateInvestor}
+            onCancel={handleCloseForm}
+            isLoading={createInvestorMutation.isPending || updateInvestorMutation.isPending}
+            initialData={editingInvestor ? {
+              name: editingInvestor.name,
+              email: editingInvestor.email,
+              phone: editingInvestor.phone,
+              address: editingInvestor.address,
+              taxId: editingInvestor.taxId,
+            } : undefined}
           />
         </div>
       )}
@@ -232,9 +290,12 @@ export function InvestorsPage() {
                 className="flex flex-col xs:flex-row xs:items-center justify-between p-3 xs:p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors gap-2 xs:gap-3"
               >
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-foreground text-sm xs:text-base truncate">
+                  <Link 
+                    to={`/investors/${investor.id}`}
+                    className="font-medium text-foreground text-sm xs:text-base truncate hover:text-blue-600 transition-colors"
+                  >
                     {investor.name}
-                  </h3>
+                  </Link>
                   <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-4 mt-1">
                     <p className="text-xs sm:text-sm text-muted-foreground">
                       Kapitál:{' '}
@@ -253,7 +314,19 @@ export function InvestorsPage() {
                     Vytvorený: {new Date(investor.createdAt).toLocaleDateString('sk-SK')}
                   </p>
                 </div>
-                <div className="flex items-center justify-end xs:justify-start mt-2 xs:mt-0">
+                <div className="flex items-center justify-end xs:justify-start mt-2 xs:mt-0 gap-2">
+                  <button
+                    onClick={() => handleEditInvestor(investor)}
+                    className="px-2 xs:px-3 py-1 text-xs sm:text-sm text-blue-600 border border-blue-300 rounded hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-nowrap"
+                  >
+                    Upraviť
+                  </button>
+                  <button
+                    onClick={() => handleCashflowInvestor(investor)}
+                    className="px-2 xs:px-3 py-1 text-xs sm:text-sm text-green-600 border border-green-300 rounded hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 whitespace-nowrap"
+                  >
+                    Cashflow
+                  </button>
                   <button
                     onClick={() => handleDeleteInvestor(investor.id, investor.name)}
                     disabled={deleteInvestorMutation.isPending}
@@ -295,6 +368,14 @@ export function InvestorsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Cashflow Modal */}
+      {cashflowModal && (
+        <InvestorCashflowModal
+          investor={cashflowModal}
+          onClose={() => setCashflowModal(null)}
+        />
+      )}
     </div>
   );
 }

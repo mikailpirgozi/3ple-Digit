@@ -43,7 +43,13 @@ const createApiClient = (): AxiosInstance => {
       if (error.response?.status === 401) {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_data');
-        window.location.href = '/login';
+        // Trigger storage event to update auth state
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'auth_token',
+          oldValue: localStorage.getItem('auth_token'),
+          newValue: null,
+          storageArea: localStorage,
+        }));
       }
 
       // Extract API error or create generic error

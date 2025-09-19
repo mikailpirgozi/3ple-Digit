@@ -286,6 +286,8 @@ export interface CreateLiabilityRequest {
 export interface BankBalance {
   id: string;
   accountName: string;
+  bankName?: string;
+  accountType?: string;
   date: string;
   amount: number;
   currency: 'EUR';
@@ -294,8 +296,20 @@ export interface BankBalance {
 
 export interface CreateBankBalanceRequest {
   accountName: string;
+  bankName?: string;
+  accountType?: string;
   date: string;
   amount: number;
+  currency?: string;
+}
+
+export interface UpdateBankBalanceRequest {
+  accountName?: string;
+  bankName?: string;
+  accountType?: string;
+  amount?: number;
+  currency?: string;
+  date?: string;
 }
 
 export interface CsvImportResponse {

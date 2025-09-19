@@ -29,10 +29,8 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(authApi.isAuthenticated());
   const queryClient = useQueryClient();
-
-  // Check if user is authenticated on mount
-  const isAuthenticated = authApi.isAuthenticated();
 
   // Query to get current user (only if authenticated)
   const { data: userData, isLoading } = useQuery({
@@ -52,12 +50,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [userData, isAuthenticated]);
 
+  // Listen for storage changes (e.g., when token is removed)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const newAuthState = authApi.isAuthenticated();
+      setIsAuthenticated(newAuthState);
+      if (!newAuthState) {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: data => {
       authApi.setToken(data.accessToken);
       setUser(data.user);
+      setIsAuthenticated(true);
       // Invalidate and refetch user data
       void queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
       // Invalidate all queries to refetch with new auth
@@ -71,6 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     onSuccess: data => {
       authApi.setToken(data.accessToken);
       setUser(data.user);
+      setIsAuthenticated(true);
       // Invalidate and refetch user data
       void queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
       // Invalidate all queries to refetch with new auth
@@ -92,13 +106,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     authApi.logout();
     setUser(null);
+    setIsAuthenticated(false);
     // Clear all queries
     queryClient.clear();
   };
 
   const value: AuthContextType = {
     user,
-    isAuthenticated: Boolean(user),
+    isAuthenticated,
     isLoading: isLoading ?? loginMutation.isPending ?? registerMutation.isPending,
     login,
     register,
