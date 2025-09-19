@@ -81,19 +81,15 @@ export class R2Service {
         },
       });
 
-      const uploadUrl = await getSignedUrl(r2Client, command, {
+      // Generate presigned URL
+      let uploadUrl = await getSignedUrl(r2Client, command, {
         expiresIn: expiresInMinutes * 60,
-        // Explicitly disable checksum headers and x-id parameter
-        unhoistableHeaders: new Set([
-          'x-amz-checksum-crc32',
-          'x-amz-checksum-crc32c', 
-          'x-amz-checksum-sha1',
-          'x-amz-checksum-sha256',
-          'x-amz-sdk-checksum-algorithm'
-        ]),
-        // Disable x-id parameter
-        signableHeaders: new Set(['host']),
       });
+
+      // Manually remove problematic parameters that cause CORS issues
+      uploadUrl = uploadUrl.replace(/&x-id=PutObject/g, '');
+      uploadUrl = uploadUrl.replace(/&x-amz-sdk-checksum-algorithm=[^&]*/g, '');
+      uploadUrl = uploadUrl.replace(/&x-amz-checksum-[^&]*=[^&]*/g, '');
 
       const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
       const publicUrl = `${this.publicUrl}/${r2Key}`;
