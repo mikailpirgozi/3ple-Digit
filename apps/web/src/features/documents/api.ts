@@ -39,8 +39,7 @@ export const documentsApi = {
   // Upload file to R2 using presigned URL
   uploadFile: async (
     uploadUrl: string,
-    file: File,
-    fields?: Record<string, string>
+    file: File
   ): Promise<void> => {
     // Check if it's a mock URL (development mode)
     if (uploadUrl.includes('mock-upload-url.com') || uploadUrl.includes('mock')) {
@@ -49,24 +48,32 @@ export const documentsApi = {
       return;
     }
 
-    const formData = new FormData();
-
-    // Add fields first (if any)
-    if (fields) {
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-    }
-
-    // Add file last
-    formData.append('file', file);
-
     try {
-      // Upload directly to R2 (not through our API)
+      // eslint-disable-next-line no-console
+      console.log('🚀 Starting R2 upload:', {
+        uploadUrl, // Show full URL for debugging
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        method: 'PUT'
+      });
+
+      // Upload directly to R2 using PUT (matches backend PutObjectCommand)
       const response = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData,
-        mode: 'cors', // Explicitly set CORS mode
+        method: 'PUT',
+        body: file,
+        mode: 'cors',
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+          'Content-Length': file.size.toString(),
+        },
+      });
+
+      // eslint-disable-next-line no-console
+      console.log('✅ R2 response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
       });
 
       if (!response.ok) {

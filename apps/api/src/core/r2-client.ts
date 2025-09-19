@@ -75,6 +75,7 @@ export class R2Service {
         Key: r2Key,
         ContentType: metadata.mimeType,
         ContentLength: metadata.size,
+        ChecksumAlgorithm: undefined, // Disable automatic checksum
         Metadata: {
           originalName: metadata.originalName,
           uploadedAt: new Date().toISOString(),
@@ -83,6 +84,7 @@ export class R2Service {
 
       const uploadUrl = await getSignedUrl(r2Client, command, {
         expiresIn: expiresInMinutes * 60,
+        unhoistableHeaders: new Set(['x-amz-checksum-crc32']),
       });
 
       const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);

@@ -15,8 +15,13 @@ export interface ApiErrorResponse {
 
 // Create axios instance with base configuration
 const createApiClient = (): AxiosInstance => {
-  // Use environment variable for API URL, fallback to relative URL for development
-  const baseURL = env.VITE_API_URL ? `${env.VITE_API_URL}/api` : '/api';
+  // TEMPORARY: Force Railway URL for debugging
+  const baseURL = 'https://backend-production-2bd2.up.railway.app/api';
+  
+  // eslint-disable-next-line no-console
+  console.log('🔧 API Client baseURL:', baseURL);
+  // eslint-disable-next-line no-console
+  console.log('🔧 env.VITE_API_URL:', env.VITE_API_URL);
   
   const client = axios.create({
     baseURL,
@@ -35,12 +40,13 @@ const createApiClient = (): AxiosInstance => {
       }
       
       // Debug logging for API requests
-      // eslint-disable-next-line no-console
-      console.log('API Request:', {
+    // eslint-disable-next-line no-console
+    console.log('🚀 API Request:', {
         method: config.method?.toUpperCase(),
         url: config.url,
         baseURL: config.baseURL,
         fullURL: `${config.baseURL}${config.url}`,
+        headers: config.headers,
       });
       
       return config;
@@ -50,8 +56,22 @@ const createApiClient = (): AxiosInstance => {
 
   // Response interceptor - handle errors
   client.interceptors.response.use(
-    (response: AxiosResponse) => response,
+    (response: AxiosResponse) => {
+      console.log('✅ API Response:', {
+        status: response.status,
+        url: response.config.url,
+        data: response.data ? 'Data received' : 'No data',
+      });
+      return response;
+    },
     (error: AxiosError<ApiErrorResponse>) => {
+      // eslint-disable-next-line no-console
+      console.error('❌ API Error:', {
+        status: error.response?.status,
+        url: error.config?.url,
+        message: error.message,
+        data: error.response?.data,
+      });
       // Handle 401 - redirect to login
       if (error.response?.status === 401) {
         localStorage.removeItem('auth_token');

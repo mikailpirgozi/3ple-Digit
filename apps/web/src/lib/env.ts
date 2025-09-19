@@ -29,5 +29,13 @@ function validateEnv(): Env {
 
 export const env = validateEnv();
 
+// Debug logging
+// eslint-disable-next-line no-console
+console.log('🔧 Environment loaded:', {
+  VITE_API_URL: env.VITE_API_URL,
+  VITE_NODE_ENV: env.VITE_NODE_ENV,
+  VITE_APP_NAME: env.VITE_APP_NAME,
+});
+
 // Type-safe environment variable access
 export type { Env };
