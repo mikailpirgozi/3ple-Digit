@@ -264,21 +264,21 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 xs:p-4 z-50">
+      <div className="bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] xs:max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">Udalosti aktíva: {asset.name}</h2>
-            <p className="text-sm text-muted-foreground">
+        <div className="flex items-center justify-between p-3 xs:p-4 sm:p-6 border-b border-border">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm xs:text-lg sm:text-xl font-semibold text-foreground truncate">Udalosti aktíva: {asset.name}</h2>
+            <p className="text-xs xs:text-sm text-muted-foreground">
               Aktuálna hodnota: {formatCurrency(asset.currentValue)}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground focus:outline-none"
+            className="text-muted-foreground hover:text-foreground focus:outline-none flex-shrink-0 ml-2"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -290,7 +290,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+        <div className="p-3 xs:p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-100px)] xs:max-h-[calc(90vh-120px)]">
           {showForm ? (
             asset.type === 'PÔŽIČKY' && !editingEvent ? (
               <LoanEventForm
@@ -317,19 +317,19 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
               />
             )
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 xs:space-y-6">
               {/* Add Event Button */}
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-foreground">História udalostí</h3>
+              <div className="flex flex-col xs:flex-row xs:justify-between xs:items-center gap-2 xs:gap-4">
+                <h3 className="text-sm xs:text-lg font-medium text-foreground">História udalostí</h3>
                 {validationInfo?.canAddEvents ? (
                   <button
                     onClick={() => setShowForm(true)}
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    className="px-3 xs:px-4 py-2 text-xs xs:text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 whitespace-nowrap"
                   >
                     Pridať udalosť
                   </button>
                 ) : (
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs xs:text-sm text-muted-foreground">
                     {validationInfo?.isSold ? 'Aktívum predané' : 'Nie je možné pridať udalosť'}
                   </div>
                 )}
@@ -337,8 +337,8 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
 
               {/* Validation Info for sold assets */}
               {validationInfo?.isSold && (
-                <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                  <p className="text-sm text-orange-800">
+                <div className="p-2 xs:p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <p className="text-xs xs:text-sm text-orange-800">
                     ⚠️ Toto aktívum bolo predané. Nie je možné pridávať ďalšie udalosti.
                   </p>
                 </div>
@@ -346,51 +346,51 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
 
               {/* Events List */}
               {isLoading ? (
-                <div className="text-center py-8">
-                  <div className="text-muted-foreground">Načítavam udalosti...</div>
+                <div className="text-center py-6 xs:py-8">
+                  <div className="text-xs xs:text-sm text-muted-foreground">Načítavam udalosti...</div>
                 </div>
               ) : events && events.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-2 xs:space-y-3">
                   {events
                     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                     .map(event => (
                       <div
                         key={event.id}
-                        className="flex items-center justify-between p-4 border border-border rounded-lg bg-card"
+                        className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 xs:gap-4 p-3 xs:p-4 border border-border rounded-lg bg-card"
                       >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium text-foreground">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-3">
+                            <span className="text-xs xs:text-sm font-medium text-foreground">
                               {eventKindLabels[event.type as AssetEventKind]}
                             </span>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-xs xs:text-sm text-muted-foreground">
                               {formatDate(event.date)}
                             </span>
                             {getValueChangeText(event, events || []) && (
-                              <div className="text-sm font-medium text-blue-600">
+                              <div className="text-xs xs:text-sm font-medium text-blue-600">
                                 {getValueChangeText(event, events || [])}
                               </div>
                             )}
                           </div>
                           {event.note && (
-                            <p className="mt-1 text-sm text-muted-foreground">{event.note}</p>
+                            <p className="mt-1 text-xs xs:text-sm text-muted-foreground">{event.note}</p>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1 xs:gap-2">
                           <button
                             onClick={() => {
                               setEditingEvent(event);
                               setShowForm(true);
                             }}
-                            className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            className="px-2 xs:px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                           >
                             Upraviť
                           </button>
                           <button
                             onClick={() => handleDeleteEvent(event.id)}
                             disabled={deleteEventMutation.isPending}
-                            className="px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-200 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+                            className="px-2 xs:px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-200 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
                           >
                             Odstrániť
                           </button>
@@ -399,12 +399,12 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
                     ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Žiadne udalosti nenájdené</p>
+                <div className="text-center py-6 xs:py-8">
+                  <p className="text-xs xs:text-sm text-muted-foreground">Žiadne udalosti nenájdené</p>
                   {validationInfo?.canAddEvents && (
                     <button
                       onClick={() => setShowForm(true)}
-                      className="mt-2 px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                      className="mt-2 px-3 xs:px-4 py-2 text-xs xs:text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     >
                       Pridať prvú udalosť
                     </button>

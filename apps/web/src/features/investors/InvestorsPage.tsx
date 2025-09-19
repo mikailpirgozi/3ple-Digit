@@ -96,15 +96,15 @@ export function InvestorsPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 xs:space-y-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Investori</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">Investori</h1>
+          <p className="text-xs xs:text-sm sm:text-base text-muted-foreground">
             Správa investorov a ich kapitálových vkladov
           </p>
         </div>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="flex items-center justify-center py-8 xs:py-12">
+          <div className="animate-spin rounded-full h-6 w-6 xs:h-8 xs:w-8 border-b-2 border-blue-600"></div>
         </div>
       </div>
     );
@@ -113,15 +113,15 @@ export function InvestorsPage() {
   // Error state
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 xs:space-y-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Investori</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">Investori</h1>
+          <p className="text-xs xs:text-sm sm:text-base text-muted-foreground">
             Správa investorov a ich kapitálových vkladov
           </p>
         </div>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm sm:text-base text-red-800">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 xs:p-4">
+          <p className="text-xs xs:text-sm sm:text-base text-red-800">
             Chyba pri načítavaní investorov: {(error as Error)?.message ?? 'Neznáma chyba'}
           </p>
         </div>
@@ -155,29 +155,29 @@ export function InvestorsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 xs:space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Investori</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
+        <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">Investori</h1>
+        <p className="text-xs xs:text-sm sm:text-base text-muted-foreground">
           Správa investorov a ich kapitálových vkladov
         </p>
       </div>
 
       {/* Actions bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-4 items-center">
+      <div className="flex flex-col xs:flex-row items-stretch xs:items-center justify-between gap-3 xs:gap-4">
+        <div className="flex flex-col xs:flex-row xs:flex-wrap gap-2 xs:gap-4 items-stretch xs:items-center">
           <input
             type="text"
             placeholder="Hľadať investorov..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="w-full xs:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs xs:text-sm"
           />
 
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value as SortOption)}
-            className="px-3 py-2 border border-gray-300 rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="px-3 py-2 border border-gray-300 rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs xs:text-sm"
           >
             <option value="totalCapital">Zoradiť podľa kapitálu</option>
             <option value="name">Zoradiť podľa mena</option>
@@ -186,7 +186,7 @@ export function InvestorsPage() {
 
           <button
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="px-3 py-2 border border-gray-300 rounded-md bg-background text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="px-3 py-2 border border-gray-300 rounded-md bg-background text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs xs:text-sm"
             title={sortOrder === 'asc' ? 'Zostupne' : 'Vzostupne'}
           >
             {sortOrder === 'asc' ? '↑' : '↓'}
@@ -194,7 +194,7 @@ export function InvestorsPage() {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap"
+          className="px-3 xs:px-4 py-2 text-xs xs:text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap"
         >
           Pridať investora
         </button>
@@ -202,8 +202,8 @@ export function InvestorsPage() {
 
       {/* Create investor form */}
       {showForm && (
-        <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Nový investor</h2>
+        <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+          <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-foreground mb-3 xs:mb-4">Nový investor</h2>
           <InvestorForm
             onSubmit={handleCreateInvestor}
             onCancel={() => setShowForm(false)}
@@ -213,29 +213,29 @@ export function InvestorsPage() {
       )}
 
       {/* Investors list */}
-      <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">
+      <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+        <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-foreground mb-3 xs:mb-4">
           Zoznam investorov ({investors.length})
         </h2>
 
         {sortedInvestors.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-sm sm:text-base text-muted-foreground">
+          <div className="text-center py-6 xs:py-8">
+            <p className="text-xs xs:text-sm sm:text-base text-muted-foreground">
               {searchQuery ? 'Žiadni investori nenájdení.' : 'Zatiaľ nemáte žiadnych investorov.'}
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 xs:space-y-4">
             {sortedInvestors.map(investor => (
               <div
                 key={investor.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors gap-3 sm:gap-0"
+                className="flex flex-col xs:flex-row xs:items-center justify-between p-3 xs:p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors gap-2 xs:gap-3"
               >
-                <div className="flex-1">
-                  <h3 className="font-medium text-foreground text-sm sm:text-base">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-foreground text-sm xs:text-base truncate">
                     {investor.name}
                   </h3>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+                  <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-4 mt-1">
                     <p className="text-xs sm:text-sm text-muted-foreground">
                       Kapitál:{' '}
                       <span className="font-semibold text-green-600">
@@ -253,11 +253,11 @@ export function InvestorsPage() {
                     Vytvorený: {new Date(investor.createdAt).toLocaleDateString('sk-SK')}
                   </p>
                 </div>
-                <div className="flex items-center justify-end sm:justify-start">
+                <div className="flex items-center justify-end xs:justify-start mt-2 xs:mt-0">
                   <button
                     onClick={() => handleDeleteInvestor(investor.id, investor.name)}
                     disabled={deleteInvestorMutation.isPending}
-                    className="px-3 py-1 text-xs sm:text-sm text-red-600 border border-red-300 rounded hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                    className="px-2 xs:px-3 py-1 text-xs sm:text-sm text-red-600 border border-red-300 rounded hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 whitespace-nowrap"
                   >
                     {deleteInvestorMutation.isPending ? 'Odstraňovanie...' : 'Odstrániť'}
                   </button>

@@ -229,15 +229,15 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
     .sort((a, b) => b.totalValue - a.totalValue);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 xs:space-y-6">
       {/* Filters */}
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-col xs:flex-row xs:flex-wrap gap-2 xs:gap-4">
         <select
           value={filters.type ?? ''}
           onChange={e =>
             setFilters({ ...filters, type: (e.target.value as AssetType) || undefined })
           }
-          className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-2 xs:px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs xs:text-sm"
         >
           <option value="">Všetky typy</option>
           {Object.entries(assetTypeLabels).map(([value, label]) => (
@@ -252,7 +252,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
           onChange={e =>
             setFilters({ ...filters, status: (e.target.value as 'ACTIVE' | 'SOLD') || undefined })
           }
-          className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-2 xs:px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs xs:text-sm"
         >
           <option value="">Všetky stavy</option>
           <option value="ACTIVE">Aktívne</option>
@@ -264,13 +264,13 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
           placeholder="Hľadať podľa názvu..."
           value={filters.q ?? ''}
           onChange={e => setFilters({ ...filters, q: e.target.value || undefined })}
-          className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-2 xs:px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs xs:text-sm"
         />
 
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value as SortOption)}
-          className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-2 xs:px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs xs:text-sm"
         >
           <option value="currentValue">Zoradiť podľa hodnoty</option>
           <option value="name">Zoradiť podľa názvu</option>
@@ -280,7 +280,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
 
         <button
           onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-          className="px-3 py-2 border border-border rounded-md bg-background text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-2 xs:px-3 py-2 border border-border rounded-md bg-background text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs xs:text-sm"
           title={sortOrder === 'asc' ? 'Zostupne' : 'Vzostupne'}
         >
           {sortOrder === 'asc' ? '↑' : '↓'}
@@ -288,14 +288,14 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
       </div>
 
       {/* Assets List by Categories */}
-      <div className="space-y-6">
+      <div className="space-y-4 xs:space-y-6">
         {sortedAssets.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Žiadne aktíva nenájdené</p>
+          <div className="text-center py-6 xs:py-8">
+            <p className="text-xs xs:text-sm text-muted-foreground">Žiadne aktíva nenájdené</p>
             {onCreateAsset && (
               <button
                 onClick={onCreateAsset}
-                className="mt-2 px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="mt-2 px-3 xs:px-4 py-2 text-xs xs:text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 Pridať prvé aktívum
               </button>
@@ -303,42 +303,42 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
           </div>
         ) : (
           typeTotals.map(({ type, assets: typeAssets, count, totalValue }) => (
-            <div key={type} className="space-y-3">
+            <div key={type} className="space-y-2 xs:space-y-3">
               {/* Category Header */}
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border border-border">
-                <div className="flex items-center gap-3">
-                  <h3 className="text-lg font-semibold text-foreground">{assetTypeLabels[type]}</h3>
+              <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 xs:gap-3 p-3 xs:p-4 bg-muted/50 rounded-lg border border-border">
+                <div className="flex items-center gap-2 xs:gap-3">
+                  <h3 className="text-sm xs:text-lg font-semibold text-foreground">{assetTypeLabels[type]}</h3>
                   <span className="px-2 py-1 text-xs font-medium text-muted-foreground bg-background rounded-full">
                     {count} {count === 1 ? 'aktívum' : count < 5 ? 'aktíva' : 'aktív'}
                   </span>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-semibold text-foreground">
+                <div className="text-left xs:text-right">
+                  <p className="text-sm xs:text-lg font-semibold text-foreground">
                     {formatCurrency(totalValue)}
                   </p>
-                  <p className="text-sm text-muted-foreground">Celková hodnota kategórie</p>
+                  <p className="text-xs xs:text-sm text-muted-foreground">Celková hodnota kategórie</p>
                 </div>
               </div>
 
               {/* Assets in Category */}
-              <div className="space-y-2 ml-4">
+              <div className="space-y-2 ml-0 xs:ml-2 sm:ml-4">
                 {(typeAssets as Asset[]).map(asset => {
                   const pnlData = calculatePnL(asset);
                   return (
                     <div
                       key={asset.id}
-                      className="flex items-center justify-between p-4 border border-border rounded-lg bg-card"
+                      className="flex flex-col gap-3 p-3 xs:p-4 border border-border rounded-lg bg-card"
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <h4 className="font-medium text-foreground">{asset.name}</h4>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 xs:gap-3 mb-2">
+                          <h4 className="font-medium text-foreground text-sm xs:text-base truncate">{asset.name}</h4>
                           {asset.status === 'SOLD' && (
-                            <span className="px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full">
+                            <span className="px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full flex-shrink-0">
                               Predané
                             </span>
                           )}
                         </div>
-                        <div className="mt-1 text-sm text-muted-foreground">
+                        <div className="text-xs xs:text-sm text-muted-foreground mb-3">
                           {asset.acquiredPrice && (
                             <span>Kúpené za {formatCurrency(asset.acquiredPrice)} • </span>
                           )}
@@ -356,14 +356,14 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4">
+                      <div className="flex flex-col gap-3">
                         {pnlData && (
-                          <div className="text-right">
-                            <p className="font-medium text-foreground">
+                          <div className="text-left">
+                            <p className="font-medium text-foreground text-sm xs:text-base">
                               {formatCurrency(pnlData.finalValue)}
                             </p>
                             <p
-                              className={`text-sm ${
+                              className={`text-xs xs:text-sm ${
                                 pnlData.pnl >= 0 ? 'text-green-600' : 'text-red-600'
                               }`}
                             >
@@ -379,13 +379,13 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
                           </div>
                         )}
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1 xs:gap-2">
                           <button
                             onClick={() => {
                               setSelectedAsset(asset);
                               setShowEventsModal(true);
                             }}
-                            className="px-3 py-1 text-xs font-medium text-primary bg-primary/10 border border-primary/20 rounded hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                            className="px-2 xs:px-3 py-1 text-xs font-medium text-primary bg-primary/10 border border-primary/20 rounded hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                           >
                             Udalosti
                           </button>
@@ -395,7 +395,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
                               <button
                                 onClick={() => handleMarkAsSold(asset)}
                                 disabled={markAsSoldMutation.isPending}
-                                className="px-3 py-1 text-xs font-medium text-orange-700 bg-orange-100 border border-orange-200 rounded hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50"
+                                className="px-2 xs:px-3 py-1 text-xs font-medium text-orange-700 bg-orange-100 border border-orange-200 rounded hover:bg-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50"
                               >
                                 Predať
                               </button>
@@ -403,7 +403,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
                               {onEditAsset && (
                                 <button
                                   onClick={() => onEditAsset(asset)}
-                                  className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                  className="px-2 xs:px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                                 >
                                   Upraviť
                                 </button>
@@ -414,7 +414,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
                           <button
                             onClick={() => handleDeleteAsset(asset.id)}
                             disabled={deleteAssetMutation.isPending}
-                            className="px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-200 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+                            className="px-2 xs:px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-200 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
                           >
                             Odstrániť
                           </button>

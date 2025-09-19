@@ -137,17 +137,17 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 xs:space-y-6">
       {/* Filters */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-wrap gap-4">
+        <CardContent className="p-3 xs:p-4 sm:p-6">
+          <div className="flex flex-col xs:flex-row xs:flex-wrap gap-2 xs:gap-4">
             <input
               type="month"
               placeholder="Obdobie"
               value={filters.period ?? ''}
               onChange={e => setFilters({ ...filters, period: e.target.value ?? undefined })}
-              className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="px-2 xs:px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs xs:text-sm"
             />
 
             <DatePicker
@@ -176,7 +176,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
               value={sortBy}
               onValueChange={(value: string) => setSortBy(value as SortOption)}
             >
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-full xs:w-[200px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -191,6 +191,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
               size="sm"
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
               title={sortOrder === 'asc' ? 'Zostupne' : 'Vzostupne'}
+              className="text-xs xs:text-sm"
             >
               {sortOrder === 'asc' ? '↑' : '↓'}
             </Button>
@@ -200,12 +201,12 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
 
       {/* Snapshots List */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-3 xs:p-4 sm:p-6">
           {sortedSnapshots.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="text-center py-6 xs:py-8">
               <div className="space-y-2">
                 <svg
-                  className="w-12 h-12 text-muted-foreground mx-auto"
+                  className="w-8 h-8 xs:w-12 xs:h-12 text-muted-foreground mx-auto"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -217,39 +218,39 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                   />
                 </svg>
-                <p className="text-muted-foreground">Žiadne snapshots nenájdené</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs xs:text-sm text-muted-foreground">Žiadne snapshots nenájdené</p>
+                <p className="text-xs text-muted-foreground">
                   Vytvorte prvý snapshot pre uloženie aktuálneho NAV
                 </p>
               </div>
               {onCreateSnapshot && (
-                <Button onClick={onCreateSnapshot} className="mt-4">
+                <Button onClick={onCreateSnapshot} className="mt-3 xs:mt-4 text-xs xs:text-sm">
                   Vytvoriť prvý snapshot
                 </Button>
               )}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 xs:space-y-3">
               {sortedSnapshots.map(snapshot => (
                 <Card key={snapshot.id} className="overflow-hidden">
                   {/* Snapshot Header */}
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4">
-                          <h3 className="text-lg font-semibold text-foreground">
+                  <CardContent className="p-3 xs:p-4">
+                    <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 xs:gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-4">
+                          <h3 className="text-sm xs:text-lg font-semibold text-foreground">
                             {formatDate(snapshot.date)}
                           </h3>
-                          <div className="text-right">
-                            <p className="text-xl font-bold text-primary">
+                          <div className="text-left xs:text-right">
+                            <p className="text-lg xs:text-xl font-bold text-primary">
                               {formatCurrency(snapshot.nav)}
                             </p>
-                            <p className="text-sm text-muted-foreground">NAV</p>
+                            <p className="text-xs xs:text-sm text-muted-foreground">NAV</p>
                           </div>
                         </div>
 
                         {/* Quick Summary */}
-                        <div className="mt-2 flex items-center gap-6 text-sm text-muted-foreground">
+                        <div className="mt-2 flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-6 text-xs xs:text-sm text-muted-foreground">
                           <span>Aktíva: {formatCurrency(snapshot.totalAssetValue)}</span>
                           <span>Hotovosť: {formatCurrency(snapshot.totalBankBalance)}</span>
                           <span>Záväzky: {formatCurrency(snapshot.totalLiabilities)}</span>
@@ -259,11 +260,12 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => toggleExpanded(snapshot.id)}
+                          className="text-xs xs:text-sm"
                         >
                           {expandedSnapshot === snapshot.id ? 'Skryť detaily' : 'Zobraziť detaily'}
                         </Button>
@@ -272,6 +274,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                           size="sm"
                           onClick={() => handleDeleteSnapshot(snapshot.id)}
                           disabled={deleteSnapshotMutation.isPending}
+                          className="text-xs xs:text-sm"
                         >
                           Odstrániť
                         </Button>
@@ -281,27 +284,27 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
 
                   {/* Expanded Details */}
                   {expandedSnapshot === snapshot.id && (
-                    <div className="border-t border-border bg-muted/30 p-4">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="border-t border-border bg-muted/30 p-3 xs:p-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xs:gap-6">
                         {/* Ownership Breakdown */}
                         <div>
-                          <h4 className="text-sm font-medium text-foreground mb-3">
+                          <h4 className="text-xs xs:text-sm font-medium text-foreground mb-2 xs:mb-3">
                             Rozdelenie podielov
                           </h4>
-                          <div className="space-y-2">
+                          <div className="space-y-1 xs:space-y-2">
                             {snapshot.investorSnapshots?.map(investorSnapshot => {
                               return (
                                 <Card key={investorSnapshot.id}>
                                   <CardContent className="p-2">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-sm font-medium text-foreground">
+                                    <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1 xs:gap-2">
+                                      <span className="text-xs xs:text-sm font-medium text-foreground">
                                         Investor {investorSnapshot.investorId}
                                       </span>
-                                      <div className="text-right">
-                                        <span className="text-sm font-medium text-foreground">
+                                      <div className="text-left xs:text-right">
+                                        <span className="text-xs xs:text-sm font-medium text-foreground">
                                           {investorSnapshot.ownershipPercentage.toFixed(2)}%
                                         </span>
-                                        <span className="text-xs text-muted-foreground ml-2">
+                                        <span className="text-xs text-muted-foreground ml-1 xs:ml-2">
                                           ({formatCurrency(investorSnapshot.capital)})
                                         </span>
                                       </div>
@@ -313,10 +316,10 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                           </div>
 
                           {/* Summary */}
-                          <Card className="mt-4">
-                            <CardContent className="p-3">
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-sm font-medium">
+                          <Card className="mt-3 xs:mt-4">
+                            <CardContent className="p-2 xs:p-3">
+                              <div className="space-y-1 xs:space-y-2">
+                                <div className="flex justify-between text-xs xs:text-sm font-medium">
                                   <span className="text-muted-foreground">Celkový kapitál:</span>
                                   <span className="text-foreground">
                                     {formatCurrency(
@@ -327,7 +330,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                                     )}
                                   </span>
                                 </div>
-                                <div className="flex justify-between text-sm font-medium">
+                                <div className="flex justify-between text-xs xs:text-sm font-medium">
                                   <span className="text-muted-foreground">Celkové %:</span>
                                   <span className="text-foreground">
                                     {snapshot.investorSnapshots
@@ -336,7 +339,7 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                                     %
                                   </span>
                                 </div>
-                                <div className="flex justify-between text-sm font-medium">
+                                <div className="flex justify-between text-xs xs:text-sm font-medium">
                                   <span className="text-muted-foreground">Počet investorov:</span>
                                   <span className="text-foreground">
                                     {snapshot.investorSnapshots?.length ?? 0}
@@ -350,19 +353,19 @@ export function SnapshotsList({ onCreateSnapshot }: SnapshotsListProps) {
                         {/* Performance Fee Details */}
                         {snapshot.performanceFeeRate && snapshot.totalPerformanceFee && (
                           <div>
-                            <h4 className="text-sm font-medium text-foreground mb-3">
+                            <h4 className="text-xs xs:text-sm font-medium text-foreground mb-2 xs:mb-3">
                               Performance Fee
                             </h4>
                             <Card>
-                              <CardContent className="p-3">
-                                <div className="space-y-2">
-                                  <div className="flex justify-between text-sm">
+                              <CardContent className="p-2 xs:p-3">
+                                <div className="space-y-1 xs:space-y-2">
+                                  <div className="flex justify-between text-xs xs:text-sm">
                                     <span className="text-muted-foreground">Sadzba:</span>
                                     <span className="text-foreground">
                                       {snapshot.performanceFeeRate}%
                                     </span>
                                   </div>
-                                  <div className="flex justify-between text-sm">
+                                  <div className="flex justify-between text-xs xs:text-sm">
                                     <span className="text-muted-foreground">Celkový fee:</span>
                                     <span className="text-foreground">
                                       {formatCurrency(snapshot.totalPerformanceFee)}

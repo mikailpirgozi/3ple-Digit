@@ -28,18 +28,18 @@ export function DocumentsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 xs:space-y-6">
+      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 xs:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dokumenty</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">Dokumenty</h1>
+          <p className="text-xs xs:text-sm text-muted-foreground">
             Správa dokumentov a súborov v Cloudflare R2 storage
           </p>
         </div>
         {!showUploadForm && (
           <button
             onClick={() => setShowUploadForm(true)}
-            className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            className="px-3 xs:px-4 py-2 text-xs xs:text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 whitespace-nowrap"
           >
             Nahrať dokument
           </button>
@@ -48,7 +48,7 @@ export function DocumentsPage() {
 
       {/* Upload Form */}
       {showUploadForm && (
-        <div className="rounded-lg border border-border bg-card p-6">
+        <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
           <DocumentUploadForm
             onSubmit={handleUploadDocument}
             onCancel={handleCancelUpload}
@@ -58,8 +58,8 @@ export function DocumentsPage() {
       )}
 
       {/* Documents List */}
-      <div className="rounded-lg border border-border bg-card p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-4">Nahraté dokumenty</h2>
+      <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+        <h2 className="text-lg xs:text-xl font-semibold text-foreground mb-3 xs:mb-4">Nahraté dokumenty</h2>
         <DocumentsList onUploadDocument={() => setShowUploadForm(true)} />
       </div>
     </div>

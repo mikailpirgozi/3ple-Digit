@@ -26,10 +26,10 @@ export function SnapshotsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 xs:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Snapshots</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">Snapshots</h1>
+        <p className="text-xs xs:text-sm text-muted-foreground">
           Mesačné snapshots s NAV výpočtom a rozdelením podielov
         </p>
       </div>
@@ -39,7 +39,7 @@ export function SnapshotsPage() {
 
       {/* Snapshot Form */}
       {showForm && (
-        <div className="rounded-lg border border-border bg-card p-6">
+        <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
           <SnapshotForm
             onSubmit={handleCreateSnapshot}
             onCancel={handleCancelForm}
@@ -49,8 +49,8 @@ export function SnapshotsPage() {
       )}
 
       {/* Historical Snapshots */}
-      <div className="rounded-lg border border-border bg-card p-6">
-        <h2 className="text-xl font-semibold text-foreground mb-4">História snapshots</h2>
+      <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+        <h2 className="text-lg xs:text-xl font-semibold text-foreground mb-3 xs:mb-4">História snapshots</h2>
         <SnapshotsList onCreateSnapshot={() => setShowForm(true)} />
       </div>
     </div>

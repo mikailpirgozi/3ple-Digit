@@ -57,10 +57,10 @@ export function ReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 xs:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Reporty</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">Reporty</h1>
+        <p className="text-xs xs:text-sm text-muted-foreground">
           Analýzy a prehľady výkonnosti s možnosťou CSV exportu
         </p>
       </div>
@@ -68,30 +68,30 @@ export function ReportsPage() {
       {/* Report Tabs */}
       <Card>
         <CardHeader>
-          <CardTitle>Dostupné reporty</CardTitle>
+          <CardTitle className="text-base xs:text-lg">Dostupné reporty</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 xs:gap-4 mb-4 xs:mb-6">
             {reportTabs.map(tab => (
               <Button
                 key={tab.id}
                 variant={activeReport === tab.id ? 'default' : 'outline'}
                 onClick={() => setActiveReport(tab.id)}
-                className="h-auto p-4 text-left justify-start"
+                className="h-auto p-3 xs:p-4 text-left justify-start"
               >
-                <div className="flex flex-col items-start space-y-2">
-                  <div className="text-2xl">{tab.icon}</div>
-                  <h3 className="font-medium">{tab.label}</h3>
-                  <p className="text-sm text-muted-foreground">{tab.description}</p>
+                <div className="flex flex-col items-start space-y-1 xs:space-y-2">
+                  <div className="text-xl xs:text-2xl">{tab.icon}</div>
+                  <h3 className="font-medium text-sm xs:text-base">{tab.label}</h3>
+                  <p className="text-xs xs:text-sm text-muted-foreground">{tab.description}</p>
                 </div>
               </Button>
             ))}
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-4 p-4 bg-muted/30 rounded-lg">
+          <div className="flex flex-col xs:flex-row xs:flex-wrap gap-3 xs:gap-4 p-3 xs:p-4 bg-muted/30 rounded-lg">
             <div className="flex items-center gap-2">
-              <Label htmlFor="period" className="text-sm font-medium text-foreground">
+              <Label htmlFor="period" className="text-xs xs:text-sm font-medium text-foreground">
                 Obdobie:
               </Label>
               <input
@@ -99,12 +99,12 @@ export function ReportsPage() {
                 type="month"
                 value={(filters.period as string) ?? ''}
                 onChange={e => setFilters({ ...filters, period: e.target.value ?? undefined })}
-                className="px-2 py-1 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="px-2 py-1 text-xs xs:text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
 
             <div className="flex items-center gap-2">
-              <Label htmlFor="dateFrom" className="text-sm font-medium text-foreground">
+              <Label htmlFor="dateFrom" className="text-xs xs:text-sm font-medium text-foreground">
                 Od:
               </Label>
               <DatePicker
@@ -120,7 +120,7 @@ export function ReportsPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Label htmlFor="dateTo" className="text-sm font-medium text-foreground">
+              <Label htmlFor="dateTo" className="text-xs xs:text-sm font-medium text-foreground">
                 Do:
               </Label>
               <DatePicker
@@ -135,7 +135,7 @@ export function ReportsPage() {
               />
             </div>
 
-            <Button variant="outline" size="sm" onClick={() => setFilters({})}>
+            <Button variant="outline" size="sm" onClick={() => setFilters({})} className="text-xs xs:text-sm">
               Vymazať filtre
             </Button>
           </div>

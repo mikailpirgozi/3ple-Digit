@@ -51,16 +51,16 @@ export function CurrentNavCard({ onCreateSnapshot }: CurrentNavCardProps) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 xs:gap-4 mb-4 xs:mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Aktuálny NAV</h2>
-          <p className="text-sm text-muted-foreground">Aktuálny stav portfólia</p>
+          <h2 className="text-lg xs:text-xl font-semibold text-foreground">Aktuálny NAV</h2>
+          <p className="text-xs xs:text-sm text-muted-foreground">Aktuálny stav portfólia</p>
         </div>
         {onCreateSnapshot && (
           <button
             onClick={onCreateSnapshot}
-            className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            className="px-3 xs:px-4 py-2 text-xs xs:text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 whitespace-nowrap"
           >
             Vytvoriť snapshot
           </button>
@@ -68,37 +68,37 @@ export function CurrentNavCard({ onCreateSnapshot }: CurrentNavCardProps) {
       </div>
 
       {/* NAV Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="text-center p-3 sm:p-4 bg-primary/5 border border-primary/20 rounded-lg">
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">NAV</p>
-          <p className="text-lg sm:text-2xl font-bold text-primary">
+      <div className="grid grid-cols-2 xs:grid-cols-4 gap-2 xs:gap-4 mb-4 xs:mb-6">
+        <div className="text-center p-2 xs:p-3 sm:p-4 bg-primary/5 border border-primary/20 rounded-lg">
+          <p className="text-xs text-muted-foreground mb-1">NAV</p>
+          <p className="text-sm xs:text-lg sm:text-2xl font-bold text-primary">
             {formatCurrency(currentNav.nav)}
           </p>
         </div>
-        <div className="text-center p-3 sm:p-4 border border-border rounded-lg">
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Aktíva</p>
-          <p className="text-lg sm:text-xl font-semibold text-green-600">
+        <div className="text-center p-2 xs:p-3 sm:p-4 border border-border rounded-lg">
+          <p className="text-xs text-muted-foreground mb-1">Aktíva</p>
+          <p className="text-sm xs:text-lg sm:text-xl font-semibold text-green-600">
             {formatCurrency(currentNav.totalAssetValue)}
           </p>
         </div>
-        <div className="text-center p-3 sm:p-4 border border-border rounded-lg">
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Hotovosť</p>
-          <p className="text-lg sm:text-xl font-semibold text-blue-600">
+        <div className="text-center p-2 xs:p-3 sm:p-4 border border-border rounded-lg">
+          <p className="text-xs text-muted-foreground mb-1">Hotovosť</p>
+          <p className="text-sm xs:text-lg sm:text-xl font-semibold text-blue-600">
             {formatCurrency(currentNav.totalBankBalance)}
           </p>
         </div>
-        <div className="text-center p-3 sm:p-4 border border-border rounded-lg">
-          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Záväzky</p>
-          <p className="text-lg sm:text-xl font-semibold text-red-600">
+        <div className="text-center p-2 xs:p-3 sm:p-4 border border-border rounded-lg">
+          <p className="text-xs text-muted-foreground mb-1">Záväzky</p>
+          <p className="text-sm xs:text-lg sm:text-xl font-semibold text-red-600">
             -{formatCurrency(currentNav.totalLiabilities)}
           </p>
         </div>
       </div>
 
       {/* NAV Calculation Formula */}
-      <div className="bg-muted/50 border border-border rounded-lg p-4">
-        <h3 className="text-sm font-medium text-foreground mb-2">Výpočet NAV</h3>
-        <div className="text-sm text-muted-foreground space-y-1">
+      <div className="bg-muted/50 border border-border rounded-lg p-3 xs:p-4">
+        <h3 className="text-xs xs:text-sm font-medium text-foreground mb-2">Výpočet NAV</h3>
+        <div className="text-xs xs:text-sm text-muted-foreground space-y-1">
           <div className="flex justify-between">
             <span>Aktíva:</span>
             <span className="text-green-600">+{formatCurrency(currentNav.totalAssetValue)}</span>

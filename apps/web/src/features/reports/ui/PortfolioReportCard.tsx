@@ -80,24 +80,24 @@ export function PortfolioReportCard({ filters }: PortfolioReportCardProps) {
       </div>
 
       {/* Assets by Type */}
-      {report.assetsByType && Object.keys(report.assetsByType).length > 0 && (
+      {report.assetsByType && report.assetsByType.length > 0 && (
         <div className="space-y-4 mb-6">
           <h3 className="text-lg font-medium text-foreground">Rozdelenie podľa typu</h3>
           <div className="space-y-3">
-            {Object.entries(report.assetsByType).map(([assetType, value]) => (
+            {report.assetsByType.map((assetType) => (
               <div
-                key={assetType}
+                key={assetType.type}
                 className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-foreground">
-                    {assetTypeLabels[assetType as AssetType]}
+                    {assetTypeLabels[assetType.type as AssetType]}
                   </span>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">{formatCurrency(value)}</p>
+                  <p className="text-sm font-medium text-foreground">{formatCurrency(assetType.value)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {((value / report.totalValue) * 100).toFixed(1)}%
+                    {assetType.percentage.toFixed(1)}%
                   </p>
                 </div>
               </div>
@@ -125,7 +125,7 @@ export function PortfolioReportCard({ filters }: PortfolioReportCardProps) {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-foreground">
-                    {formatCurrency(asset.currentValue)}
+                    {formatCurrency(asset.value)}
                   </p>
                 </div>
               </div>

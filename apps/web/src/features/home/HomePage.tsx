@@ -32,12 +32,12 @@ const translateAssetType = (type: string) => {
 
 // Loading skeleton component
 const StatCardSkeleton = () => (
-  <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+  <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
     <div className="flex items-center">
-      <div className="text-xl sm:text-2xl animate-pulse">⏳</div>
-      <div className="ml-3 sm:ml-4">
-        <div className="h-4 bg-muted animate-pulse rounded mb-2 w-16"></div>
-        <div className="h-6 bg-muted animate-pulse rounded w-24"></div>
+      <div className="text-lg xs:text-xl sm:text-2xl animate-pulse">⏳</div>
+      <div className="ml-2 xs:ml-3 sm:ml-4">
+        <div className="h-3 xs:h-4 bg-muted animate-pulse rounded mb-1 xs:mb-2 w-12 xs:w-16"></div>
+        <div className="h-4 xs:h-6 bg-muted animate-pulse rounded w-16 xs:w-24"></div>
       </div>
     </div>
   </div>
@@ -45,12 +45,12 @@ const StatCardSkeleton = () => (
 
 // Error card component
 const StatCardError = ({ title, error }: { title: string; error: string }) => (
-  <div className="rounded-lg border border-destructive bg-card p-4 sm:p-6">
+  <div className="rounded-lg border border-destructive bg-card p-3 xs:p-4 sm:p-6">
     <div className="flex items-center">
-      <div className="text-xl sm:text-2xl">⚠️</div>
-      <div className="ml-3 sm:ml-4">
+      <div className="text-lg xs:text-xl sm:text-2xl">⚠️</div>
+      <div className="ml-2 xs:ml-3 sm:ml-4">
         <p className="text-xs sm:text-sm font-medium text-muted-foreground">{title}</p>
-        <p className="text-sm text-destructive">Chyba: {error}</p>
+        <p className="text-xs xs:text-sm text-destructive">Chyba: {error}</p>
       </div>
     </div>
   </div>
@@ -71,37 +71,39 @@ export function HomePage() {
   // const currentSnapshot = snapshotsData?.snapshots?.[0]; // Unused for now
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Prehľad</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
+        <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">Prehľad</h1>
+        <p className="text-xs xs:text-sm sm:text-base text-muted-foreground">
           Prehľad vašich investícií a aktív
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 xs:gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* NAV Card */}
         {navLoading ? (
           <StatCardSkeleton />
         ) : navError ? (
           <StatCardError title="NAV" error="Nepodarilo sa načítať dáta" />
         ) : (
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+          <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="text-xl sm:text-2xl">💰</div>
-                <div className="ml-3 sm:ml-4">
+              <div className="flex items-center min-w-0 flex-1">
+                <div className="text-lg xs:text-xl sm:text-2xl flex-shrink-0">💰</div>
+                <div className="ml-2 xs:ml-3 sm:ml-4 min-w-0 flex-1">
                   <p className="text-xs sm:text-sm font-medium text-muted-foreground">NAV</p>
-                  <p className="text-lg sm:text-2xl font-bold text-foreground">
+                  <p className="text-sm xs:text-lg sm:text-2xl font-bold text-foreground truncate">
                     {formatCurrency(navData?.nav ?? 0)}
                   </p>
                 </div>
               </div>
-              <TrendIndicator
-                current={navData?.nav ?? 0}
-                previous={previousSnapshot?.nav}
-                formatValue={formatCurrency}
-              />
+              <div className="flex-shrink-0 ml-2">
+                <TrendIndicator
+                  current={navData?.nav ?? 0}
+                  previous={previousSnapshot?.nav}
+                  formatValue={formatCurrency}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -112,22 +114,24 @@ export function HomePage() {
         ) : navError ? (
           <StatCardError title="Aktíva" error="Nepodarilo sa načítať dáta" />
         ) : (
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+          <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="text-xl sm:text-2xl">🏢</div>
-                <div className="ml-3 sm:ml-4">
+              <div className="flex items-center min-w-0 flex-1">
+                <div className="text-lg xs:text-xl sm:text-2xl flex-shrink-0">🏢</div>
+                <div className="ml-2 xs:ml-3 sm:ml-4 min-w-0 flex-1">
                   <p className="text-xs sm:text-sm font-medium text-muted-foreground">Aktíva</p>
-                  <p className="text-lg sm:text-2xl font-bold text-foreground">
+                  <p className="text-sm xs:text-lg sm:text-2xl font-bold text-foreground truncate">
                     {formatCurrency(navData?.totalAssetValue ?? 0)}
                   </p>
                 </div>
               </div>
-              <TrendIndicator
-                current={navData?.totalAssetValue ?? 0}
-                previous={previousSnapshot?.totalAssetValue}
-                formatValue={formatCurrency}
-              />
+              <div className="flex-shrink-0 ml-2">
+                <TrendIndicator
+                  current={navData?.totalAssetValue ?? 0}
+                  previous={previousSnapshot?.totalAssetValue}
+                  formatValue={formatCurrency}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -138,22 +142,24 @@ export function HomePage() {
         ) : bankError ? (
           <StatCardError title="Banka" error="Nepodarilo sa načítať dáta" />
         ) : (
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+          <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="text-xl sm:text-2xl">🏦</div>
-                <div className="ml-3 sm:ml-4">
+              <div className="flex items-center min-w-0 flex-1">
+                <div className="text-lg xs:text-xl sm:text-2xl flex-shrink-0">🏦</div>
+                <div className="ml-2 xs:ml-3 sm:ml-4 min-w-0 flex-1">
                   <p className="text-xs sm:text-sm font-medium text-muted-foreground">Banka</p>
-                  <p className="text-lg sm:text-2xl font-bold text-foreground">
+                  <p className="text-sm xs:text-lg sm:text-2xl font-bold text-foreground truncate">
                     {formatCurrency(bankData?.totalBalance ?? 0)}
                   </p>
                 </div>
               </div>
-              <TrendIndicator
-                current={bankData?.totalBalance ?? 0}
-                previous={previousSnapshot?.totalBankBalance}
-                formatValue={formatCurrency}
-              />
+              <div className="flex-shrink-0 ml-2">
+                <TrendIndicator
+                  current={bankData?.totalBalance ?? 0}
+                  previous={previousSnapshot?.totalBankBalance}
+                  formatValue={formatCurrency}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -164,22 +170,24 @@ export function HomePage() {
         ) : liabilitiesError ? (
           <StatCardError title="Záväzky" error="Nepodarilo sa načítať dáta" />
         ) : (
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+          <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="text-xl sm:text-2xl">💳</div>
-                <div className="ml-3 sm:ml-4">
+              <div className="flex items-center min-w-0 flex-1">
+                <div className="text-lg xs:text-xl sm:text-2xl flex-shrink-0">💳</div>
+                <div className="ml-2 xs:ml-3 sm:ml-4 min-w-0 flex-1">
                   <p className="text-xs sm:text-sm font-medium text-muted-foreground">Záväzky</p>
-                  <p className="text-lg sm:text-2xl font-bold text-destructive">
+                  <p className="text-sm xs:text-lg sm:text-2xl font-bold text-destructive truncate">
                     {formatCurrency(liabilitiesData?.totalBalance ?? 0)}
                   </p>
                 </div>
               </div>
-              <TrendIndicator
-                current={liabilitiesData?.totalBalance ?? 0}
-                previous={previousSnapshot?.totalLiabilities}
-                formatValue={formatCurrency}
-              />
+              <div className="flex-shrink-0 ml-2">
+                <TrendIndicator
+                  current={liabilitiesData?.totalBalance ?? 0}
+                  previous={previousSnapshot?.totalLiabilities}
+                  formatValue={formatCurrency}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -187,9 +195,9 @@ export function HomePage() {
 
       {/* Asset Breakdown */}
       {navData && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Rozdelenie aktív</h3>
+        <div className="grid grid-cols-1 gap-4 xs:gap-6 lg:grid-cols-2">
+          <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+            <h3 className="text-base xs:text-lg font-semibold text-foreground mb-3 xs:mb-4">Rozdelenie aktív</h3>
             <div className="space-y-3">
               {navData.assetBreakdown
                 .sort((a, b) => b.totalValue - a.totalValue) // Zoradenie podľa ceny (najvyššie prvé)
@@ -207,8 +215,8 @@ export function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Bankové účty</h3>
+          <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+            <h3 className="text-base xs:text-lg font-semibold text-foreground mb-3 xs:mb-4">Bankové účty</h3>
             <div className="space-y-3">
               {bankData?.byAccount
                 .sort((a, b) => b.amount - a.amount) // Zoradenie podľa sumy (najvyššie prvé)
@@ -231,10 +239,10 @@ export function HomePage() {
       )}
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xs:gap-6 lg:grid-cols-2">
         {/* NAV Trend Chart */}
-        <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Vývoj NAV</h3>
+        <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+          <h3 className="text-base xs:text-lg font-semibold text-foreground mb-3 xs:mb-4">Vývoj NAV</h3>
           {snapshotsData && snapshotsData.snapshots.length > 0 ? (
             <SimpleLineChart
               data={snapshotsData.snapshots
@@ -265,8 +273,8 @@ export function HomePage() {
         </div>
 
         {/* Asset Allocation Chart */}
-        <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Alokácia aktív</h3>
+        <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+          <h3 className="text-base xs:text-lg font-semibold text-foreground mb-3 xs:mb-4">Alokácia aktív</h3>
           {navData && navData.assetBreakdown.length > 0 ? (
             <SimplePieChart
               data={navData.assetBreakdown
@@ -287,25 +295,25 @@ export function HomePage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Rýchle akcie</h3>
+      <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+        <h3 className="text-base xs:text-lg font-semibold text-foreground mb-3 xs:mb-4">Rýchle akcie</h3>
         <QuickActions />
       </div>
 
       {/* Recent Activity */}
-      <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Nedávne aktivity</h3>
+      <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+        <h3 className="text-base xs:text-lg font-semibold text-foreground mb-3 xs:mb-4">Nedávne aktivity</h3>
         <RecentActivity />
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">
+      <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
+        <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-foreground mb-3 xs:mb-4">
           Vitajte v 3ple Digit MVP
         </h2>
-        <p className="text-sm sm:text-base text-muted-foreground mb-4">
+        <p className="text-xs xs:text-sm sm:text-base text-muted-foreground mb-3 xs:mb-4">
           Toto je základná verzia aplikácie pre správu investícií. Momentálne máte prístup k:
         </p>
-        <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
+        <ul className="space-y-1.5 xs:space-y-2 text-xs sm:text-sm text-muted-foreground">
           <li>• 👥 Správa investorov a ich vkladov</li>
           <li>• 🏢 Evidencia aktív (nehnuteľnosti, pôžičky, akcie...)</li>
           <li>• 🏦 Sledovanie bankových účtov</li>

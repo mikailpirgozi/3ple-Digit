@@ -36,11 +36,11 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="w-9 h-9"
+      className="w-8 h-8 xs:w-9 xs:h-9"
       title={getTooltip()}
       aria-label="Toggle theme"
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
     </Button>
   );
 }
