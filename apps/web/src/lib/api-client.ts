@@ -15,9 +15,12 @@ export interface ApiErrorResponse {
 
 // Create axios instance with base configuration
 const createApiClient = (): AxiosInstance => {
+  // Use environment variable for API URL, fallback to relative URL for development
+  const baseURL = env.VITE_API_URL ? `${env.VITE_API_URL}/api` : '/api';
+  
   const client = axios.create({
-    baseURL: `${env.VITE_API_URL}/api`,
-    timeout: 10000,
+    baseURL,
+    timeout: 30000, // Increased timeout for file uploads
     headers: {
       'Content-Type': 'application/json',
     },
@@ -30,6 +33,16 @@ const createApiClient = (): AxiosInstance => {
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      
+      // Debug logging for API requests
+      // eslint-disable-next-line no-console
+      console.log('API Request:', {
+        method: config.method?.toUpperCase(),
+        url: config.url,
+        baseURL: config.baseURL,
+        fullURL: `${config.baseURL}${config.url}`,
+      });
+      
       return config;
     },
     error => Promise.reject(error)

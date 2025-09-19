@@ -42,6 +42,13 @@ export const documentsApi = {
     file: File,
     fields?: Record<string, string>
   ): Promise<void> => {
+    // Check if it's a mock URL (development mode)
+    if (uploadUrl.includes('mock-upload-url.com') || uploadUrl.includes('mock')) {
+      // eslint-disable-next-line no-console
+      console.log('Skipping actual upload in development mode with mock URL');
+      return;
+    }
+
     const formData = new FormData();
 
     // Add fields first (if any)
@@ -54,14 +61,39 @@ export const documentsApi = {
     // Add file last
     formData.append('file', file);
 
-    // Upload directly to R2 (not through our API)
-    const response = await fetch(uploadUrl, {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      // Upload directly to R2 (not through our API)
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData,
+        mode: 'cors', // Explicitly set CORS mode
+      });
 
-    if (!response.ok) {
-      throw new Error(`Upload failed: ${response.statusText}`);
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        // eslint-disable-next-line no-console
+        console.error('R2 Upload failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+          uploadUrl: `${uploadUrl.substring(0, 100)}...`, // Log partial URL for debugging
+        });
+        throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('R2 Upload error:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        uploadUrl: `${uploadUrl.substring(0, 100)}...`, // Log partial URL for debugging
+        fileName: file.name,
+        fileSize: file.size,
+      });
+      
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new Error('Network error: Unable to connect to file storage. Please check your internet connection and try again.');
+      }
+      
+      throw error;
     }
   },
 

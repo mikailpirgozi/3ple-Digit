@@ -91,7 +91,14 @@ export function useUploadDocument(): UseMutationResult<
         linkedId,
       };
 
+      // eslint-disable-next-line no-console
+      console.log('Getting presigned upload URL...', { fileName: file.name, size: file.size });
       const presignResponse = await documentsApi.getPresignedUpload(presignData);
+      // eslint-disable-next-line no-console
+      console.log('Presigned response received:', { 
+        uploadUrl: `${presignResponse.uploadUrl.substring(0, 100)}...`, 
+        r2Key: presignResponse.r2Key 
+      });
 
       // Upload file to R2 (skip in development with mock URL)
       if (!presignResponse.uploadUrl.includes('mock-upload-url.com') && !presignResponse.uploadUrl.includes('mock')) {
