@@ -83,7 +83,7 @@ export class R2Service {
 
       const uploadUrl = await getSignedUrl(r2Client, command, {
         expiresIn: expiresInMinutes * 60,
-        // Explicitly disable checksum headers
+        // Explicitly disable checksum headers and x-id parameter
         unhoistableHeaders: new Set([
           'x-amz-checksum-crc32',
           'x-amz-checksum-crc32c', 
@@ -91,6 +91,8 @@ export class R2Service {
           'x-amz-checksum-sha256',
           'x-amz-sdk-checksum-algorithm'
         ]),
+        // Disable x-id parameter
+        signableHeaders: new Set(['host']),
       });
 
       const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
