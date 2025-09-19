@@ -62,14 +62,25 @@ export const documentsApi = {
       }))
     });
 
-    // Use raw axios for multipart/form-data
-    const response = await apiClient.post('/documents/upload-proxy', formData, {
+    // Use fetch instead of axios for FormData
+    const token = localStorage.getItem('auth_token');
+    const baseURL = apiClient.defaults.baseURL;
+    
+    const response = await fetch(`${baseURL}/documents/upload-proxy`, {
+      method: 'POST',
       headers: {
-        // Let axios/browser set Content-Type with boundary
-      }
+        'Authorization': token ? `Bearer ${token}` : '',
+        // Don't set Content-Type - let browser set it with boundary
+      },
+      body: formData,
     });
     
-    return response.data;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || error.message || 'Upload failed');
+    }
+    
+    return response.json();
   },
 
   // Upload file to R2 using presigned URL
