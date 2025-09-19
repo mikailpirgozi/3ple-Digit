@@ -106,6 +106,18 @@ router.get('/path', asyncHandler(async (_req, res) => {
 - Provide diffs and "how to test" steps with every larger change.
 - Prefer minimal diffs; for >200 LOC changes, outline a short refactor plan first.
 
+## DATABASE PROTECTION RULES (CRITICAL - NEVER VIOLATE)
+- ❌ **NEVER** use `prisma migrate reset` - DELETES ALL DATA
+- ❌ **NEVER** use `prisma db push --force-reset` - DELETES ALL DATA  
+- ❌ **NEVER** use `prisma db push --force` - DELETES ALL DATA
+- ❌ **NEVER** drop/replace existing tables with data
+- ❌ **NEVER** use destructive database operations without explicit user consent
+- ✅ **ALWAYS** use `prisma migrate dev` to ADD new fields/tables
+- ✅ **ALWAYS** use `prisma db push` for development schema sync
+- ✅ **ALWAYS** preserve existing data when adding schema changes
+- ✅ **ALWAYS** ask before any operation that could affect existing data
+- 🚨 **CRITICAL**: User's Railway PostgreSQL database contains valuable production data that must NEVER be deleted
+
 ## DO / DON'T
 - ✅ Use typed helpers (`env`, `api`, `log`, `flags`), shared Zod schemas.
 - ✅ Keep modules isolated; export types from `/packages/types` if shared.

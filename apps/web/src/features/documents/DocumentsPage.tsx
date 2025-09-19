@@ -16,7 +16,13 @@ export function DocumentsPage() {
     note?: string;
   }) => {
     try {
-      await uploadDocumentMutation.mutateAsync(data);
+      await uploadDocumentMutation.mutateAsync({
+        file: data.file,
+        linkedType: data.linkedType,
+        linkedId: data.linkedId,
+        title: data.title,
+        note: data.note,
+      });
       setShowUploadForm(false);
     } catch (error) {
       console.error('Error uploading document:', error);

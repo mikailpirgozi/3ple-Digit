@@ -72,6 +72,24 @@ export class DocumentsService {
       return {
         uploadUrl: uploadData.uploadUrl,
         r2Key: uploadData.r2Key,
+        expiresAt: uploadData.expiresAt,
+        fields: {},
+        document: {
+          id: '',
+          name: data.fileName,
+          originalName: data.fileName,
+          linkedType: data.linkedType ?? null,
+          linkedId: data.linkedId ?? null,
+          description: null,
+          r2Key: uploadData.r2Key,
+          mimeType: data.fileType,
+          size: data.fileSize,
+          sha256: null,
+          category: null,
+          uploadedBy: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       };
     } catch (error) {
       log.error('Failed to generate presigned upload URL', {
@@ -100,6 +118,8 @@ export class DocumentsService {
         size: data.size,
         category: this.toNullable(data.category),
         description: this.toNullable(data.description),
+        linkedType: this.toNullable(data.linkedType),
+        linkedId: this.toNullable(data.linkedId),
         uploadedBy: this.toNullable(userId),
       },
     });
@@ -377,6 +397,8 @@ export class DocumentsService {
       sha256: document.sha256 as string,
       category: document.category as string,
       description: document.description as string | null,
+      linkedType: document.linkedType as string | null,
+      linkedId: document.linkedId as string | null,
       uploadedBy: document.uploadedBy as string,
       createdAt: document.createdAt as Date,
       updatedAt: document.updatedAt as Date,

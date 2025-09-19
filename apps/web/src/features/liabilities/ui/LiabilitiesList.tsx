@@ -1,4 +1,5 @@
 import type { Liability } from '@/types/api';
+import { useState } from 'react';
 import { useDeleteLiability, useLiabilities } from '../hooks';
 
 interface LiabilitiesListProps {
@@ -6,7 +7,12 @@ interface LiabilitiesListProps {
   onEditLiability?: (liability: Liability) => void;
 }
 
+type SortOption = 'name' | 'currentBalance' | 'createdAt';
+
 export function LiabilitiesList({ onCreateLiability, onEditLiability }: LiabilitiesListProps) {
+  const [sortBy, setSortBy] = useState<SortOption>('currentBalance');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  
   const { data: liabilitiesData, isLoading, error } = useLiabilities();
   const deleteLiabilityMutation = useDeleteLiability();
 
@@ -54,6 +60,38 @@ export function LiabilitiesList({ onCreateLiability, onEditLiability }: Liabilit
     0
   );
 
+  // Sort liabilities based on selected criteria
+  const sortedLiabilities = [...liabilities].sort((a, b) => {
+    let aValue: string | number, bValue: string | number;
+
+    switch (sortBy) {
+      case 'currentBalance':
+        aValue = a.currentBalance ?? 0;
+        bValue = b.currentBalance ?? 0;
+        break;
+      case 'name':
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case 'createdAt':
+        aValue = new Date(a.createdAt).getTime();
+        bValue = new Date(b.createdAt).getTime();
+        break;
+      default:
+        return 0;
+    }
+
+    if (sortBy === 'name') {
+      return sortOrder === 'asc'
+        ? (aValue as string).localeCompare(bValue as string)
+        : (bValue as string).localeCompare(aValue as string);
+    } else {
+      return sortOrder === 'asc'
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
+    }
+  });
+
   return (
     <div className="space-y-6">
       {/* Summary Card */}
@@ -70,9 +108,32 @@ export function LiabilitiesList({ onCreateLiability, onEditLiability }: Liabilit
         </div>
       </div>
 
+      {/* Filters and Sorting */}
+      <div className="bg-muted/50 border border-border rounded-lg p-4">
+        <div className="flex flex-col xs:flex-row xs:flex-wrap gap-2 xs:gap-4">
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as SortOption)}
+            className="px-2 xs:px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs xs:text-sm"
+          >
+            <option value="currentBalance">Zoradiť podľa zostatku</option>
+            <option value="name">Zoradiť podľa názvu</option>
+            <option value="createdAt">Zoradiť podľa dátumu</option>
+          </select>
+
+          <button
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="px-2 xs:px-3 py-2 border border-border rounded-md bg-background text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs xs:text-sm"
+            title={sortOrder === 'asc' ? 'Zostupne' : 'Vzostupne'}
+          >
+            {sortOrder === 'asc' ? '↑' : '↓'}
+          </button>
+        </div>
+      </div>
+
       {/* Liabilities List */}
       <div className="space-y-4">
-        {liabilities.length === 0 ? (
+        {sortedLiabilities.length === 0 ? (
           <div className="text-center py-8">
             <div className="space-y-2">
               <svg
@@ -102,9 +163,7 @@ export function LiabilitiesList({ onCreateLiability, onEditLiability }: Liabilit
           </div>
         ) : (
           <div className="space-y-3">
-            {liabilities
-              .sort((a, b) => b.currentBalance - a.currentBalance) // Sort by balance descending
-              .map(liability => (
+            {sortedLiabilities.map(liability => (
                 <div
                   key={liability.id}
                   className="flex items-center justify-between p-4 border border-border rounded-lg bg-card hover:shadow-md transition-shadow"
@@ -166,7 +225,7 @@ export function LiabilitiesList({ onCreateLiability, onEditLiability }: Liabilit
               />
             </svg>
             <span>
-              Záväzky sú zoradené podľa výšky zostatku. Celkové záväzky sa odpočítavaju od NAV.
+              Záväzky sú zoradené podľa vybranej možnosti. Celkové záväzky sa odpočítavaju od NAV.
             </span>
           </div>
         </div>

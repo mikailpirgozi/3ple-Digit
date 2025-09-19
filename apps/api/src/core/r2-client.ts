@@ -12,6 +12,7 @@ const r2Client = new S3Client({
     accessKeyId: env.R2_ACCESS_KEY_ID,
     secretAccessKey: env.R2_SECRET_ACCESS_KEY,
   },
+  forcePathStyle: true, // Required for R2
 });
 
 export interface UploadMetadata {
@@ -45,6 +46,28 @@ export class R2Service {
       const randomSuffix = Math.random().toString(36).substring(2, 8);
       const extension = this.getFileExtension(metadata.originalName);
       const r2Key = `uploads/${timestamp}-${randomSuffix}${extension}`;
+
+      // In development mode without R2 credentials, return a mock URL
+      if (env.R2_ACCOUNT_ID === 'test-account-id' || 
+          env.R2_ACCESS_KEY_ID === 'test-access-key' ||
+          env.R2_ACCOUNT_ID === 'your-r2-account-id' ||
+          env.R2_ACCESS_KEY_ID === 'your-r2-access-key-id') {
+        log.warn('Using mock R2 service for development (no real R2 credentials)', {
+          r2Key,
+          mimeType: metadata.mimeType,
+          size: metadata.size,
+        });
+
+        const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
+        const publicUrl = `${this.publicUrl}/${r2Key}`;
+
+        return {
+          uploadUrl: `https://mock-upload-url.com/upload?key=${r2Key}`,
+          r2Key,
+          publicUrl,
+          expiresAt,
+        };
+      }
 
       // Create presigned URL
       const command = new PutObjectCommand({
@@ -95,6 +118,18 @@ export class R2Service {
     expiresInMinutes = 60
   ): Promise<string> {
     try {
+      // In development mode without R2 credentials, return mock URL
+      if (env.R2_ACCOUNT_ID === 'test-account-id' || 
+          env.R2_ACCESS_KEY_ID === 'test-access-key' ||
+          env.R2_ACCOUNT_ID === 'your-r2-account-id' ||
+          env.R2_ACCESS_KEY_ID === 'your-r2-access-key-id') {
+        log.warn('Using mock download URL for development (no real R2 credentials)', {
+          r2Key,
+          expiresInMinutes,
+        });
+        return `https://mock-download-url.com/download?key=${r2Key}`;
+      }
+
       const command = new GetObjectCommand({
         Bucket: this.bucketName,
         Key: r2Key,
@@ -124,6 +159,17 @@ export class R2Service {
    */
   async deleteObject(r2Key: string): Promise<void> {
     try {
+      // In development mode without R2 credentials, skip R2 deletion
+      if (env.R2_ACCOUNT_ID === 'test-account-id' || 
+          env.R2_ACCESS_KEY_ID === 'test-access-key' ||
+          env.R2_ACCOUNT_ID === 'your-r2-account-id' ||
+          env.R2_ACCESS_KEY_ID === 'your-r2-access-key-id') {
+        log.warn('Skipping R2 deletion in development mode (no real R2 credentials)', {
+          r2Key,
+        });
+        return;
+      }
+
       const command = new DeleteObjectCommand({
         Bucket: this.bucketName,
         Key: r2Key,

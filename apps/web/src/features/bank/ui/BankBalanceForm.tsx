@@ -23,12 +23,21 @@ type BankBalanceFormData = z.infer<typeof bankBalanceFormSchema>;
 
 interface BankBalanceFormProps {
   balance?: BankBalance;
+  formMode?: 'new-account' | 'add-balance' | 'edit-balance';
+  selectedAccountName?: string | null;
   onSubmit: (data: CreateBankBalanceRequest | UpdateBankBalanceRequest) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: BankBalanceFormProps) {
+export function BankBalanceForm({ 
+  balance, 
+  formMode = 'new-account', 
+  selectedAccountName, 
+  onSubmit, 
+  onCancel, 
+  isLoading 
+}: BankBalanceFormProps) {
   const { data: accountNames } = useAccountNames();
 
   const {
@@ -48,34 +57,61 @@ export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: Bank
               : (balance.date as string).split('T')[0],
           amount: balance.amount,
           currency: balance.currency,
-          bankName: balance.bankName || '',
-          accountType: balance.accountType || '',
+          bankName: balance.bankName ?? '',
+          accountType: balance.accountType === '' ? 'NONE' : (balance.accountType ?? 'NONE'),
         }
       : {
+          accountName: selectedAccountName ?? '',
           date: new Date().toISOString().split('T')[0],
           amount: 0,
           currency: 'EUR',
           bankName: '',
-          accountType: '',
+          accountType: 'NONE',
         },
   });
 
-  const selectedAccountName = watch('accountName');
+  const currentAccountName = watch('accountName');
 
   const handleFormSubmit = (data: BankBalanceFormData) => {
-    onSubmit(data);
+    // Convert "NONE" back to empty string for API compatibility
+    // For add-balance mode, don't include bankName and accountType
+    const submitData = {
+      ...data,
+      accountType: data.accountType === 'NONE' ? '' : data.accountType,
+      // Only include bankName and accountType for new accounts
+      ...(formMode === 'new-account' ? {
+        bankName: data.bankName,
+        accountType: data.accountType === 'NONE' ? '' : data.accountType,
+      } : {
+        bankName: '',
+        accountType: '',
+      }),
+    };
+    onSubmit(submitData);
   };
 
   const handleAccountNameSelect = (accountName: string) => {
     setValue('accountName', accountName);
   };
 
+  const getFormTitle = () => {
+    if (balance) return 'Upraviť zostatok';
+    if (formMode === 'add-balance') return 'Pridať zostatok do účtu';
+    return 'Nový bankový účet';
+  };
+
+  const getFormDescription = () => {
+    if (balance) return 'Upravte údaje bankového zostatku';
+    if (formMode === 'add-balance') return `Pridajte nový zostatok do účtu "${selectedAccountName}"`;
+    return 'Vytvorte nový bankový účet a zadajte prvý zostatok';
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{balance ? 'Upraviť zostatok' : 'Nový zostatok'}</CardTitle>
+        <CardTitle>{getFormTitle()}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          {balance ? 'Upravte údaje bankového zostatku' : 'Pridajte nový bankový zostatok'}
+          {getFormDescription()}
         </p>
       </CardHeader>
       <CardContent>
@@ -84,15 +120,22 @@ export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: Bank
           <div>
             <Label htmlFor="accountName">Názov účtu</Label>
             <div className="space-y-2">
-              <Input
-                id="accountName"
-                type="text"
-                {...register('accountName')}
-                placeholder="Napríklad: Main Business Account"
-              />
+              {formMode === 'add-balance' ? (
+                <div className="p-3 bg-muted rounded-md">
+                  <p className="text-sm font-medium">{selectedAccountName}</p>
+                  <p className="text-xs text-muted-foreground">Pridávate zostatok do tohto účtu</p>
+                </div>
+              ) : (
+                <Input
+                  id="accountName"
+                  type="text"
+                  {...register('accountName')}
+                  placeholder="Napríklad: Main Business Account"
+                />
+              )}
 
-              {/* Existing account names suggestions */}
-              {accountNames && accountNames.length > 0 && (
+              {/* Existing account names suggestions - only show for new account mode */}
+              {formMode === 'new-account' && accountNames && accountNames.length > 0 && (
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Existujúce účty:</p>
                   <div className="flex flex-wrap gap-2">
@@ -100,7 +143,7 @@ export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: Bank
                       <Button
                         key={name}
                         type="button"
-                        variant={selectedAccountName === name ? 'default' : 'outline'}
+                        variant={currentAccountName === name ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => handleAccountNameSelect(name)}
                       >
@@ -116,43 +159,47 @@ export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: Bank
             )}
           </div>
 
-          {/* Bank Name */}
-          <div>
-            <Label htmlFor="bankName">Názov banky (voliteľné)</Label>
-            <Input
-              id="bankName"
-              type="text"
-              {...register('bankName')}
-              placeholder="Napríklad: Tatra Banka"
-            />
-            {errors.bankName && (
-              <p className="mt-1 text-sm text-destructive">{errors.bankName.message}</p>
-            )}
-          </div>
+          {/* Bank Name - only show for new account mode */}
+          {formMode === 'new-account' && (
+            <div>
+              <Label htmlFor="bankName">Názov banky (voliteľné)</Label>
+              <Input
+                id="bankName"
+                type="text"
+                {...register('bankName')}
+                placeholder="Napríklad: Tatra Banka"
+              />
+              {errors.bankName && (
+                <p className="mt-1 text-sm text-destructive">{errors.bankName.message}</p>
+              )}
+            </div>
+          )}
 
-          {/* Account Type */}
-          <div>
-            <Label htmlFor="accountType">Typ účtu (voliteľné)</Label>
-            <Select
-              value={watch('accountType') || ''}
-              onValueChange={(value: string) => setValue('accountType', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Vyberte typ účtu" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Žiadny typ</SelectItem>
-                <SelectItem value="BUSINESS">Business účet</SelectItem>
-                <SelectItem value="PERSONAL">Osobný účet</SelectItem>
-                <SelectItem value="SAVINGS">Sporiaci účet</SelectItem>
-                <SelectItem value="CHECKING">Bežný účet</SelectItem>
-                <SelectItem value="INVESTMENT">Investičný účet</SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.accountType && (
-              <p className="mt-1 text-sm text-destructive">{errors.accountType.message}</p>
-            )}
-          </div>
+          {/* Account Type - only show for new account mode */}
+          {formMode === 'new-account' && (
+            <div>
+              <Label htmlFor="accountType">Typ účtu (voliteľné)</Label>
+              <Select
+                value={watch('accountType') ?? 'NONE'}
+                onValueChange={(value: string) => setValue('accountType', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Vyberte typ účtu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NONE">Žiadny typ</SelectItem>
+                  <SelectItem value="BUSINESS">Business účet</SelectItem>
+                  <SelectItem value="PERSONAL">Osobný účet</SelectItem>
+                  <SelectItem value="SAVINGS">Sporiaci účet</SelectItem>
+                  <SelectItem value="CHECKING">Bežný účet</SelectItem>
+                  <SelectItem value="INVESTMENT">Investičný účet</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.accountType && (
+                <p className="mt-1 text-sm text-destructive">{errors.accountType.message}</p>
+              )}
+            </div>
+          )}
 
           {/* Date */}
           <div>
@@ -213,7 +260,14 @@ export function BankBalanceForm({ balance, onSubmit, onCancel, isLoading }: Bank
               Zrušiť
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Ukladám...' : balance ? 'Uložiť zmeny' : 'Vytvoriť zostatok'}
+              {isLoading 
+                ? 'Ukladám...' 
+                : balance 
+                  ? 'Uložiť zmeny' 
+                  : formMode === 'add-balance' 
+                    ? 'Pridať zostatok' 
+                    : 'Vytvoriť účet'
+              }
             </Button>
           </div>
         </form>

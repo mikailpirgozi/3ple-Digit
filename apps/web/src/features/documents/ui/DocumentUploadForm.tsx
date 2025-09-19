@@ -21,6 +21,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useRef, useState } from 'react';
 import { useForm, type ControllerRenderProps } from 'react-hook-form';
 import { z } from 'zod';
+import { useAssets } from '../../assets/hooks';
+import { useInvestors } from '../../investors/hooks';
+import { useLiabilities } from '../../liabilities/hooks';
 
 const documentUploadFormSchema = z.object({
   title: z.string().min(1, 'Názov je povinný'),
@@ -52,10 +55,38 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
     resolver: zodResolver(documentUploadFormSchema),
     defaultValues: {
       linkedType: 'asset',
+      linkedId: '',
+      title: '',
+      note: '',
     },
   });
 
   const selectedLinkedType = form.watch('linkedType');
+
+  // Load entities based on selected type
+  const { data: assetsData } = useAssets();
+  const { data: investorsData } = useInvestors();
+  const { data: liabilitiesData } = useLiabilities();
+
+  const getEntitiesForType = () => {
+    switch (selectedLinkedType) {
+      case 'asset':
+        return assetsData?.assets ?? [];
+      case 'investor':
+        return investorsData?.investors ?? [];
+      case 'liability':
+        return liabilitiesData?.liabilities ?? [];
+      default:
+        return [];
+    }
+  };
+
+  const entities = getEntitiesForType();
+
+  // Reset linkedId when linkedType changes
+  React.useEffect(() => {
+    form.setValue('linkedId', '');
+  }, [selectedLinkedType, form]);
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
@@ -253,7 +284,7 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
             )}
           />
 
-          {/* Linked ID */}
+          {/* Linked Entity */}
           <FormField
             control={form.control}
             name="linkedId"
@@ -263,15 +294,23 @@ export function DocumentUploadForm({ onSubmit, onCancel, isLoading }: DocumentUp
               field: ControllerRenderProps<DocumentUploadFormData, 'linkedId'>;
             }) => (
               <FormItem>
-                <FormLabel>ID entity</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder={`ID ${linkedTypeLabels[selectedLinkedType as DocumentLinkedType]?.toLowerCase() || 'entity'}u`}
-                    {...field}
-                  />
-                </FormControl>
+                <FormLabel>Entita</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={`Vyberte ${linkedTypeLabels[selectedLinkedType as DocumentLinkedType]?.toLowerCase() || 'entitu'}`} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {entities.map((entity) => (
+                      <SelectItem key={entity.id} value={entity.id}>
+                        {entity.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <p className="text-sm text-muted-foreground">
-                  UUID entity, ku ktorej sa dokument vzťahuje
+                  Vyberte {linkedTypeLabels[selectedLinkedType as DocumentLinkedType]?.toLowerCase() || 'entitu'}, ku ktorej sa dokument vzťahuje
                 </p>
                 <FormMessage />
               </FormItem>

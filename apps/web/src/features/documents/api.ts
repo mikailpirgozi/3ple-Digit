@@ -24,6 +24,18 @@ export const documentsApi = {
   getPresignedDownload: (id: string): Promise<{ downloadUrl: string }> =>
     api.get(`/documents/${id}/download`),
 
+  // Create document record after upload
+  createDocument: (data: {
+    name: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+    r2Key: string;
+    linkedType?: string;
+    linkedId?: string;
+    note?: string;
+  }): Promise<Document> => api.post('/documents', data),
+
   // Upload file to R2 using presigned URL
   uploadFile: async (
     uploadUrl: string,

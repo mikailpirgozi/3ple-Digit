@@ -9,6 +9,8 @@ export function BankPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBalance, setEditingBalance] = useState<BankBalance | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [formMode, setFormMode] = useState<'new-account' | 'add-balance' | 'edit-balance'>('new-account');
+  const [selectedAccountName, setSelectedAccountName] = useState<string | null>(null);
 
   const createBalanceMutation = useCreateBankBalance();
   const updateBalanceMutation = useUpdateBankBalance();
@@ -17,6 +19,8 @@ export function BankPage() {
     try {
       await createBalanceMutation.mutateAsync(data);
       setShowForm(false);
+      setFormMode('new-account');
+      setSelectedAccountName(null);
     } catch (error) {
       console.error('Error creating balance:', error);
     }
@@ -29,6 +33,8 @@ export function BankPage() {
       await updateBalanceMutation.mutateAsync({ id: editingBalance.id, data });
       setEditingBalance(null);
       setShowForm(false);
+      setFormMode('new-account');
+      setSelectedAccountName(null);
     } catch (error) {
       console.error('Error updating balance:', error);
     }
@@ -36,12 +42,27 @@ export function BankPage() {
 
   const handleEditBalance = (balance: BankBalance) => {
     setEditingBalance(balance);
+    setFormMode('edit-balance');
+    setShowForm(true);
+  };
+
+  const handleAddBalanceToAccount = (accountName: string) => {
+    setSelectedAccountName(accountName);
+    setFormMode('add-balance');
+    setShowForm(true);
+  };
+
+  const handleCreateNewAccount = () => {
+    setFormMode('new-account');
+    setSelectedAccountName(null);
     setShowForm(true);
   };
 
   const handleCancelForm = () => {
     setShowForm(false);
     setEditingBalance(null);
+    setFormMode('new-account');
+    setSelectedAccountName(null);
   };
 
   return (
@@ -60,10 +81,10 @@ export function BankPage() {
               Import CSV
             </button>
             <button
-              onClick={() => setShowForm(true)}
+              onClick={handleCreateNewAccount}
               className="px-3 xs:px-4 py-2 text-xs xs:text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 whitespace-nowrap"
             >
-              Pridať zostatok
+              Nový účet
             </button>
           </div>
         )}
@@ -73,6 +94,8 @@ export function BankPage() {
         <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
           <BankBalanceForm
             balance={editingBalance ?? undefined}
+            formMode={formMode}
+            selectedAccountName={selectedAccountName}
             onSubmit={editingBalance ? handleUpdateBalance : handleCreateBalance}
             onCancel={handleCancelForm}
             isLoading={createBalanceMutation.isPending ?? updateBalanceMutation.isPending}
@@ -81,7 +104,8 @@ export function BankPage() {
       ) : (
         <div className="rounded-lg border border-border bg-card p-3 xs:p-4 sm:p-6">
           <BankBalancesList
-            onCreateBalance={() => setShowForm(true)}
+            onCreateNewAccount={handleCreateNewAccount}
+            onAddBalanceToAccount={handleAddBalanceToAccount}
             onEditBalance={handleEditBalance}
             onImportCsv={() => setShowImportModal(true)}
           />

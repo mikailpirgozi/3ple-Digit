@@ -68,13 +68,17 @@ export function useUploadDocument(): UseMutationResult<
       file,
       linkedType,
       linkedId,
+      title,
+      note,
     }: {
       file: File;
       linkedType: DocumentLinkedType;
       linkedId: string;
+      title: string;
+      note?: string;
     }) => {
       // Calculate SHA256 hash
-      await documentsApi.calculateSHA256(file);
+      const sha256 = await documentsApi.calculateSHA256(file);
 
       // Get presigned upload URL
       const presignData: PresignUploadRequest = {
@@ -89,10 +93,24 @@ export function useUploadDocument(): UseMutationResult<
 
       const presignResponse = await documentsApi.getPresignedUpload(presignData);
 
-      // Upload file to R2
-      await documentsApi.uploadFile(presignResponse.uploadUrl, file, presignResponse.fields);
+      // Upload file to R2 (skip in development with mock URL)
+      if (!presignResponse.uploadUrl.includes('mock-upload-url.com') && !presignResponse.uploadUrl.includes('mock')) {
+        await documentsApi.uploadFile(presignResponse.uploadUrl, file, presignResponse.fields);
+      }
 
-      return presignResponse.document;
+      // Create document record in database
+      const document = await documentsApi.createDocument({
+        name: title,
+        originalName: file.name,
+        mimeType: file.type,
+        size: file.size,
+        r2Key: presignResponse.r2Key,
+        linkedType: linkedType,
+        linkedId,
+        note,
+      });
+
+      return document;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: documentsKeys.lists() });
@@ -109,6 +127,12 @@ export function useDownloadDocument(): UseMutationResult<
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await documentsApi.getPresignedDownload(id);
+
+      // Check if it's a mock URL (development mode)
+      if (response.downloadUrl.includes('mock-download-url.com') || response.downloadUrl.includes('mock')) {
+        alert('V development móde nie je download dostupný. Dokument je uložený v databáze s mock R2 storage.');
+        return response;
+      }
 
       // Open download URL in new tab
       window.open(response.downloadUrl, '_blank');

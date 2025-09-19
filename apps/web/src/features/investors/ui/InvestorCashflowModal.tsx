@@ -182,7 +182,7 @@ export function InvestorCashflowModal({ investor, onClose }: InvestorCashflowMod
                     type: editingCashflow.type,
                     amount: editingCashflow.amount,
                     date: editingCashflow.date,
-                    note: editingCashflow.note || undefined,
+                    note: editingCashflow.note ?? undefined,
                   } : undefined}
                 />
               </div>
@@ -212,7 +212,7 @@ export function InvestorCashflowModal({ investor, onClose }: InvestorCashflowMod
                       <div className="flex-1">
                         <div className="flex items-center gap-3">
                           <span className="text-lg">
-                            {cashflowTypeLabels[cashflow.type] || cashflow.type}
+                            {cashflowTypeLabels[cashflow.type] ?? cashflow.type}
                           </span>
                           <span className={`font-semibold ${
                             cashflow.type === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'

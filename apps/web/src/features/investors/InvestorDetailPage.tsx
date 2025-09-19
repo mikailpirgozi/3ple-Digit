@@ -1,6 +1,6 @@
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import type { CreateInvestorRequest, Investor } from '@/types/api';
+import type { CreateInvestorRequest } from '@/types/api';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,7 +35,7 @@ export function InvestorDetailPage() {
     data: investor,
     isLoading,
     error,
-  } = useInvestor(id!);
+  } = useInvestor(id ?? '');
   const updateInvestorMutation = useUpdateInvestor();
   const deleteInvestorMutation = useDeleteInvestor();
 

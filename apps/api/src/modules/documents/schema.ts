@@ -8,6 +8,8 @@ export const createDocumentSchema = z.object({
   size: z.number().int().min(1, 'Size must be positive'),
   category: z.string().optional(),
   description: z.string().optional(),
+  linkedType: z.enum(['asset', 'investor', 'liability']).optional(),
+  linkedId: z.string().optional(),
 });
 
 export const updateDocumentSchema = z.object({
@@ -22,6 +24,8 @@ export const getPresignedUploadUrlSchema = z.object({
   fileType: z.string().min(1, 'File type is required'),
   fileSize: z.number().int().min(1, 'File size must be positive'),
   category: z.string().optional(),
+  linkedType: z.enum(['asset', 'investor', 'liability']).optional(),
+  linkedId: z.string().optional(),
 });
 
 // Query schemas
@@ -46,6 +50,8 @@ export const documentResponseSchema = z.object({
   sha256: z.string().nullable(),
   category: z.string().nullable(),
   description: z.string().nullable(),
+  linkedType: z.string().nullable(),
+  linkedId: z.string().nullable(),
   uploadedBy: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -55,7 +61,9 @@ export const documentResponseSchema = z.object({
 export const presignedUploadResponseSchema = z.object({
   uploadUrl: z.string(),
   r2Key: z.string(),
+  expiresAt: z.date(),
   fields: z.record(z.string()).optional(),
+  document: documentResponseSchema,
 });
 
 export const presignedDownloadResponseSchema = z.object({

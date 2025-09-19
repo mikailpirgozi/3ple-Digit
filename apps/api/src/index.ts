@@ -68,7 +68,7 @@ const authLimiter = rateLimit({
 
 const uploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 20, // limit file uploads
+  max: 100, // limit file uploads (increased for development)
   message: 'Too many file uploads, please try again later.',
 });
 

@@ -18,7 +18,8 @@ import { useState } from 'react';
 import { useAccountNames, useBankBalances, useDeleteBankBalance } from '../hooks';
 
 interface BankBalancesListProps {
-  onCreateBalance?: () => void;
+  onCreateNewAccount?: () => void;
+  onAddBalanceToAccount?: (accountName: string) => void;
   onEditBalance?: (balance: BankBalance) => void;
   onImportCsv?: () => void;
 }
@@ -26,7 +27,8 @@ interface BankBalancesListProps {
 type SortOption = 'amount' | 'date' | 'accountName';
 
 export function BankBalancesList({
-  onCreateBalance,
+  onCreateNewAccount,
+  onAddBalanceToAccount,
   onEditBalance,
   onImportCsv,
 }: BankBalancesListProps) {
@@ -274,7 +276,7 @@ export function BankBalancesList({
                   Import CSV
                 </Button>
               )}
-              {onCreateBalance && <Button onClick={onCreateBalance}>Pridať zostatok</Button>}
+              {onCreateNewAccount && <Button onClick={onCreateNewAccount}>Nový účet</Button>}
             </div>
           </div>
         </CardContent>
@@ -301,14 +303,26 @@ export function BankBalancesList({
                       <span>Počet záznamov</span>
                       <span>{account.balanceCount}</span>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setFilters({ ...filters, accountName: account.accountName })}
-                      className="w-full mt-2"
-                    >
-                      Zobraziť históriu
-                    </Button>
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setFilters({ ...filters, accountName: account.accountName })}
+                        className="flex-1"
+                      >
+                        Zobraziť históriu
+                      </Button>
+                      {onAddBalanceToAccount && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => onAddBalanceToAccount(account.accountName)}
+                          className="flex-1"
+                        >
+                          Pridať zostatok
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -339,9 +353,9 @@ export function BankBalancesList({
           {sortedBalances.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">Žiadne zostatky nenájdené</p>
-              {onCreateBalance && (
-                <Button onClick={onCreateBalance} className="mt-2">
-                  Pridať prvý zostatok
+              {onCreateNewAccount && (
+                <Button onClick={onCreateNewAccount} className="mt-2">
+                  Vytvoriť prvý účet
                 </Button>
               )}
             </div>
