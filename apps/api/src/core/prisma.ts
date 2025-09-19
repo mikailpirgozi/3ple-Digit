@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { env } from './env.js';
-import { log } from './logger.js';
+import { env } from './env';
+import { log } from './logger';
 
 // Create Prisma Client factory function for dynamic URL support
 function createPrismaClient() {

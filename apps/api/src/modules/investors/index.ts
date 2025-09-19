@@ -1,6 +1,6 @@
 // Investors module exports
-export { investorsRouter } from './router.js';
-export { investorsService } from './service.js';
+export { investorsRouter } from './router';
+export { investorsService } from './service';
 export { 
   CashflowType,
   type CreateInvestorRequest,
@@ -10,4 +10,4 @@ export {
   type InvestorResponse,
   type CashflowResponse,
   type CashflowTypeEnum,
-} from './schema.js';
+} from './schema';

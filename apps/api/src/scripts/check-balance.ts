@@ -8,7 +8,7 @@
 import {
   analyzeNavInvestorBalance,
   explainAccountingLogic,
-} from '../modules/snapshots/nav-balance-analysis.js';
+} from '../modules/snapshots/nav-balance-analysis';
 
 async function main() {
   // eslint-disable-next-line no-console

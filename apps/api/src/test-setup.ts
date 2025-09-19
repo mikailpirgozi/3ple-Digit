@@ -15,7 +15,7 @@ if (originalDatabaseUrl?.includes('railway.app') ?? originalDatabaseUrl?.include
 process.env.DATABASE_URL = 'file:./test.db'; // FORCE test database
 
 // Import test Prisma client
-import { testPrisma as prisma } from './test-prisma.js';
+import { testPrisma as prisma } from './test-prisma';
 
 beforeAll(async () => {
   // Test setup - connect to SQLite test database

@@ -1,6 +1,6 @@
 // Assets module exports
-export { assetsRouter } from './router.js';
-export { assetsService } from './service.js';
+export { assetsRouter } from './router';
+export { assetsService } from './service';
 export { 
   AssetType,
   AssetEventType,
@@ -12,4 +12,4 @@ export {
   type UpdateAssetEventRequest,
   type AssetResponse,
   type AssetEventResponse,
-} from './schema.js';
+} from './schema';

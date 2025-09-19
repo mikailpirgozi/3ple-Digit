@@ -1,6 +1,6 @@
 // Reports module exports
-export { reportsRouter } from './router.js';
-export { reportsService } from './service.js';
+export { reportsRouter } from './router';
+export { reportsService } from './service';
 export { 
   type GetPortfolioReportQuery,
   type GetInvestorReportQuery,
@@ -11,4 +11,4 @@ export {
   type InvestorReport,
   type PerformanceReport,
   type CashflowReport,
-} from './schema.js';
+} from './schema';

@@ -2,8 +2,8 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { log } from './logger.js';
-import { prisma } from './prisma.js';
+import { log } from './logger';
+import { prisma } from './prisma';
 
 async function createQuickBackup() {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -102,6 +102,6 @@ async function createQuickBackup() {
 }
 
 // Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   void createQuickBackup();
 }

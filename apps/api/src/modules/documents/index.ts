@@ -1,6 +1,6 @@
 // Documents module exports
-export { documentsRouter } from './router.js';
-export { documentsService } from './service.js';
+export { documentsRouter } from './router';
+export { documentsService } from './service';
 export { 
   type CreateDocumentRequest,
   type UpdateDocumentRequest,
@@ -8,4 +8,4 @@ export {
   type DocumentResponse,
   type PresignedUploadResponse,
   type PresignedDownloadResponse,
-} from './schema.js';
+} from './schema';

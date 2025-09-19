@@ -7,11 +7,11 @@ import {
   createErrorResponse,
   isOperationalError,
   sanitizeError,
-} from '../lib/error.js';
-import { log } from './logger.js';
+} from '../lib/error';
+import { log } from './logger';
 
 // Re-export for backward compatibility
-export { AppError, appError as errors } from '../lib/error.js';
+export { AppError, appError as errors } from '../lib/error';
 
 export interface ApiError extends Error {
   statusCode?: number;

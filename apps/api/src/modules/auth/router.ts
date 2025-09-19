@@ -1,9 +1,9 @@
-import { asyncHandler } from '@/core/error-handler.js';
-import { log } from '@/core/logger.js';
+import { asyncHandler } from '@/core/error-handler';
+import { log } from '@/core/logger';
 import { Router, type Router as ExpressRouter } from 'express';
-import { authenticate } from './middleware.js';
-import { loginSchema, registerSchema } from './schema.js';
-import { authService } from './service.js';
+import { authenticate } from './middleware';
+import { loginSchema, registerSchema } from './schema';
+import { authService } from './service';
 
 const router: ExpressRouter = Router();
 

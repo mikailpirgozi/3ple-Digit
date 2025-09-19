@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { testPrisma as prisma } from '../../test-prisma.js';
-import { BankService } from './service.js';
+import { testPrisma as prisma } from '../../test-prisma';
+import { BankService } from './service';
 
 describe('Bank Service Unit Tests', () => {
   const bankService = new BankService();

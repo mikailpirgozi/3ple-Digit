@@ -1,13 +1,13 @@
-import { asyncHandler } from '@/core/error-handler.js';
-import { validateRequiredParam } from '@/core/validation.js';
-import { adminOrInternal, authenticate } from '@/modules/auth/middleware.js';
+import { asyncHandler } from '@/core/error-handler';
+import { validateRequiredParam } from '@/core/validation';
+import { adminOrInternal, authenticate } from '@/modules/auth/middleware';
 import { Router, type Router as ExpressRouter } from 'express';
 import {
   createLiabilitySchema,
   getLiabilitiesQuerySchema,
   updateLiabilitySchema,
-} from './schema.js';
-import { liabilitiesService } from './service.js';
+} from './schema';
+import { liabilitiesService } from './service';
 
 const router: ExpressRouter = Router();
 

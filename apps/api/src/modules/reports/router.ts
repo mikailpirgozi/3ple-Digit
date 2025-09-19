@@ -1,5 +1,5 @@
-import { asyncHandler } from '@/core/error-handler.js';
-import { authenticate } from '@/modules/auth/middleware.js';
+import { asyncHandler } from '@/core/error-handler';
+import { authenticate } from '@/modules/auth/middleware';
 import { Router, type Router as ExpressRouter } from 'express';
 import {
   exportCsvSchema,
@@ -7,8 +7,8 @@ import {
   getInvestorReportQuerySchema,
   getPerformanceReportQuerySchema,
   getPortfolioReportQuerySchema,
-} from './schema.js';
-import { reportsService } from './service.js';
+} from './schema';
+import { reportsService } from './service';
 
 const router: ExpressRouter = Router();
 

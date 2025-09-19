@@ -1,5 +1,5 @@
-import { log } from './logger.js';
-import { prisma } from './prisma.js';
+import { log } from './logger';
+import { prisma } from './prisma';
 
 /**
  * Script na vymazanie všetkých vzorových dát z databázy
@@ -135,7 +135,7 @@ async function cleanupSampleData() {
 }
 
 // Spustenie scriptu ak je volaný priamo
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   cleanupSampleData()
     .then(() => {
       log.info('✅ Cleanup completed successfully!');

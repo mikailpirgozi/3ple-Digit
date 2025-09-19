@@ -4,8 +4,8 @@
  */
 
 import { Decimal } from '@prisma/client/runtime/library';
-import type { Money } from './types-helpers.js';
-import { toMoney } from './types-helpers.js';
+import type { Money } from './types-helpers';
+import { toMoney } from './types-helpers';
 
 /**
  * Rounding modes for money calculations

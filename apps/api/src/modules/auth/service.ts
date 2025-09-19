@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/core/prisma.js';
-import { env } from '@/core/env.js';
-import { errors } from '@/core/error-handler.js';
-import { log } from '@/core/logger.js';
-import type { LoginRequest, RegisterRequest, AuthResponse, JwtPayload, UserRoleType } from './schema.js';
+import { prisma } from '@/core/prisma';
+import { env } from '@/core/env';
+import { errors } from '@/core/error-handler';
+import { log } from '@/core/logger';
+import type { LoginRequest, RegisterRequest, AuthResponse, JwtPayload, UserRoleType } from './schema';
 
 export class AuthService {
   private readonly jwtSecret = env.JWT_SECRET;

@@ -1,6 +1,6 @@
-import { errors } from '@/core/error-handler.js';
-import { log } from '@/core/logger.js';
-import { prisma } from '@/core/prisma.js';
+import { errors } from '@/core/error-handler';
+import { log } from '@/core/logger';
+import { prisma } from '@/core/prisma';
 import type { BankBalance } from '@prisma/client';
 import type {
   BankBalanceResponse,
@@ -10,8 +10,8 @@ import type {
   CsvRowData,
   GetBankBalancesQuery,
   UpdateBankBalanceRequest,
-} from './schema.js';
-import { csvRowSchema } from './schema.js';
+} from './schema';
+import { csvRowSchema } from './schema';
 
 export class BankService {
   /**

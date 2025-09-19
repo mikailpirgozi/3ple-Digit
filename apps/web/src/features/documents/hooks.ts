@@ -78,7 +78,7 @@ export function useUploadDocument(): UseMutationResult<
       note?: string;
     }) => {
       // Calculate SHA256 hash
-      const sha256 = await documentsApi.calculateSHA256(file);
+      await documentsApi.calculateSHA256(file);
 
       // Get presigned upload URL
       const presignData: PresignUploadRequest = {
@@ -105,7 +105,7 @@ export function useUploadDocument(): UseMutationResult<
         mimeType: file.type,
         size: file.size,
         r2Key: presignResponse.r2Key,
-        linkedType: linkedType,
+        linkedType,
         linkedId,
         note,
       });

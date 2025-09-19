@@ -1,6 +1,6 @@
-import { asyncHandler } from '@/core/error-handler.js';
-import { validateRequiredParam } from '@/core/validation.js';
-import { adminOrInternal, authenticate } from '@/modules/auth/middleware.js';
+import { asyncHandler } from '@/core/error-handler';
+import { validateRequiredParam } from '@/core/validation';
+import { adminOrInternal, authenticate } from '@/modules/auth/middleware';
 import { Router, type Router as ExpressRouter } from 'express';
 import {
   createCashflowSchema,
@@ -9,8 +9,8 @@ import {
   getInvestorsQuerySchema,
   updateCashflowSchema,
   updateInvestorSchema,
-} from './schema.js';
-import { investorsService } from './service.js';
+} from './schema';
+import { investorsService } from './service';
 
 const router: ExpressRouter = Router();
 

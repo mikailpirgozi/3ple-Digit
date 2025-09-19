@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { log } from './logger.js';
-import { prisma } from './prisma.js';
+import { log } from './logger';
+import { prisma } from './prisma';
 // Prisma types handled via any for CI compatibility
 
 interface BackupData {
@@ -243,7 +243,7 @@ export async function listBackups(): Promise<string[]> {
 }
 
 // CLI interface
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   const command = process.argv[2];
 
   switch (command) {

@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { testPrisma as prisma } from '../test-prisma.js';
-import app from '../index.js';
+import { testPrisma as prisma } from '../test-prisma';
+import app from '../index';
 
 describe('Integration Tests - Key Application Flows', () => {
   let authToken: string;

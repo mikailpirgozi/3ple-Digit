@@ -1,6 +1,6 @@
-import { errors } from '@/core/error-handler.js';
-import { log } from '@/core/logger.js';
-import { prisma } from '@/core/prisma.js';
+import { errors } from '@/core/error-handler';
+import { log } from '@/core/logger';
+import { prisma } from '@/core/prisma';
 // PeriodSnapshot and InvestorSnapshot types removed as not exported from @prisma/client
 import type {
   CreateSnapshotRequest,
@@ -10,7 +10,7 @@ import type {
   NavCalculation,
   SnapshotResponse,
   UpdateSnapshotRequest,
-} from './schema.js';
+} from './schema';
 
 export class SnapshotsService {
   /**

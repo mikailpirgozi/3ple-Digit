@@ -1,9 +1,9 @@
-import { asyncHandler } from '@/core/error-handler.js';
-import { validateRequiredParam } from '@/core/validation.js';
-import { adminOrInternal, authenticate } from '@/modules/auth/middleware.js';
+import { asyncHandler } from '@/core/error-handler';
+import { validateRequiredParam } from '@/core/validation';
+import { adminOrInternal, authenticate } from '@/modules/auth/middleware';
 import { Router, type Router as ExpressRouter } from 'express';
-import { createSnapshotSchema, getSnapshotsQuerySchema, updateSnapshotSchema } from './schema.js';
-import { snapshotsService } from './service.js';
+import { createSnapshotSchema, getSnapshotsQuerySchema, updateSnapshotSchema } from './schema';
+import { snapshotsService } from './service';
 
 const router: ExpressRouter = Router();
 

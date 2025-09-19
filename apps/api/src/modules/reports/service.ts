@@ -1,5 +1,5 @@
-import { log } from '@/core/logger.js';
-import { prisma } from '@/core/prisma.js';
+import { log } from '@/core/logger';
+import { prisma } from '@/core/prisma';
 import type {
   CashflowReport,
   ExportCsvRequest,
@@ -10,7 +10,7 @@ import type {
   InvestorReport,
   PerformanceReport,
   PortfolioReport,
-} from './schema.js';
+} from './schema';
 
 export class ReportsService {
   /**

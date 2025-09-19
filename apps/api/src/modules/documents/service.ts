@@ -1,7 +1,7 @@
-import { errors } from '@/core/error-handler.js';
-import { log } from '@/core/logger.js';
-import { prisma } from '@/core/prisma.js';
-import { r2Service } from '@/core/r2-client.js';
+import { errors } from '@/core/error-handler';
+import { log } from '@/core/logger';
+import { prisma } from '@/core/prisma';
+import { r2Service } from '@/core/r2-client';
 // Document type removed as not exported from @prisma/client
 import crypto from 'crypto';
 import type {
@@ -12,7 +12,7 @@ import type {
   PresignedDownloadResponse,
   PresignedUploadResponse,
   UpdateDocumentRequest,
-} from './schema.js';
+} from './schema';
 
 export class DocumentsService {
   /**

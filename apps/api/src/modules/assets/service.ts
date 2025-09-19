@@ -1,6 +1,6 @@
-import { errors } from '@/core/error-handler.js';
-import { log } from '@/core/logger.js';
-import { prisma } from '@/core/prisma.js';
+import { errors } from '@/core/error-handler';
+import { log } from '@/core/logger';
+import { prisma } from '@/core/prisma';
 import type { Prisma } from '@prisma/client';
 // Prisma types handled via any for CI compatibility
 import type {
@@ -13,7 +13,7 @@ import type {
   GetAssetsQuery,
   UpdateAssetEventRequest,
   UpdateAssetRequest,
-} from './schema.js';
+} from './schema';
 
 export class AssetsService {
   /**

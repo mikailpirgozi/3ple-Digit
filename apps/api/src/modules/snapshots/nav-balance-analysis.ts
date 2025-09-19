@@ -1,4 +1,4 @@
-import { snapshotsService } from './service.js';
+import { snapshotsService } from './service';
 
 /**
  * Analyze the balance between NAV and Investor Capital

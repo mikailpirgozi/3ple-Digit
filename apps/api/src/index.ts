@@ -1,6 +1,6 @@
-import { env } from '@/core/env.js';
-import { errorHandler } from '@/core/error-handler.js';
-import { logger } from '@/core/logger.js';
+import { env } from '@/core/env';
+import { errorHandler } from '@/core/error-handler';
+import { logger } from '@/core/logger';
 import compression from 'compression';
 import cors from 'cors';
 import express, { type Express } from 'express';
@@ -114,14 +114,14 @@ app.get('/health', (_req, res) => {
 // });
 
 // API routes
-import { assetsRouter } from '@/modules/assets/index.js';
-import { authRouter } from '@/modules/auth/index.js';
-import { bankRouter } from '@/modules/bank/index.js';
-import { documentsRouter } from '@/modules/documents/index.js';
-import { investorsRouter } from '@/modules/investors/index.js';
-import { liabilitiesRouter } from '@/modules/liabilities/index.js';
-import { reportsRouter } from '@/modules/reports/index.js';
-import { snapshotsRouter } from '@/modules/snapshots/index.js';
+import { assetsRouter } from '@/modules/assets/index';
+import { authRouter } from '@/modules/auth/index';
+import { bankRouter } from '@/modules/bank/index';
+import { documentsRouter } from '@/modules/documents/index';
+import { investorsRouter } from '@/modules/investors/index';
+import { liabilitiesRouter } from '@/modules/liabilities/index';
+import { reportsRouter } from '@/modules/reports/index';
+import { snapshotsRouter } from '@/modules/snapshots/index';
 
 app.use('/api/auth', authRouter);
 app.use('/api/investors', investorsRouter);

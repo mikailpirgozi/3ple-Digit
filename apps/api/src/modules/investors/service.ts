@@ -1,6 +1,6 @@
-import { errors } from '@/core/error-handler.js';
-import { log } from '@/core/logger.js';
-import { prisma } from '@/core/prisma.js';
+import { errors } from '@/core/error-handler';
+import { log } from '@/core/logger';
+import { prisma } from '@/core/prisma';
 // Investor and InvestorCashflow types removed as not exported from @prisma/client
 import type {
   CashflowResponse,
@@ -11,7 +11,7 @@ import type {
   InvestorResponse,
   UpdateCashflowRequest,
   UpdateInvestorRequest,
-} from './schema.js';
+} from './schema';
 
 export class InvestorsService {
   /**

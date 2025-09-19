@@ -3,13 +3,13 @@
  * Copy this template when creating new routers to ensure TypeScript safety
  */
 
-import { asyncHandler } from '@/core/error-handler.js';
-import { validateRequiredParam } from '@/core/validation.js';
-import { adminOrInternal, authenticate } from '@/modules/auth/middleware.js';
+import { asyncHandler } from '@/core/error-handler';
+import { validateRequiredParam } from '@/core/validation';
+import { adminOrInternal, authenticate } from '@/modules/auth/middleware';
 import { Router } from 'express';
 // Import your service and schemas here
-// import { templateService } from './service.js';
-// import { createTemplateSchema, updateTemplateSchema } from './schema.js';
+// import { templateService } from './service';
+// import { createTemplateSchema, updateTemplateSchema } from './schema';
 
 const router = Router();
 

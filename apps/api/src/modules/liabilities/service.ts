@@ -1,13 +1,13 @@
-import { errors } from '@/core/error-handler.js';
-import { log } from '@/core/logger.js';
-import { prisma } from '@/core/prisma.js';
+import { errors } from '@/core/error-handler';
+import { log } from '@/core/logger';
+import { prisma } from '@/core/prisma';
 // Liability type removed as not exported from @prisma/client
 import type {
   CreateLiabilityRequest,
   GetLiabilitiesQuery,
   LiabilityResponse,
   UpdateLiabilityRequest,
-} from './schema.js';
+} from './schema';
 
 export class LiabilitiesService {
   /**

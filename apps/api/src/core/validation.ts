@@ -1,4 +1,4 @@
-import { errors } from './error-handler.js';
+import { errors } from './error-handler';
 
 /**
  * Validates that a required parameter exists and is not empty

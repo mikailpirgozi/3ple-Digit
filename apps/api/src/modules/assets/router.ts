@@ -1,6 +1,6 @@
-import { asyncHandler } from '@/core/error-handler.js';
-import { validateRequiredParam } from '@/core/validation.js';
-import { adminOrInternal, authenticate } from '@/modules/auth/middleware.js';
+import { asyncHandler } from '@/core/error-handler';
+import { validateRequiredParam } from '@/core/validation';
+import { adminOrInternal, authenticate } from '@/modules/auth/middleware';
 import { Router, type Router as ExpressRouter } from 'express';
 import {
   createAssetEventSchema,
@@ -9,8 +9,8 @@ import {
   getAssetsQuerySchema,
   updateAssetEventSchema,
   updateAssetSchema,
-} from './schema.js';
-import { assetsService } from './service.js';
+} from './schema';
+import { assetsService } from './service';
 
 const router: ExpressRouter = Router();
 

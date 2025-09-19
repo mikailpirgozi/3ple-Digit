@@ -1,8 +1,8 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createHash } from 'crypto';
-import { env } from './env.js';
-import { log } from './logger.js';
+import { env } from './env';
+import { log } from './logger';
 
 // Initialize S3 client for Cloudflare R2
 const r2Client = new S3Client({

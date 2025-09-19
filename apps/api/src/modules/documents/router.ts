@@ -1,14 +1,14 @@
-import { asyncHandler } from '@/core/error-handler.js';
-import { validateRequiredParam } from '@/core/validation.js';
-import { adminOrInternal, authenticate } from '@/modules/auth/middleware.js';
+import { asyncHandler } from '@/core/error-handler';
+import { validateRequiredParam } from '@/core/validation';
+import { adminOrInternal, authenticate } from '@/modules/auth/middleware';
 import { Router, type Router as ExpressRouter } from 'express';
 import {
   createDocumentSchema,
   getDocumentsQuerySchema,
   getPresignedUploadUrlSchema,
   updateDocumentSchema,
-} from './schema.js';
-import { documentsService } from './service.js';
+} from './schema';
+import { documentsService } from './service';
 
 const router: ExpressRouter = Router();
 

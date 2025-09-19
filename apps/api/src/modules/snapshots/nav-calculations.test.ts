@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { testPrisma as prisma } from '../../test-prisma.js';
-import { SnapshotsService } from './service.js';
+import { testPrisma as prisma } from '../../test-prisma';
+import { SnapshotsService } from './service';
 
 describe('NAV Calculations Unit Tests', () => {
   const snapshotsService = new SnapshotsService();

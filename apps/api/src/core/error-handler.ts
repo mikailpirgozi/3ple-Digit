@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
-import { log } from './logger.js';
+import { log } from './logger';
 
 export interface ApiError extends Error {
   statusCode?: number;

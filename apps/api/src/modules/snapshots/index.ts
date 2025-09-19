@@ -1,6 +1,6 @@
 // Snapshots module exports
-export { snapshotsRouter } from './router.js';
-export { snapshotsService } from './service.js';
+export { snapshotsRouter } from './router';
+export { snapshotsService } from './service';
 export { 
   type CreateSnapshotRequest,
   type UpdateSnapshotRequest,
@@ -8,4 +8,4 @@ export {
   type InvestorSnapshotResponse,
   type NavCalculation,
   type InvestorOwnership,
-} from './schema.js';
+} from './schema';

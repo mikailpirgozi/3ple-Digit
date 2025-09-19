@@ -1,7 +1,7 @@
-import { errors } from '@/core/error-handler.js';
+import { errors } from '@/core/error-handler';
 import type { NextFunction, Request, Response } from 'express';
-import type { UserRoleType } from './schema.js';
-import { authService } from './service.js';
+import type { UserRoleType } from './schema';
+import { authService } from './service';
 
 // Extend Express Request type to include user
 declare global {

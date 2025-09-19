@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
-import { log } from './logger.js';
-import { prisma } from './prisma.js';
+import { log } from './logger';
+import { prisma } from './prisma';
 
 async function main() {
   log.info('🌱 Starting database seed...');
