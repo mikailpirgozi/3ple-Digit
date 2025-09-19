@@ -58,11 +58,8 @@ export const documentsApi = {
       fileType: file.type,
     });
 
-    return api.post('/documents/upload-proxy', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    // Don't set Content-Type header - let browser set it with boundary
+    return api.post('/documents/upload-proxy', formData);
   },
 
   // Upload file to R2 using presigned URL
