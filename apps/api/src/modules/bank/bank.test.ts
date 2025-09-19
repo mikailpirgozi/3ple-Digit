@@ -244,6 +244,25 @@ describe('Bank Service Unit Tests', () => {
       expect(summary.byCurrency.USD!.count).toBe(1);
       expect(summary.byAccount).toHaveLength(3);
     });
+
+    it('should use only latest balance per account (no duplicates)', async () => {
+      // Add older balance for existing account
+      await prisma.bankBalance.create({
+        data: {
+          accountName: 'test-eur-account',
+          amount: 99999, // This old amount should NOT be included
+          currency: 'EUR',
+          date: new Date('2025-01-10'), // Older date
+        },
+      });
+
+      const summary = await bankService.getBankBalanceSummary();
+
+      // Should still be 30000, not 30000 + 99999
+      expect(summary.totalBalance).toBe(30000);
+      expect(summary.byCurrency.EUR!.amount).toBe(25000); // Should not include the old 99999
+      expect(summary.byAccount).toHaveLength(3); // Same number of accounts
+    });
   });
 
   describe('Bank Balance CRUD Operations', () => {

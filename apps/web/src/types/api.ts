@@ -91,6 +91,8 @@ export type AssetType =
   | 'MATERIÁL'
   | 'PODIEL VO FIRME';
 export type AssetStatus = 'ACTIVE' | 'SOLD';
+export type InterestPeriod = 'MONTHLY' | 'QUARTERLY' | 'YEARLY' | 'AT_MATURITY';
+export type LoanStatus = 'ACTIVE' | 'REPAID' | 'DEFAULTED';
 
 export interface Asset {
   id: string;
@@ -101,13 +103,73 @@ export interface Asset {
   acquiredDate?: string;
   currentValue: number;
   expectedSalePrice?: number;
+  salePrice?: number;
+  saleDate?: string;
   status: AssetStatus;
-  meta: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+  // Loan-specific fields
+  loanPrincipal?: number;
+  interestRate?: number;
+  interestPeriod?: InterestPeriod;
+  loanStartDate?: string;
+  loanMaturityDate?: string;
+  loanStatus?: LoanStatus;
+  // Loan statistics
+  totalInterestEarned?: number;
+  totalInterestPaid?: number;
+  totalInterestUnpaid?: number;
+  outstandingPrincipal?: number;
   createdAt: string;
   updatedAt: string;
+  eventsCount?: number;
+  totalInflows?: number;
+  totalOutflows?: number;
 }
 
-export type AssetEventKind = 'VALUATION' | 'PAYMENT_IN' | 'PAYMENT_OUT' | 'CAPEX' | 'NOTE' | 'SALE';
+// Backend response type that matches the API schema
+export interface AssetResponse {
+  id: string;
+  name: string;
+  type: string;
+  description: string | null;
+  currentValue: number;
+  status?: string;
+  acquiredPrice?: number | null;
+  acquiredDate?: Date | string | null;
+  salePrice?: number | null;
+  saleDate?: string | null;
+  // Loan-specific fields
+  loanPrincipal?: number | null;
+  interestRate?: number | null;
+  interestPeriod?: string | null;
+  loanStartDate?: string | null;
+  loanMaturityDate?: string | null;
+  loanStatus?: string | null;
+  // Loan statistics
+  totalInterestEarned?: number;
+  totalInterestPaid?: number;
+  totalInterestUnpaid?: number;
+  outstandingPrincipal?: number;
+  createdAt: string;
+  updatedAt: string;
+  eventsCount?: number;
+  totalInflows?: number;
+  totalOutflows?: number;
+}
+
+export type AssetEventKind = 
+  | 'VALUATION' 
+  | 'PAYMENT_IN' 
+  | 'PAYMENT_OUT' 
+  | 'CAPEX' 
+  | 'NOTE' 
+  | 'SALE'
+  | 'LOAN_DISBURSEMENT'
+  | 'INTEREST_ACCRUAL'
+  | 'INTEREST_PAYMENT'
+  | 'PRINCIPAL_PAYMENT'
+  | 'LOAN_REPAYMENT'
+  | 'DEFAULT';
 
 export interface AssetEvent {
   id: string;
@@ -116,6 +178,13 @@ export interface AssetEvent {
   type: AssetEventKind;
   amount?: number | null;
   note?: string | null;
+  // Loan payment tracking fields
+  isPaid?: boolean | null;
+  paymentDate?: string | null;
+  principalAmount?: number | null;
+  interestAmount?: number | null;
+  referencePeriodStart?: string | null;
+  referencePeriodEnd?: string | null;
   createdAt: string;
 }
 
@@ -128,6 +197,13 @@ export interface CreateAssetRequest {
   currentValue: number;
   expectedSalePrice?: number;
   meta?: Record<string, unknown>;
+  // Loan-specific fields
+  loanPrincipal?: number;
+  interestRate?: number;
+  interestPeriod?: InterestPeriod;
+  loanStartDate?: string;
+  loanMaturityDate?: string;
+  loanStatus?: LoanStatus;
 }
 
 export interface CreateAssetEventRequest {
@@ -136,6 +212,39 @@ export interface CreateAssetEventRequest {
   amount?: number;
   note?: string;
   assetId?: string; // Optional because it's added by the backend router
+  // Loan payment tracking fields
+  isPaid?: boolean;
+  paymentDate?: string;
+  principalAmount?: number;
+  interestAmount?: number;
+  referencePeriodStart?: string;
+  referencePeriodEnd?: string;
+}
+
+export interface LoanStatistics {
+  totalInterestEarned: number;
+  totalInterestPaid: number;
+  totalInterestUnpaid: number;
+  outstandingPrincipal: number;
+}
+
+export interface AssetEventsResponse {
+  events: AssetEvent[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface AssetEventValidationInfo {
+  canAddEvents: boolean;
+  minDate: Date | string | null;
+  lastEventDate: Date | string | null;
+  lastEventType: string | null;
+  isSold: boolean;
+  acquiredDate: Date | string | null;
 }
 
 export interface UpdateAssetEventRequest {
@@ -164,6 +273,15 @@ export interface AssetSaleResponse {
   id: string;
   status: AssetStatus;
   pnl: number;
+}
+
+export interface AssetEventValidationInfo {
+  canAddEvents: boolean;
+  minDate: string | null;
+  lastEventDate: string | null;
+  lastEventType: string | null;
+  isSold: boolean;
+  acquiredDate: string | null;
 }
 
 // Liability types

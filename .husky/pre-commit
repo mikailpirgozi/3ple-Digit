@@ -1,5 +1,35 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npx lint-staged
-npx lint-staged
+# 🛡️ Database Protection Pre-commit Hook
+
+echo "🛡️  Running database protection checks..."
+
+# Check if any Prisma schema files were modified
+if git diff --cached --name-only | grep -q "prisma/schema.prisma"; then
+  echo "⚠️  Prisma schema changes detected!"
+  
+  # Check if we're on production environment
+  if [ "$NODE_ENV" = "production" ] || [ "$RAILWAY_ENVIRONMENT" = "production" ]; then
+    echo "🚨 PRODUCTION ENVIRONMENT DETECTED!"
+    echo "❌ Direct schema changes blocked on production"
+    echo "💡 Use: npm run db:migrate \"describe_your_change\""
+    exit 1
+  fi
+  
+  # Create automatic backup before schema changes
+  echo "🔄 Creating automatic backup before schema changes..."
+  cd apps/api && node database-protection.js backup "pre_schema_change" && cd ../..
+fi
+
+# Check for dangerous commands in staged files (not commit message)
+if git diff --cached --name-only | xargs grep -l -E "(prisma db push|prisma migrate reset|DROP TABLE|TRUNCATE)" 2>/dev/null; then
+  echo "🚨 DANGEROUS DATABASE COMMANDS DETECTED IN STAGED FILES!"
+  echo "❌ Commit blocked for safety"
+  exit 1
+fi
+
+echo "✅ Database protection checks passed"
+
+# Run linting
+npm run lint

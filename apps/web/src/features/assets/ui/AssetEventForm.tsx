@@ -4,6 +4,7 @@ import { DatePicker } from '@/ui/ui/date-picker';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { useAssetEventValidationInfo } from '../hooks';
 
 const assetEventFormSchema = z.object({
   date: z.string({
@@ -49,6 +50,7 @@ export function AssetEventForm({
   onCancel,
   isLoading,
 }: AssetEventFormProps) {
+  const { data: validationInfo, isLoading: validationLoading } = useAssetEventValidationInfo(assetId);
   const {
     register,
     handleSubmit,
@@ -76,6 +78,14 @@ export function AssetEventForm({
   const selectedType = watch('type');
   const requiresAmount = ['VALUATION', 'PAYMENT_IN', 'PAYMENT_OUT', 'CAPEX'].includes(selectedType);
 
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('sk-SK');
+  };
+
+  // Check if we can add events
+  const canAddEvents = validationInfo?.canAddEvents ?? true;
+  const minDate = validationInfo?.minDate ? new Date(validationInfo.minDate) : undefined;
+
   const handleFormSubmit = (data: AssetEventFormData) => {
     const payload = {
       date: new Date(data.date).toISOString(),
@@ -88,6 +98,38 @@ export function AssetEventForm({
     onSubmit(payload);
   };
 
+  if (validationLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <div className="text-muted-foreground">Načítavam validačné informácie...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!canAddEvents) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold text-foreground">Nemožno pridať udalosť</h2>
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-800">
+              {validationInfo?.isSold 
+                ? 'Toto aktívum bolo predané. Nie je možné pridávať ďalšie udalosti.'
+                : 'Nie je možné pridať udalosť k tomuto aktívu.'}
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Zavrieť
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -98,6 +140,26 @@ export function AssetEventForm({
           {event ? 'Upravte údaje udalosti' : 'Pridajte novú udalosť k aktívu'}
         </p>
       </div>
+
+      {/* Validation Info */}
+      {validationInfo && !event && (
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h3 className="text-sm font-medium text-blue-800 mb-2">Informácie o obmedzeniach</h3>
+          <div className="space-y-1 text-sm text-blue-700">
+            {validationInfo.acquiredDate && (
+              <p>📅 Dátum nákupu aktíva: {formatDate(validationInfo.acquiredDate)}</p>
+            )}
+            {validationInfo.lastEventDate && validationInfo.lastEventType && (
+              <p>
+                🕒 Posledná udalosť: {validationInfo.lastEventType} dňa {formatDate(validationInfo.lastEventDate)}
+              </p>
+            )}
+            {validationInfo.minDate && (
+              <p>⚠️ Minimálny povolený dátum: {formatDate(validationInfo.minDate)}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         {/* Date */}
@@ -114,6 +176,8 @@ export function AssetEventForm({
               }
             }}
             placeholder="Vyberte dátum"
+            fromDate={minDate}
+            disabledDays={minDate ? (date: Date) => date < minDate : undefined}
           />
           {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>}
         </div>

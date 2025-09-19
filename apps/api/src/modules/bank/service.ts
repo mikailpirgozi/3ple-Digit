@@ -334,9 +334,22 @@ export class BankService {
       orderBy: { date: 'desc' },
     });
 
-    const totalBalance = balances.reduce((sum, balance) => sum + balance.amount, 0);
+    // Group by account (latest balance per account) - SAME LOGIC AS NAV CALCULATION
+    const accountMap = new Map<string, BankBalance>();
+    balances.forEach(balance => {
+      const key = `${balance.accountName}-${balance.bankName ?? 'unknown'}`;
+      const existing = accountMap.get(key);
+      if (!existing || existing.date < balance.date) {
+        accountMap.set(key, balance);
+      }
+    });
 
-    const byCurrency = balances.reduce<Record<string, { amount: number; count: number }>>(
+    // Use only latest balances for calculations
+    const latestBalances = Array.from(accountMap.values());
+
+    const totalBalance = latestBalances.reduce((sum, balance) => sum + balance.amount, 0);
+
+    const byCurrency = latestBalances.reduce<Record<string, { amount: number; count: number }>>(
       (acc, balance) => {
         acc[balance.currency] ??= { amount: 0, count: 0 };
         const currencyKey = balance.currency;
@@ -350,17 +363,7 @@ export class BankService {
       {}
     );
 
-    // Group by account (latest balance per account)
-    const accountMap = new Map<string, BankBalance>();
-    balances.forEach(balance => {
-      const key = `${balance.accountName}-${balance.bankName ?? 'unknown'}`;
-      const existing = accountMap.get(key);
-      if (!existing || existing.date < balance.date) {
-        accountMap.set(key, balance);
-      }
-    });
-
-    const byAccount = Array.from(accountMap.values()).map(balance => ({
+    const byAccount = latestBalances.map(balance => ({
       accountName: balance.accountName,
       bankName: balance.bankName,
       amount: balance.amount,

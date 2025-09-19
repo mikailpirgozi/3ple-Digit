@@ -1,5 +1,5 @@
 import type {
-  Asset,
+  AssetResponse,
   AssetEvent,
   AssetEventKind,
   CreateAssetEventRequest,
@@ -11,21 +11,29 @@ import {
   useCreateAssetEvent,
   useDeleteAssetEvent,
   useUpdateAssetEvent,
+  useAssetEventValidationInfo,
 } from '../hooks';
 import { AssetEventForm } from './AssetEventForm';
+import { LoanEventForm } from './LoanEventForm';
 
 interface AssetEventsModalProps {
-  asset: Asset;
+  asset: AssetResponse;
   onClose: () => void;
 }
 
-const eventKindLabels: Record<AssetEventKind, string> = {
+const eventKindLabels: Record<string, string> = {
   VALUATION: '📊 Prehodnotenie',
   PAYMENT_IN: '💰 Príjem',
   PAYMENT_OUT: '💸 Výdaj',
   CAPEX: '🔧 Investícia (CAPEX)',
   NOTE: '📝 Poznámka',
   SALE: '🏷️ Predaj',
+  LOAN_DISBURSEMENT: '💳 Poskytnutie pôžičky',
+  INTEREST_ACCRUAL: '📈 Narastanie úroku',
+  INTEREST_PAYMENT: '💵 Platba úroku',
+  PRINCIPAL_PAYMENT: '💸 Platba istiny',
+  LOAN_REPAYMENT: '✅ Splatenie pôžičky',
+  DEFAULT: '⚠️ Defaultovanie',
 };
 
 export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
@@ -33,6 +41,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
   const [editingEvent, setEditingEvent] = useState<AssetEvent | null>(null);
 
   const { data: events, isLoading } = useAssetEvents(asset.id);
+  const { data: validationInfo } = useAssetEventValidationInfo(asset.id);
   const createEventMutation = useCreateAssetEvent();
   const updateEventMutation = useUpdateAssetEvent();
   const deleteEventMutation = useDeleteAssetEvent();
@@ -101,12 +110,12 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
     const years = finalMonths / 12;
 
     if (finalMonths < 12) {
-      return {
-        days: 0,
-        months: finalMonths,
-        years: years,
-        text: finalMonths === 1 ? `${finalMonths} mesiac` : `${finalMonths} mesiacov`,
-      };
+        return {
+          days: 0,
+          months: finalMonths,
+          years,
+          text: finalMonths === 1 ? `${finalMonths} mesiac` : `${finalMonths} mesiacov`,
+        };
     } else {
       const wholeYears = Math.floor(finalMonths / 12);
       const remainingMonths = finalMonths % 12;
@@ -122,7 +131,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
         return {
           days: 0,
           months: finalMonths,
-          years: years,
+          years,
           text: `${wholeYears} rokov ${remainingMonths} mesiacov`,
         };
       }
@@ -184,7 +193,7 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
             const changePercent = (change / purchasePrice) * 100;
 
             // Calculate time from asset acquisition to first valuation
-            const startDate = asset.acquiredDate ?? asset.createdAt;
+            const startDate = (asset as any).acquiredDate ?? asset.createdAt;
             const timePeriod = calculateTimePeriod(
               typeof startDate === 'string' ? startDate : startDate.toISOString(),
               typeof event.date === 'string' ? event.date : event.date.toISOString()
@@ -215,8 +224,40 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
         return `-${formatCurrency(Math.abs(event.amount))} (výdaj)`;
       case 'CAPEX':
         return `+${formatCurrency(event.amount)} (investícia)`;
-      case 'SALE':
+      case 'SALE': {
+        // Calculate total performance from acquisition to sale
+        const purchasePrice = asset.acquiredPrice ?? 0;
+        if (purchasePrice > 0 && event.amount) {
+          const totalGain = event.amount - purchasePrice;
+          const totalPercent = (totalGain / purchasePrice) * 100;
+          
+          // Calculate time from acquisition to sale
+          const startDate = (asset as any).acquiredDate ?? asset.createdAt;
+          const timePeriod = calculateTimePeriod(
+            typeof startDate === 'string' ? startDate : (startDate as Date).toISOString(),
+            typeof event.date === 'string' ? event.date : event.date.toISOString()
+          );
+          const annualizedReturn = calculateAnnualizedReturn(
+            purchasePrice, 
+            event.amount, 
+            timePeriod.months
+          );
+          
+          const gainText = totalGain >= 0 
+            ? ` (+${formatCurrency(totalGain)})` 
+            : ` (${formatCurrency(totalGain)})`;
+          
+          const percentText = `${totalPercent >= 0 ? '+' : ''}${totalPercent.toFixed(1)}%`;
+          const timeText = `za ${timePeriod.text}`;
+          const annualText = timePeriod.months > 0 
+            ? ` (${annualizedReturn.toFixed(1)}% ročne)` 
+            : '';
+          
+          return `Predané za ${formatCurrency(event.amount)}${gainText} | ${percentText} ${timeText}${annualText}`;
+        }
+        
         return `Predané za ${formatCurrency(event.amount)}`;
+      }
       default:
         return null;
     }
@@ -251,28 +292,57 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           {showForm ? (
-            <AssetEventForm
-              event={editingEvent ?? undefined}
-              assetId={asset.id}
-              onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent}
-              onCancel={() => {
-                setShowForm(false);
-                setEditingEvent(null);
-              }}
-              isLoading={createEventMutation.isPending ?? updateEventMutation.isPending}
-            />
+            asset.type === 'PÔŽIČKY' && !editingEvent ? (
+              <LoanEventForm
+                assetId={asset.id}
+                loanPrincipal={(asset as any).loanPrincipal ?? undefined}
+                interestRate={(asset as any).interestRate ?? undefined}
+                interestPeriod={(asset as any).interestPeriod ?? undefined}
+                onSubmit={handleCreateEvent}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingEvent(null);
+                }}
+              />
+            ) : (
+              <AssetEventForm
+                event={editingEvent ?? undefined}
+                assetId={asset.id}
+                onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingEvent(null);
+                }}
+                isLoading={createEventMutation.isPending ?? updateEventMutation.isPending}
+              />
+            )
           ) : (
             <div className="space-y-6">
               {/* Add Event Button */}
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-foreground">História udalostí</h3>
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                >
-                  Pridať udalosť
-                </button>
+                {validationInfo?.canAddEvents ? (
+                  <button
+                    onClick={() => setShowForm(true)}
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  >
+                    Pridať udalosť
+                  </button>
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    {validationInfo?.isSold ? 'Aktívum predané' : 'Nie je možné pridať udalosť'}
+                  </div>
+                )}
               </div>
+
+              {/* Validation Info for sold assets */}
+              {validationInfo?.isSold && (
+                <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <p className="text-sm text-orange-800">
+                    ⚠️ Toto aktívum bolo predané. Nie je možné pridávať ďalšie udalosti.
+                  </p>
+                </div>
+              )}
 
               {/* Events List */}
               {isLoading ? (
@@ -331,12 +401,14 @@ export function AssetEventsModal({ asset, onClose }: AssetEventsModalProps) {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">Žiadne udalosti nenájdené</p>
-                  <button
-                    onClick={() => setShowForm(true)}
-                    className="mt-2 px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  >
-                    Pridať prvú udalosť
-                  </button>
+                  {validationInfo?.canAddEvents && (
+                    <button
+                      onClick={() => setShowForm(true)}
+                      className="mt-2 px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    >
+                      Pridať prvú udalosť
+                    </button>
+                  )}
                 </div>
               )}
             </div>

@@ -101,6 +101,17 @@ router.post(
       note?: string;
     };
 
+    // Validate input
+    if (!salePrice || salePrice <= 0) {
+      res.status(400).json({ error: 'Invalid sale price' });
+      return;
+    }
+
+    if (!date) {
+      res.status(400).json({ error: 'Sale date is required' });
+      return;
+    }
+
     // Create a sale event
     const saleEvent = await assetsService.createAssetEvent(
       {
@@ -141,6 +152,19 @@ router.post(
       pnl,
       saleEvent,
     });
+  })
+);
+
+/**
+ * GET /api/assets/:id/events/validation
+ * Get validation info for new asset events
+ */
+router.get(
+  '/:id/events/validation',
+  asyncHandler(async (req, res) => {
+    const id = validateRequiredParam(req.params.id, 'id');
+    const validationInfo = await assetsService.getAssetEventValidationInfo(id);
+    res.json(validationInfo);
   })
 );
 
@@ -228,6 +252,33 @@ router.delete(
     const id = validateRequiredParam(req.params.id, 'id');
     await assetsService.deleteAssetEvent(id, req.user?.id);
     res.status(204).send();
+  })
+);
+
+/**
+ * POST /api/assets/:id/reset
+ * Reset asset from SOLD status to ACTIVE (Admin/Internal only)
+ */
+router.post(
+  '/:id/reset',
+  adminOrInternal,
+  asyncHandler(async (req, res) => {
+    const id = validateRequiredParam(req.params.id, 'id');
+    const asset = await assetsService.resetAssetFromSold(id, req.user?.id);
+    res.json(asset);
+  })
+);
+
+/**
+ * GET /api/assets/:id/loan-statistics
+ * Get loan statistics for a loan asset
+ */
+router.get(
+  '/:id/loan-statistics',
+  asyncHandler(async (req, res) => {
+    const id = validateRequiredParam(req.params.id, 'id');
+    const statistics = await assetsService.getLoanStatistics(id);
+    res.json(statistics);
   })
 );
 

@@ -52,12 +52,12 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
           id: asset.id,
           data: {
             date: new Date().toISOString(),
-            saleDate: new Date().toISOString(),
             salePrice: Number(salePrice),
           },
         });
       } catch (error) {
         console.error('Error marking asset as sold:', error);
+        console.error('Full error details:', JSON.stringify(error, null, 2));
       }
     }
   };
@@ -126,15 +126,20 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
 
   const calculatePnL = (asset: Asset) => {
     if (!asset.acquiredPrice) return null;
-    const pnl = asset.currentValue - asset.acquiredPrice;
+    
+    // For sold assets, use salePrice; for active assets, use currentValue
+    const finalValue = asset.status === 'SOLD' && asset.salePrice ? asset.salePrice : asset.currentValue;
+    const pnl = finalValue - asset.acquiredPrice;
     const pnlPercent = (pnl / asset.acquiredPrice) * 100;
 
     // Calculate time period and annualized return
     const startDate = asset.acquiredDate ?? asset.createdAt;
-    const timePeriod = calculateTimePeriod(startDate, new Date().toISOString());
+    // For sold assets, use saleDate; for active assets, use current date
+    const endDate = asset.status === 'SOLD' && asset.saleDate ? asset.saleDate : new Date().toISOString();
+    const timePeriod = calculateTimePeriod(startDate, endDate);
     const annualizedReturn = calculateAnnualizedReturn(
       asset.acquiredPrice,
-      asset.currentValue,
+      finalValue,
       timePeriod.months
     );
 
@@ -143,6 +148,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
       pnlPercent,
       timePeriod,
       annualizedReturn: timePeriod.months > 0 ? annualizedReturn : null,
+      finalValue,
     };
   };
 
@@ -229,7 +235,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
         <select
           value={filters.type ?? ''}
           onChange={e =>
-            setFilters({ ...filters, type: (e.target.value as AssetType) ?? undefined })
+            setFilters({ ...filters, type: (e.target.value as AssetType) || undefined })
           }
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         >
@@ -244,7 +250,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
         <select
           value={filters.status ?? ''}
           onChange={e =>
-            setFilters({ ...filters, status: (e.target.value as 'ACTIVE' | 'SOLD') ?? undefined })
+            setFilters({ ...filters, status: (e.target.value as 'ACTIVE' | 'SOLD') || undefined })
           }
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         >
@@ -256,8 +262,8 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
         <input
           type="text"
           placeholder="Hľadať podľa názvu..."
-          value={filters.q ?? ''}
-          onChange={e => setFilters({ ...filters, q: e.target.value ?? undefined })}
+          value={filters.q || ''}
+          onChange={e => setFilters({ ...filters, q: e.target.value || undefined })}
           className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
 
@@ -336,8 +342,12 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
                           {asset.acquiredPrice && (
                             <span>Kúpené za {formatCurrency(asset.acquiredPrice)} • </span>
                           )}
-                          Aktuálna hodnota: {formatCurrency(asset.currentValue)}
-                          {asset.expectedSalePrice && (
+                          {asset.status === 'SOLD' && asset.salePrice ? (
+                            <span>Predané za {formatCurrency(asset.salePrice)}</span>
+                          ) : (
+                            <span>Aktuálna hodnota: {formatCurrency(asset.currentValue)}</span>
+                          )}
+                          {asset.expectedSalePrice && asset.status !== 'SOLD' && (
                             <span>
                               {' '}
                               • Očakávaná predajná cena: {formatCurrency(asset.expectedSalePrice)}
@@ -350,7 +360,7 @@ export function AssetsList({ onCreateAsset, onEditAsset }: AssetsListProps) {
                         {pnlData && (
                           <div className="text-right">
                             <p className="font-medium text-foreground">
-                              {formatCurrency(asset.currentValue)}
+                              {formatCurrency(pnlData.finalValue)}
                             </p>
                             <p
                               className={`text-sm ${

@@ -20,11 +20,37 @@ export const AssetEventType = {
   CAPEX: 'CAPEX',
   NOTE: 'NOTE',
   SALE: 'SALE',
+  // Loan-specific events
+  LOAN_DISBURSEMENT: 'LOAN_DISBURSEMENT', // Poskytnutie pôžičky
+  INTEREST_ACCRUAL: 'INTEREST_ACCRUAL', // Narastanie úroku
+  INTEREST_PAYMENT: 'INTEREST_PAYMENT', // Platba úroku
+  PRINCIPAL_PAYMENT: 'PRINCIPAL_PAYMENT', // Platba istiny
+  LOAN_REPAYMENT: 'LOAN_REPAYMENT', // Splatenie pôžičky
+  DEFAULT: 'DEFAULT', // Defaultovanie pôžičky
 } as const;
 
 export type AssetEventTypeEnum = (typeof AssetEventType)[keyof typeof AssetEventType];
 
 // Asset schemas
+// Interest period enum
+export const InterestPeriod = {
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
+  AT_MATURITY: 'AT_MATURITY',
+} as const;
+
+export type InterestPeriodEnum = (typeof InterestPeriod)[keyof typeof InterestPeriod];
+
+// Loan status enum
+export const LoanStatus = {
+  ACTIVE: 'ACTIVE',
+  REPAID: 'REPAID',
+  DEFAULTED: 'DEFAULTED',
+} as const;
+
+export type LoanStatusEnum = (typeof LoanStatus)[keyof typeof LoanStatus];
+
 export const createAssetSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   type: z.enum([
@@ -40,6 +66,13 @@ export const createAssetSchema = z.object({
   currentValue: z.number().min(0, 'Current value must be non-negative'),
   acquiredPrice: z.number().min(0, 'Acquired price must be non-negative').optional(),
   acquiredDate: z.coerce.date().optional(),
+  // Loan-specific fields
+  loanPrincipal: z.number().min(0).optional(),
+  interestRate: z.number().min(0).max(100).optional(), // Percentage
+  interestPeriod: z.enum([InterestPeriod.MONTHLY, InterestPeriod.QUARTERLY, InterestPeriod.YEARLY, InterestPeriod.AT_MATURITY]).optional(),
+  loanStartDate: z.coerce.date().optional(),
+  loanMaturityDate: z.coerce.date().optional(),
+  loanStatus: z.enum([LoanStatus.ACTIVE, LoanStatus.REPAID, LoanStatus.DEFAULTED]).optional(),
 });
 
 export const updateAssetSchema = z.object({
@@ -62,6 +95,13 @@ export const updateAssetSchema = z.object({
   status: z.enum(['ACTIVE', 'SOLD']).optional(),
   salePrice: z.number().optional(),
   saleDate: z.coerce.date().optional(),
+  // Loan-specific fields
+  loanPrincipal: z.number().min(0).optional(),
+  interestRate: z.number().min(0).max(100).optional(),
+  interestPeriod: z.enum([InterestPeriod.MONTHLY, InterestPeriod.QUARTERLY, InterestPeriod.YEARLY, InterestPeriod.AT_MATURITY]).optional(),
+  loanStartDate: z.coerce.date().optional(),
+  loanMaturityDate: z.coerce.date().optional(),
+  loanStatus: z.enum([LoanStatus.ACTIVE, LoanStatus.REPAID, LoanStatus.DEFAULTED]).optional(),
 });
 
 // Asset event schemas
@@ -74,10 +114,23 @@ export const createAssetEventSchema = z.object({
     AssetEventType.CAPEX,
     AssetEventType.NOTE,
     AssetEventType.SALE,
+    AssetEventType.LOAN_DISBURSEMENT,
+    AssetEventType.INTEREST_ACCRUAL,
+    AssetEventType.INTEREST_PAYMENT,
+    AssetEventType.PRINCIPAL_PAYMENT,
+    AssetEventType.LOAN_REPAYMENT,
+    AssetEventType.DEFAULT,
   ]),
   amount: z.number().optional(),
   date: z.coerce.date(),
   note: z.string().optional(),
+  // Loan payment tracking fields
+  isPaid: z.boolean().optional(),
+  paymentDate: z.coerce.date().optional(),
+  principalAmount: z.number().optional(),
+  interestAmount: z.number().optional(),
+  referencePeriodStart: z.coerce.date().optional(),
+  referencePeriodEnd: z.coerce.date().optional(),
 });
 
 export const updateAssetEventSchema = z.object({
@@ -89,11 +142,24 @@ export const updateAssetEventSchema = z.object({
       AssetEventType.CAPEX,
       AssetEventType.NOTE,
       AssetEventType.SALE,
+      AssetEventType.LOAN_DISBURSEMENT,
+      AssetEventType.INTEREST_ACCRUAL,
+      AssetEventType.INTEREST_PAYMENT,
+      AssetEventType.PRINCIPAL_PAYMENT,
+      AssetEventType.LOAN_REPAYMENT,
+      AssetEventType.DEFAULT,
     ])
     .optional(),
   amount: z.number().optional(),
   date: z.coerce.date().optional(),
   note: z.string().optional(),
+  // Loan payment tracking fields
+  isPaid: z.boolean().optional(),
+  paymentDate: z.coerce.date().optional(),
+  principalAmount: z.number().optional(),
+  interestAmount: z.number().optional(),
+  referencePeriodStart: z.coerce.date().optional(),
+  referencePeriodEnd: z.coerce.date().optional(),
 });
 
 // Query schemas
@@ -126,6 +192,12 @@ export const getAssetEventsQuerySchema = z.object({
       AssetEventType.CAPEX,
       AssetEventType.NOTE,
       AssetEventType.SALE,
+      AssetEventType.LOAN_DISBURSEMENT,
+      AssetEventType.INTEREST_ACCRUAL,
+      AssetEventType.INTEREST_PAYMENT,
+      AssetEventType.PRINCIPAL_PAYMENT,
+      AssetEventType.LOAN_REPAYMENT,
+      AssetEventType.DEFAULT,
     ])
     .optional(),
   dateFrom: z.coerce.date().optional(),
@@ -134,6 +206,7 @@ export const getAssetEventsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   sortBy: z.enum(['date', 'amount', 'createdAt']).default('date'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  isPaid: z.boolean().optional(), // Filter by payment status
 });
 
 // Response schemas
@@ -148,11 +221,23 @@ export const assetResponseSchema = z.object({
   acquiredDate: z.date().nullable().optional(),
   salePrice: z.number().nullable().optional(),
   saleDate: z.date().nullable().optional(),
+  // Loan-specific fields
+  loanPrincipal: z.number().nullable().optional(),
+  interestRate: z.number().nullable().optional(),
+  interestPeriod: z.string().nullable().optional(),
+  loanStartDate: z.date().nullable().optional(),
+  loanMaturityDate: z.date().nullable().optional(),
+  loanStatus: z.string().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
   eventsCount: z.number().optional(),
   totalInflows: z.number().optional(),
   totalOutflows: z.number().optional(),
+  // Loan-specific calculations
+  totalInterestEarned: z.number().optional(),
+  totalInterestPaid: z.number().optional(),
+  totalInterestUnpaid: z.number().optional(),
+  outstandingPrincipal: z.number().optional(),
 });
 
 export const assetEventResponseSchema = z.object({
@@ -162,6 +247,13 @@ export const assetEventResponseSchema = z.object({
   amount: z.number().nullable(),
   date: z.date(),
   note: z.string().nullable(),
+  // Loan payment tracking fields
+  isPaid: z.boolean().nullable().optional(),
+  paymentDate: z.date().nullable().optional(),
+  principalAmount: z.number().nullable().optional(),
+  interestAmount: z.number().nullable().optional(),
+  referencePeriodStart: z.date().nullable().optional(),
+  referencePeriodEnd: z.date().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
   asset: z

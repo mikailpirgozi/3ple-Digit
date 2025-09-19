@@ -64,10 +64,20 @@ model Asset {
   acquiredDate  DateTime?
   salePrice     Float?
   saleDate      DateTime?
+  
+  // Loan-specific fields
+  loanPrincipal    Float?      @map("loan_principal")
+  interestRate     Float?      @map("interest_rate")
+  interestPeriod   String?     @map("interest_period") // MONTHLY, QUARTERLY, YEARLY, AT_MATURITY
+  loanStartDate    DateTime?   @map("loan_start_date")
+  loanMaturityDate DateTime?   @map("loan_maturity_date")
+  loanStatus       String?     @map("loan_status") // ACTIVE, REPAID, DEFAULTED
+  
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   events        AssetEvent[]
 
+  @@index([type, loanStatus], map: "idx_assets_type_loan_status")
   @@map("assets")
 }
 
@@ -78,10 +88,20 @@ model AssetEvent {
   amount    Float?
   date      DateTime
   note      String?
+  
+  // Loan payment tracking fields
+  isPaid               Boolean?   @default(true) @map("is_paid")
+  paymentDate          DateTime?  @map("payment_date")
+  principalAmount      Float?     @map("principal_amount")
+  interestAmount       Float?     @map("interest_amount")
+  referencePeriodStart DateTime?  @map("reference_period_start")
+  referencePeriodEnd   DateTime?  @map("reference_period_end")
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
+  @@index([assetId, isPaid], map: "idx_asset_events_is_paid")
   @@map("asset_events")
 }
 

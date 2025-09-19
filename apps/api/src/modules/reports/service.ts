@@ -267,7 +267,7 @@ export class ReportsService {
     const navChangePercent =
       previousNav && previousNav !== 0 ? ((currentNav - previousNav) / previousNav) * 100 : null;
 
-    // Get current totals
+    // Get current totals - only active assets (not sold)
     const assets = await prisma.asset.findMany({
       include: {
         events: {
@@ -292,7 +292,9 @@ export class ReportsService {
       }
     });
 
-    const totalAssets = assets.reduce((sum, asset) => sum + asset.currentValue, 0);
+    // Calculate total assets value - only active assets (not sold)
+    const activeAssets = assets.filter(asset => asset.status !== 'SOLD');
+    const totalAssets = activeAssets.reduce((sum, asset) => sum + asset.currentValue, 0);
     const totalLiabilities = liabilities.reduce(
       (sum, liability) => sum + liability.currentBalance,
       0
@@ -310,8 +312,8 @@ export class ReportsService {
       if (asset.status === 'SOLD' && asset.salePrice && asset.acquiredPrice) {
         // Realized PnL from sold assets
         totalRealizedPnL += asset.salePrice - asset.acquiredPrice;
-      } else {
-        // Unrealized PnL from active assets
+      } else if (asset.status !== 'SOLD') {
+        // Unrealized PnL from active assets only
         const acquiredPrice = asset.acquiredPrice ?? asset.currentValue;
         totalUnrealizedPnL += asset.currentValue - acquiredPrice;
       }

@@ -42,6 +42,14 @@ export function useAssetEvents(id: string) {
   });
 }
 
+export function useAssetEventValidationInfo(id: string) {
+  return useQuery({
+    queryKey: [...assetsKeys.detail(id), 'validation'],
+    queryFn: () => assetsApi.getAssetEventValidationInfo(id),
+    enabled: Boolean(id),
+  });
+}
+
 // Assets mutations
 export function useCreateAsset() {
   const queryClient = useQueryClient();

@@ -39,7 +39,7 @@ function validateEnv(): Env {
     return envSchema.parse(process.env);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const missingVars = error.errors
+      const missingVars = (error as z.ZodError).errors
         .map(err => `${err.path.join('.')}: ${err.message}`)
         .join('\n');
 
@@ -54,10 +54,10 @@ function validateEnv(): Env {
         return {
           NODE_ENV: 'production',
           PORT: 4000,
-          DATABASE_URL: process.env.DATABASE_URL || '',
+          DATABASE_URL: process.env.DATABASE_URL ?? '',
           CORS_ORIGINS: ['http://localhost:3000'],
           JWT_SECRET:
-            process.env.JWT_SECRET ||
+            process.env.JWT_SECRET ??
             'fallback-secret-key-for-production-please-set-proper-jwt-secret',
           JWT_EXPIRES_IN: '7d',
           R2_ACCOUNT_ID: 'test-account-id',

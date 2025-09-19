@@ -1,6 +1,6 @@
 import { api } from '@/lib/api-client';
 import type {
-  Asset,
+  AssetResponse,
   AssetEvent,
   CreateAssetRequest,
   CreateAssetEventRequest,
@@ -9,6 +9,8 @@ import type {
   AssetFilters,
   AssetsResponse,
   AssetEventsResponse,
+  AssetEventValidationInfo,
+  LoanStatistics,
 } from '@/types/api';
 
 export const assetsApi = {
@@ -16,13 +18,13 @@ export const assetsApi = {
   getAssets: (filters?: AssetFilters): Promise<AssetsResponse> => api.get('/assets', filters),
 
   // Get asset by ID
-  getAsset: (id: string): Promise<Asset> => api.get(`/assets/${id}`),
+  getAsset: (id: string): Promise<AssetResponse> => api.get(`/assets/${id}`),
 
   // Create new asset
-  createAsset: (data: CreateAssetRequest): Promise<Asset> => api.post('/assets', data),
+  createAsset: (data: CreateAssetRequest): Promise<AssetResponse> => api.post('/assets', data),
 
   // Update asset
-  updateAsset: (id: string, data: Partial<CreateAssetRequest>): Promise<Asset> =>
+  updateAsset: (id: string, data: Partial<CreateAssetRequest>): Promise<AssetResponse> =>
     api.put(`/assets/${id}`, data),
 
   // Delete asset
@@ -30,7 +32,11 @@ export const assetsApi = {
 
   // Get asset events
   getAssetEvents: (id: string): Promise<AssetEvent[]> =>
-    api.get<AssetEventsResponse>(`/assets/${id}/events`).then(response => response.events),
+    api.get<AssetEventsResponse>(`/assets/${id}/events`).then((response: any) => response.events),
+
+  // Get asset event validation info
+  getAssetEventValidationInfo: (id: string): Promise<AssetEventValidationInfo> =>
+    api.get(`/assets/${id}/events/validation`),
 
   // Create asset event
   createAssetEvent: (id: string, data: CreateAssetEventRequest): Promise<AssetEvent> =>
@@ -50,4 +56,8 @@ export const assetsApi = {
   // Mark asset as sold
   markAsSold: (id: string, data: MarkAssetSoldRequest): Promise<AssetSaleResponse> =>
     api.post(`/assets/${id}/mark-sold`, data),
+
+  // Get loan statistics
+  getLoanStatistics: (id: string): Promise<LoanStatistics> =>
+    api.get(`/assets/${id}/loan-statistics`),
 };
