@@ -69,13 +69,12 @@ export class R2Service {
         };
       }
 
-      // Create presigned URL
+      // Create presigned URL without ContentLength to avoid checksum
       const command = new PutObjectCommand({
         Bucket: this.bucketName,
         Key: r2Key,
         ContentType: metadata.mimeType,
-        ContentLength: metadata.size,
-        ChecksumAlgorithm: undefined, // Disable automatic checksum
+        // Remove ContentLength to prevent automatic checksum generation
         Metadata: {
           originalName: metadata.originalName,
           uploadedAt: new Date().toISOString(),
@@ -84,7 +83,14 @@ export class R2Service {
 
       const uploadUrl = await getSignedUrl(r2Client, command, {
         expiresIn: expiresInMinutes * 60,
-        unhoistableHeaders: new Set(['x-amz-checksum-crc32']),
+        // Explicitly disable checksum headers
+        unhoistableHeaders: new Set([
+          'x-amz-checksum-crc32',
+          'x-amz-checksum-crc32c', 
+          'x-amz-checksum-sha1',
+          'x-amz-checksum-sha256',
+          'x-amz-sdk-checksum-algorithm'
+        ]),
       });
 
       const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
