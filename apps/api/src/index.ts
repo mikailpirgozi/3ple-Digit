@@ -128,6 +128,16 @@ import { liabilitiesRouter } from '@/modules/liabilities/index';
 import { reportsRouter } from '@/modules/reports/index';
 import { snapshotsRouter } from '@/modules/snapshots/index';
 
+// Health check endpoint
+app.get('/api/health', (_req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: env.NODE_ENV,
+    version: '1.0.0'
+  });
+});
+
 app.use('/api/auth', authRouter);
 app.use('/api/investors', investorsRouter);
 app.use('/api/assets', assetsRouter);
